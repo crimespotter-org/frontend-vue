@@ -11,7 +11,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/home',
     name: 'Home',
     component: HomePage
-  }
+  },
+  {
+    path: '/crime-map',
+    component: () => import('@/views/CrimeMapView.vue')
+  },
 ]
 
 const router = createRouter({

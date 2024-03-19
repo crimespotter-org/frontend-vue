@@ -16,13 +16,18 @@
       <div id="container">
         <strong>Ready to create an app?</strong>
         <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+        <ion-fab>
+          <ion-fab-button tab="crime-map" href="/crime-map">
+            Go To Map
+          </ion-fab-button>
+        </ion-fab>
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonFab, IonFabButton } from '@ionic/vue';
 </script>
 
 <style scoped>
