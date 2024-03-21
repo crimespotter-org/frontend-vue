@@ -27,7 +27,7 @@ const location = ref<Location>();
 
 // PROPS
 const props = defineProps<{
-  markerData: { coordinate: any; title: string; snippet: string }[];
+  markerData: { coordinate: any; title: string; iconUrl: string}[];
 }>();
 
 // EVENTS
@@ -53,19 +53,21 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
 
   // Plot each point on the map
-  const markers = props.markerData.map(({ coordinate, title, snippet }) => {
+  const markers = props.markerData.map(({ coordinate, title, iconUrl }) => {
     return {
       coordinate,
       title,
-      snippet,
+      iconUrl
     };
   });
+
+  const image = "/public/House.png"
 
   //Location from User
   markers.push({
     coordinate: {lat: location.value?.latitude, lng: location.value?.longitude},
     title: "Mein Standort",
-    snippet:"Mein Standort"
+    iconUrl: image
   });
 
   markerIds.value = await newMap.addMarkers(markers);

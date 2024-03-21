@@ -7,6 +7,19 @@
     </ion-header>
 
     <ion-content>
+      <ion-item>
+      <ion-select label="Radius" placeholder="0km">
+        <ion-select-option value="5">5 km</ion-select-option>
+        <ion-select-option value="10">10 km</ion-select-option>
+        <ion-select-option value="20">20 km</ion-select-option>
+        <ion-select-option value="50">50 km</ion-select-option>
+        <ion-select-option value="100">100 km</ion-select-option>
+        <ion-select-option value="200">200 km</ion-select-option>
+        <ion-select-option value="500">500 km</ion-select-option>
+        <ion-select-option value="1000">1000 km</ion-select-option>
+        <ion-select-option value="10000">10000 km</ion-select-option>
+      </ion-select>
+      </ion-item>
       <my-map
         :markerData="markerData"
         @onMapClicked="mapClicked"
@@ -32,6 +45,9 @@ import {
   IonToolbar,
   IonPopover,
   modalController,
+  IonItem,
+  IonSelect,
+  IonSelectOption 
 } from "@ionic/vue";
 import { ref } from "vue";
 import MyMap from "../components/Map.vue";
@@ -39,18 +55,19 @@ import CrimeProfile from "../components/CrimeProfile.vue";
 import { Capacitor } from "@capacitor/core";
 
 const markerIsOpen = ref<boolean>(false);
+const range = ref<string>("1");
 
 // data for the map
 const markerData = [
   {
     coordinate: { lat: 37.769, lng: -122.446 },
     title: "title one",
-    snippet: "title one snippet content will be presented here",
+    iconUrl: ""
   },
   {
     coordinate: { lat: 37.769, lng: -122.45 },
     title: "title two",
-    snippet: "title one snippet content will be presented here",
+    iconUrl: ""
   },
 ];
 

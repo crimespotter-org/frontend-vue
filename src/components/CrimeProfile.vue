@@ -17,7 +17,7 @@ import { IonContent, IonHeader, IonTitle, modalController } from "@ionic/vue";
 
 // PROPS
 const props = defineProps<{
-  markerData: { coordinate: any; title: string; snippet: string }[];
+  markerData: { coordinate: any; title: string;}[];
 }>();
 
 const emits = defineEmits<{
