@@ -16,7 +16,8 @@
         :is-open="markerIsOpen"
         size="cover"
         @did-dismiss="markerIsOpen = false">
-        <crime-profile></crime-profile>
+        <crime-profile
+        :markerData = "markerData"></crime-profile>
       </ion-popover>
     </ion-content>
 </ion-page>

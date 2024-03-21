@@ -43,7 +43,7 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
 
   // Plot each point on the map
-  let markers = props.markerData.map(({ coordinate, title, snippet }) => {
+  const markers = props.markerData.map(({ coordinate, title, snippet }) => {
     return {
       coordinate,
       title,
