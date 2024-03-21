@@ -11,6 +11,19 @@
 <script setup lang="ts">
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
+import { Geolocation } from "@capacitor/geolocation";
+
+const mapRef = ref<HTMLElement>();
+const markerIds = ref<string[] | undefined>();
+let newMap: GoogleMap;
+
+export interface Location{
+  name: string;
+  latitude: number;
+  longitude: number;
+} 
+
+const location = ref<Location>();
 
 // PROPS
 const props = defineProps<{
@@ -23,12 +36,9 @@ const emits = defineEmits<{
   (event: "onMapClicked"): void;
 }>();
 
-const mapRef = ref<HTMLElement>();
-const markerIds = ref<string[] | undefined>();
-let newMap: GoogleMap;
-
 onMounted(async () => {
   console.log("mounted ", mapRef.value);
+  await currentLocation()
   await nextTick();
   await createMap();
 });
@@ -51,28 +61,46 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
     };
   });
 
+  //Location from User
+  markers.push({
+    coordinate: {lat: location.value?.latitude, lng: location.value?.longitude},
+    title: "Mein Standort",
+    snippet:"Mein Standort"
+  });
+
   markerIds.value = await newMap.addMarkers(markers);
 };
 
-/**
- *
- */
+const currentLocation = async () => {
+  await Geolocation.getCurrentPosition().then((coordinates) => {
+    location.value =
+    {
+      name: "Mein Standort",
+      latitude: coordinates.coords.latitude,
+      longitude: coordinates.coords.longitude
+    }});
+};
+
 async function createMap() {
   if (!mapRef.value) return;
 
+  currentLocation();
+
   // render map using capacitor plugin
   newMap = await GoogleMap.create({
-    id: "my-cool-map",
+    id: "map-id",
     element: mapRef.value,
     apiKey: import.meta.env.VITE_APP_YOUR_API_KEY_HERE as string,
     config: {
       center: {
-        lat: 37.783,
-        lng: -122.408,
+        lat: location.value!.latitude,
+        lng: location.value!.longitude,
       },
-      zoom: 12,
+      zoom: 15,
     },
   });
+
+  newMap.enableCurrentLocation(true);
 
   // add markers to map
   addSomeMarkers(newMap);

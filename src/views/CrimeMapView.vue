@@ -1,5 +1,5 @@
 <template>
-<ion-page>
+  <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-title>Crime Map</ion-title>
@@ -15,12 +15,12 @@
       <ion-popover
         :is-open="markerIsOpen"
         size="cover"
-        @did-dismiss="markerIsOpen = false">
-        <crime-profile
-        :markerData = "markerData"></crime-profile>
+        @did-dismiss="markerIsOpen = false"
+      >
+        <crime-profile :markerData="markerData"></crime-profile>
       </ion-popover>
     </ion-content>
-</ion-page>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
@@ -46,7 +46,12 @@ const markerData = [
     coordinate: { lat: 37.769, lng: -122.446 },
     title: "title one",
     snippet: "title one snippet content will be presented here",
-  }
+  },
+  {
+    coordinate: { lat: 37.769, lng: -122.45 },
+    title: "title two",
+    snippet: "title one snippet content will be presented here",
+  },
 ];
 
 const openModal = async (marker: any) => {
@@ -80,10 +85,11 @@ const getMarkerInfo = (marker: { latitude: number; longitude: number }) => {
 const markerClicked = (event: any) => {
   console.log(event);
 
-
   // only use dialog in web since we doesnt show info window
   if (!Capacitor.isNativePlatform()) {
     openModal(getMarkerInfo(event));
   }
 };
+
+
 </script>
