@@ -55,7 +55,6 @@ import CrimeProfile from "../components/CrimeProfile.vue";
 import { Capacitor } from "@capacitor/core";
 
 const markerIsOpen = ref<boolean>(false);
-const range = ref<string>("1");
 
 // data for the map
 const markerData = [
