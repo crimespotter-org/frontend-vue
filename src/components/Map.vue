@@ -15,6 +15,7 @@ import { Geolocation } from "@capacitor/geolocation";
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
+const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
 let newMap: GoogleMap;
 
 export interface Location{
@@ -92,7 +93,7 @@ async function createMap() {
   newMap = await GoogleMap.create({
     id: "map-id",
     element: mapRef.value,
-    apiKey: import.meta.env.VITE_APP_YOUR_API_KEY_HERE as string,
+    apiKey: import.meta.env.VITE_APP_YOUR_API_KEY_HERE as string, //use apikey here
     config: {
       center: {
         lat: location.value!.latitude,
