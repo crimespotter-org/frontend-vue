@@ -12,11 +12,13 @@
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
+import {mapService} from "../services/map-service";
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
 const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
 let newMap: GoogleMap;
+
 
 export interface Location{
   name: string;
@@ -50,6 +52,8 @@ onUnmounted(() => {
   newMap.removeMarkers(markerIds?.value as string[]);
 });
 
+
+
 const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
 
@@ -70,6 +74,10 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
     title: "Mein Standort",
     iconUrl: image
   });
+
+  const dbMarkers = await mapService.getAllCases();
+  console.log("Test:")
+  console.log(dbMarkers[0])
 
   markerIds.value = await newMap.addMarkers(markers);
 };
