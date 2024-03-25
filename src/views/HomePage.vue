@@ -20,6 +20,11 @@
           <ion-fab-button tab="crime-map" href="/crime-map">
             Go To Map
           </ion-fab-button>
+          <ion-fab-button tab="case-profile" color="warning">
+            <router-link to="case-profile">
+              Show case profile
+            </router-link>
+          </ion-fab-button>
         </ion-fab>
       </div>
     </ion-content>
