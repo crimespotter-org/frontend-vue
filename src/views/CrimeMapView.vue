@@ -63,11 +63,13 @@ onMounted(async () => {
   markerData = await mapService.getAllCases();
 });
 
-const openModal = async (marker: any) => {
+const openModal = async (markerData: AllCases) => {
+  console.log("marker to pass");
+  console.log(markerData)
   const modal = await modalController.create({
     component: CrimeProfile,
     componentProps: {
-      marker,
+      markerData,
     },
     initialBreakpoint: 0.8,
     breakpoints: [0, 0.8],
@@ -83,20 +85,21 @@ const mapClicked = () => {
   console.log("mapClicked");
 };
 
-const getMarkerInfo = (marker: { latitude: number; longitude: number }) => {
+const getMarkerInfo = (marker: { lat: number; long: number }) : AllCases => {
   return markerData.filter(
     (m) =>
-      m.lat === marker.latitude &&
-      m.long === marker.longitude
-  )[0];
+      m.lat === marker.long &&
+      m.long === marker.lat
+  );
 };
 
-const markerClicked = (event: any) => {
-  console.log(event);
-
+const markerClicked = (event: {latitude: number, longitude: number, mapId: string, markerId: string, snippet: string, title: string}) => {
   // only use dialog in web since we doesnt show info window
   if (!Capacitor.isNativePlatform()) {
-    openModal(getMarkerInfo(event));
+    const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
+    console.log("marker to pass")
+    console.log(markerToPass);
+    openModal(markerToPass);
   }
 };
 

@@ -1,14 +1,14 @@
 <template>
   <ion-header>
     <ion-toolbar>
-      <ion-title>{{JSON.stringify(markerData,null,2)}}</ion-title>
+      <ion-title>Title</ion-title>
       <ion-buttons slot="end">
         <ion-button @click="closeModal()">Close</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
-    <p>{{markerData[0].title}}</p>
+    <p>{{props.markerData[0].title}}</p>
   </ion-content>
 </template>
 
