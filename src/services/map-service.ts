@@ -15,7 +15,7 @@ class MapService{
     }
 
     async getAllCases(): Promise<AllCases>{
-        const{data: cases, error} = await supabase.rpc("getallcases")
+        const{data: cases, error} = await supabase.rpc("get_all_cases")
         if (error) {
             console.error('Fehler beim Abrufen der Daten:', error.message);
             return [];

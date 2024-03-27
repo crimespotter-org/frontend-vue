@@ -36,7 +36,6 @@ const emits = defineEmits<{
 
 onMounted(async () => {
   console.log("mounted ", mapRef.value);
-  await currentLocation()
   await nextTick();
   await createMap();
 });
@@ -56,7 +55,7 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
   // each point from supabase
   const markers = markerData.map((item) => {
     return{
-      coordinate: {lat: item.long, lng: item.lat},
+      coordinate: {lat: item.lat, lng: item.long},
       title: item.title,
       iconUrl: ""
     }
@@ -85,7 +84,7 @@ const currentLocation = async () => {
 async function createMap() {
   if (!mapRef.value) return;
 
-  await currentLocation();
+  await currentLocation()
 
   // render map using capacitor plugin
   newMap = await GoogleMap.create({

@@ -88,8 +88,8 @@ const mapClicked = () => {
 const getMarkerInfo = (marker: { lat: number; long: number }) : AllCases => {
   return markerData.filter(
     (m) =>
-      m.lat === marker.long &&
-      m.long === marker.lat
+      m.long === marker.long &&
+      m.lat === marker.lat
   );
 };
 
