@@ -1,23 +1,24 @@
 <template>
   <ion-header>
     <ion-toolbar>
-      <ion-title>Fall Titel</ion-title>
+      <ion-title>{{JSON.stringify(markerData,null,2)}}</ion-title>
       <ion-buttons slot="end">
         <ion-button @click="closeModal()">Close</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
-    <p>Inhalt des Steckbriefes</p>
+    <p>{{markerData[0].title}}</p>
   </ion-content>
 </template>
 
 <script setup lang="ts">
+import { AllCases } from "@/types/supabase-global";
 import { IonContent, IonHeader, IonTitle, modalController } from "@ionic/vue";
 
 // PROPS
 const props = defineProps<{
-  markerData: { coordinate: any; title: string;}[];
+  markerData: AllCases;
 }>();
 
 const emits = defineEmits<{

@@ -21,15 +21,13 @@
       </ion-select>
       </ion-item>
       <my-map
-        :markerData="markerData"
         @onMapClicked="mapClicked"
         @onMarkerClicked="markerClicked"
       ></my-map>
       <ion-popover
         :is-open="markerIsOpen"
         size="cover"
-        @did-dismiss="markerIsOpen = false"
-      >
+        @did-dismiss="markerIsOpen = false">
         <crime-profile :markerData="markerData"></crime-profile>
       </ion-popover>
     </ion-content>
@@ -49,26 +47,21 @@ import {
   IonSelect,
   IonSelectOption 
 } from "@ionic/vue";
-import { ref } from "vue";
-import MyMap from "../components/Map.vue";
+import { onMounted, ref } from "vue";
+import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
 import { Capacitor } from "@capacitor/core";
+import { mapService } from "@/services/map-service";
+import { AllCases } from "@/types/supabase-global";
 
 const markerIsOpen = ref<boolean>(false);
 
 // data for the map
-const markerData = [
-  {
-    coordinate: { lat: 37.769, lng: -122.446 },
-    title: "title one",
-    iconUrl: ""
-  },
-  {
-    coordinate: { lat: 37.769, lng: -122.45 },
-    title: "title two",
-    iconUrl: ""
-  },
-];
+let markerData: AllCases = [];
+
+onMounted(async () => {
+  markerData = await mapService.getAllCases();
+});
 
 const openModal = async (marker: any) => {
   const modal = await modalController.create({
@@ -93,8 +86,8 @@ const mapClicked = () => {
 const getMarkerInfo = (marker: { latitude: number; longitude: number }) => {
   return markerData.filter(
     (m) =>
-      m.coordinate.lat === marker.latitude &&
-      m.coordinate.lng === marker.longitude
+      m.lat === marker.latitude &&
+      m.long === marker.longitude
   )[0];
 };
 

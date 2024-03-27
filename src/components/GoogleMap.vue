@@ -12,7 +12,7 @@
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { Geolocation } from "@capacitor/geolocation";
-import {mapService} from "../services/map-service";
+import { mapService } from "@/services/map-service";
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
@@ -27,11 +27,6 @@ export interface Location{
 } 
 
 const location = ref<Location>();
-
-// PROPS
-const props = defineProps<{
-  markerData: { coordinate: any; title: string; iconUrl: string}[];
-}>();
 
 // EVENTS
 const emits = defineEmits<{
@@ -52,32 +47,27 @@ onUnmounted(() => {
   newMap.removeMarkers(markerIds?.value as string[]);
 });
 
-
-
 const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
+  const image = "/public/House.png";
 
-  // Plot each point on the map
-  const markers = props.markerData.map(({ coordinate, title, iconUrl }) => {
-    return {
-      coordinate,
-      title,
-      iconUrl
-    };
+  const markerData = await mapService.getAllCases();
+
+  // each point from supabase
+  const markers = markerData.map((item) => {
+    return{
+      coordinate: {lat: item.long, lng: item.lat},
+      title: item.title,
+      iconUrl: ""
+    }
   });
-
-  const image = "/public/House.png"
 
   //Location from User
   markers.push({
-    coordinate: {lat: location.value?.latitude, lng: location.value?.longitude},
+    coordinate: {lat: location.value!.latitude, lng: location.value!.longitude},
     title: "Mein Standort",
     iconUrl: image
   });
-
-  const dbMarkers = await mapService.getAllCases();
-  console.log("Test:")
-  console.log(dbMarkers[0])
 
   markerIds.value = await newMap.addMarkers(markers);
 };
@@ -95,7 +85,7 @@ const currentLocation = async () => {
 async function createMap() {
   if (!mapRef.value) return;
 
-  currentLocation();
+  await currentLocation();
 
   // render map using capacitor plugin
   newMap = await GoogleMap.create({
