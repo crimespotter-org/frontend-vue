@@ -11,22 +11,16 @@
 <script setup lang="ts">
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
-import { Geolocation } from "@capacitor/geolocation";
 import { mapService } from "@/services/map-service";
+import { Coordinate } from "@/types/supabase-global"
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
-const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
+//const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
 let newMap: GoogleMap;
+const currentLocation = ref<Coordinate>();
 
 
-export interface Location{
-  name: string;
-  latitude: number;
-  longitude: number;
-} 
-
-const location = ref<Location>();
 
 // EVENTS
 const emits = defineEmits<{
@@ -48,7 +42,7 @@ onUnmounted(() => {
 
 const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
-  const image = "/public/House.png";
+  const image = "/public/home-sharp.svg";
 
   const markerData = await mapService.getAllCases();
 
@@ -63,28 +57,20 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
 
   //Location from User
   markers.push({
-    coordinate: {lat: location.value!.latitude, lng: location.value!.longitude},
+    coordinate: {lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude},
     title: "Mein Standort",
     iconUrl: image
   });
 
-  markerIds.value = await newMap.addMarkers(markers);
-};
+  console.log(markers[2]);
 
-const currentLocation = async () => {
-  await Geolocation.getCurrentPosition().then((coordinates) => {
-    location.value =
-    {
-      name: "Mein Standort",
-      latitude: coordinates.coords.latitude,
-      longitude: coordinates.coords.longitude
-    }});
+  markerIds.value = await newMap.addMarkers(markers);
 };
 
 async function createMap() {
   if (!mapRef.value) return;
 
-  await currentLocation()
+  currentLocation.value = await mapService.currentLocation();
 
   // render map using capacitor plugin
   newMap = await GoogleMap.create({
@@ -93,8 +79,8 @@ async function createMap() {
     apiKey: import.meta.env.VITE_APP_YOUR_API_KEY_HERE as string, //use apikey here
     config: {
       center: {
-        lat: location.value!.latitude,
-        lng: location.value!.longitude,
+        lat: currentLocation.value!.latitude,
+        lng: currentLocation.value!.longitude,
       },
       zoom: 15,
     },

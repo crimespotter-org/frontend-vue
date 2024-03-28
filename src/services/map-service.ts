@@ -1,5 +1,6 @@
 import { supabase } from "./supabase-service";
-import {Case, AllCases} from "@/types/supabase-global"
+import {Case, AllCases, Coordinate} from "@/types/supabase-global"
+import { Geolocation } from "@capacitor/geolocation";
 
 class MapService{
     async getMarkers(): Promise<Case[]>{
@@ -22,6 +23,12 @@ class MapService{
         }
         console.log(cases)
         return cases;
+    }
+
+    async currentLocation() : Promise<Coordinate>{
+        const currentLocation = await Geolocation.getCurrentPosition();
+        const coordinate = {latitude: currentLocation.coords.latitude, longitude: currentLocation.coords.longitude};
+        return coordinate;
     }
 }
 

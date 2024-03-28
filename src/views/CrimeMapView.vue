@@ -8,7 +8,10 @@
 
     <ion-content>
       <ion-item>
-      <ion-select label="Radius" placeholder="0km">
+      <ion-select label="Radius" 
+      placeholder="0km" 
+      aria-label="Range"
+      @ionChange="handleRangeChange" >
         <ion-select-option value="5">5 km</ion-select-option>
         <ion-select-option value="10">10 km</ion-select-option>
         <ion-select-option value="20">20 km</ion-select-option>
@@ -61,6 +64,17 @@ let markerData: AllCases = [];
 
 onMounted(async () => {
   markerData = await mapService.getAllCases();
+  const currentLocation = await mapService.currentLocation();
+  markerData.push({
+      id: "0",
+      title: "Mein Standort",
+      summary: "Mein aktueller Standort",
+      status: "",
+      created_by: "",
+      created_at: new Date().getDate().toString(),
+      lat: currentLocation.latitude,
+      long: currentLocation.longitude
+  })
 });
 
 const openModal = async (markerData: AllCases) => {
@@ -97,11 +111,12 @@ const markerClicked = (event: {latitude: number, longitude: number, mapId: strin
   // only use dialog in web since we doesnt show info window
   if (!Capacitor.isNativePlatform()) {
     const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
-    console.log("marker to pass")
-    console.log(markerToPass);
     openModal(markerToPass);
   }
 };
 
+const handleRangeChange = (event: {detail: {value: number}}) => {
+  console.log(event.detail.value);
+}
 
 </script>
