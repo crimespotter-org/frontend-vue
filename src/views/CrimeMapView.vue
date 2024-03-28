@@ -8,7 +8,10 @@
 
     <ion-content>
       <ion-item>
-      <ion-select label="Radius" placeholder="0km">
+      <ion-select label="Radius" 
+      placeholder="0km" 
+      aria-label="Range"
+      @ionChange="handleRangeChange" >
         <ion-select-option value="5">5 km</ion-select-option>
         <ion-select-option value="10">10 km</ion-select-option>
         <ion-select-option value="20">20 km</ion-select-option>
@@ -21,15 +24,13 @@
       </ion-select>
       </ion-item>
       <my-map
-        :markerData="markerData"
         @onMapClicked="mapClicked"
         @onMarkerClicked="markerClicked"
       ></my-map>
       <ion-popover
         :is-open="markerIsOpen"
         size="cover"
-        @did-dismiss="markerIsOpen = false"
-      >
+        @did-dismiss="markerIsOpen = false">
         <crime-profile :markerData="markerData"></crime-profile>
       </ion-popover>
     </ion-content>
@@ -49,32 +50,40 @@ import {
   IonSelect,
   IonSelectOption 
 } from "@ionic/vue";
-import { ref } from "vue";
-import MyMap from "../components/Map.vue";
+import { onMounted, ref } from "vue";
+import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
 import { Capacitor } from "@capacitor/core";
+import { mapService } from "@/services/map-service";
+import { AllCases } from "@/types/supabase-global";
 
 const markerIsOpen = ref<boolean>(false);
 
 // data for the map
-const markerData = [
-  {
-    coordinate: { lat: 37.769, lng: -122.446 },
-    title: "title one",
-    iconUrl: ""
-  },
-  {
-    coordinate: { lat: 37.769, lng: -122.45 },
-    title: "title two",
-    iconUrl: ""
-  },
-];
+let markerData: AllCases = [];
 
-const openModal = async (marker: any) => {
+onMounted(async () => {
+  markerData = await mapService.getAllCases();
+  const currentLocation = await mapService.currentLocation();
+  markerData.push({
+      id: "0",
+      title: "Mein Standort",
+      summary: "Mein aktueller Standort",
+      status: "",
+      created_by: "",
+      created_at: new Date().getDate().toString(),
+      lat: currentLocation.latitude,
+      long: currentLocation.longitude
+  })
+});
+
+const openModal = async (markerData: AllCases) => {
+  console.log("marker to pass");
+  console.log(markerData)
   const modal = await modalController.create({
     component: CrimeProfile,
     componentProps: {
-      marker,
+      markerData,
     },
     initialBreakpoint: 0.8,
     breakpoints: [0, 0.8],
@@ -90,22 +99,24 @@ const mapClicked = () => {
   console.log("mapClicked");
 };
 
-const getMarkerInfo = (marker: { latitude: number; longitude: number }) => {
+const getMarkerInfo = (marker: { lat: number; long: number }) : AllCases => {
   return markerData.filter(
     (m) =>
-      m.coordinate.lat === marker.latitude &&
-      m.coordinate.lng === marker.longitude
-  )[0];
+      m.long === marker.long &&
+      m.lat === marker.lat
+  );
 };
 
-const markerClicked = (event: any) => {
-  console.log(event);
-
+const markerClicked = (event: {latitude: number, longitude: number, mapId: string, markerId: string, snippet: string, title: string}) => {
   // only use dialog in web since we doesnt show info window
   if (!Capacitor.isNativePlatform()) {
-    openModal(getMarkerInfo(event));
+    const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
+    openModal(markerToPass);
   }
 };
 
+const handleRangeChange = (event: {detail: {value: number}}) => {
+  console.log(event.detail.value);
+}
 
 </script>

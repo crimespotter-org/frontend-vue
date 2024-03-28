@@ -11,27 +11,16 @@
 <script setup lang="ts">
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
-import { Geolocation } from "@capacitor/geolocation";
-import {mapService} from "../services/map-service";
+import { mapService } from "@/services/map-service";
+import { Coordinate } from "@/types/supabase-global"
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
-const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
+//const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
 let newMap: GoogleMap;
+const currentLocation = ref<Coordinate>();
 
 
-export interface Location{
-  name: string;
-  latitude: number;
-  longitude: number;
-} 
-
-const location = ref<Location>();
-
-// PROPS
-const props = defineProps<{
-  markerData: { coordinate: any; title: string; iconUrl: string}[];
-}>();
 
 // EVENTS
 const emits = defineEmits<{
@@ -41,7 +30,6 @@ const emits = defineEmits<{
 
 onMounted(async () => {
   console.log("mounted ", mapRef.value);
-  await currentLocation()
   await nextTick();
   await createMap();
 });
@@ -52,50 +40,37 @@ onUnmounted(() => {
   newMap.removeMarkers(markerIds?.value as string[]);
 });
 
-
-
 const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
+  const image = "/public/home-sharp.svg";
 
-  // Plot each point on the map
-  const markers = props.markerData.map(({ coordinate, title, iconUrl }) => {
-    return {
-      coordinate,
-      title,
-      iconUrl
-    };
+  const markerData = await mapService.getAllCases();
+
+  // each point from supabase
+  const markers = markerData.map((item) => {
+    return{
+      coordinate: {lat: item.lat, lng: item.long},
+      title: item.title,
+      iconUrl: ""
+    }
   });
-
-  const image = "/public/House.png"
 
   //Location from User
   markers.push({
-    coordinate: {lat: location.value?.latitude, lng: location.value?.longitude},
+    coordinate: {lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude},
     title: "Mein Standort",
     iconUrl: image
   });
 
-  const dbMarkers = await mapService.getAllCases();
-  console.log("Test:")
-  console.log(dbMarkers[0])
+  console.log(markers[2]);
 
   markerIds.value = await newMap.addMarkers(markers);
-};
-
-const currentLocation = async () => {
-  await Geolocation.getCurrentPosition().then((coordinates) => {
-    location.value =
-    {
-      name: "Mein Standort",
-      latitude: coordinates.coords.latitude,
-      longitude: coordinates.coords.longitude
-    }});
 };
 
 async function createMap() {
   if (!mapRef.value) return;
 
-  currentLocation();
+  currentLocation.value = await mapService.currentLocation();
 
   // render map using capacitor plugin
   newMap = await GoogleMap.create({
@@ -104,8 +79,8 @@ async function createMap() {
     apiKey: import.meta.env.VITE_APP_YOUR_API_KEY_HERE as string, //use apikey here
     config: {
       center: {
-        lat: location.value!.latitude,
-        lng: location.value!.longitude,
+        lat: currentLocation.value!.latitude,
+        lng: currentLocation.value!.longitude,
       },
       zoom: 15,
     },

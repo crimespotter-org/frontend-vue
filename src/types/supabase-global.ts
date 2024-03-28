@@ -370,3 +370,8 @@ export type Media = Database['public']['Tables']['media']['Row']
 export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Vote = Database['public']['Tables']['votes']['Row']
 export type AllCases = Database['public']['Functions']['getallcases']['Returns']
+
+export interface Coordinate{
+  latitude: number;
+  longitude: number;
+} 
