@@ -29,6 +29,11 @@
         </ion-col>
       </ion-row>
     </ion-grid>
+    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
+        <ion-fab-button color="secondary">
+          <ion-icon :icon="add"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
     <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
     </capacitor-google-map>
   </div>
@@ -39,7 +44,7 @@ import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
 import { Coordinate, ListOfCases } from "@/types/supabase-global";
-import { filterOutline} from "ionicons/icons"
+import { filterOutline, add} from "ionicons/icons";
 import{
   IonItem,
   IonSelect,

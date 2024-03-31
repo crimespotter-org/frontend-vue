@@ -1,11 +1,11 @@
 <template>
-  <ion-page v-if="markerDataLoaded" class="crimeBody">
-    <ion-header :translucent="true" class="crimeBody">
-      <ion-toolbar>
+  <ion-page v-if="markerDataLoaded" class="crimeMap">
+    <ion-header :translucent="true">
+      <ion-toolbar class="crimeHeader">
         <ion-title>Crime Map</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
+    <ion-content :scroll-y="true">
       <my-map :markerData="markerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
       <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
         <crime-profile :markerData="markerData"></crime-profile>
@@ -22,6 +22,9 @@ import {
   IonTitle,
   IonToolbar,
   IonPopover,
+  IonIcon,
+  IonFab, 
+  IonFabButton, 
   modalController,
 } from "@ionic/vue";
 import { onMounted, ref } from "vue";
@@ -30,6 +33,7 @@ import CrimeProfile from "../components/CrimeProfile.vue";
 import { Capacitor } from "@capacitor/core";
 import { mapService } from "@/services/map-service";
 import { ListOfCases } from "@/types/supabase-global";
+import { add} from "ionicons/icons";
 
 const markerIsOpen = ref<boolean>(false);
 

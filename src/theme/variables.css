@@ -227,11 +227,15 @@ http://ionicframework.com/docs/theming/ */
   }
 }
 
-.crimeBody{
+.crimeMap{
   --ion-background-color: var(--ion-color-primary);
-  --ion-background-color-rgb: var(--ion-background-color-rgb);
+  --ion-background-color-rgb: var(--ion-color-primary-rgb);
   --ion-text-color: var(--ion-color-primary-contrast);
   --ion-text-color-rgb: 255,255,255;
+}
+
+.crimeHeader{
+  --background: var(--ion-color-primary);
 }
 
 
