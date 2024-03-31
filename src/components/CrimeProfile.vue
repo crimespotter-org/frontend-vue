@@ -13,12 +13,12 @@
 </template>
 
 <script setup lang="ts">
-import { AllCases } from "@/types/supabase-global";
+import { ListOfCases } from "@/types/supabase-global";
 import { IonContent, IonHeader, IonTitle, modalController } from "@ionic/vue";
 
 // PROPS
 const props = defineProps<{
-  markerData: AllCases;
+  markerData: ListOfCases;
 }>();
 
 const emits = defineEmits<{

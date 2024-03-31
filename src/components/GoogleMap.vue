@@ -1,9 +1,35 @@
 <template>
   <div>
-    <capacitor-google-map
-      ref="mapRef"
-      style="display: inline-block; width: 100vw; height: 86vh"
-    >
+    <ion-grid>
+      <ion-row>
+        <ion-col size="3">
+          <ion-fab>
+            <ion-fab-button>
+              <ion-icon name="filter-circle-sharp"></ion-icon>
+            </ion-fab-button>
+          </ion-fab>
+        </ion-col>
+        <ion-col size="6">
+          <ion-searchbar></ion-searchbar>
+        </ion-col>
+        <ion-col size="3">
+          <ion-item>
+            <ion-select label="0km" aria-label="Range" @ionChange="handleRangeChange">
+              <ion-select-option value="5">5 km</ion-select-option>
+              <ion-select-option value="10">10 km</ion-select-option>
+              <ion-select-option value="20">20 km</ion-select-option>
+              <ion-select-option value="50">50 km</ion-select-option>
+              <ion-select-option value="100">100 km</ion-select-option>
+              <ion-select-option value="200">200 km</ion-select-option>
+              <ion-select-option value="500">500 km</ion-select-option>
+              <ion-select-option value="1000">1000 km</ion-select-option>
+              <ion-select-option value="10000">10000 km</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
     </capacitor-google-map>
   </div>
 </template>
@@ -12,15 +38,29 @@
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
-import { Coordinate } from "@/types/supabase-global"
+import { Coordinate, ListOfCases } from "@/types/supabase-global";
+import{
+  IonItem,
+  IonSelect,
+  IonSelectOption,
+  //IonList,
+  //IonLabel,
+  //IonModal,
+  IonSearchbar,
+  IonCol, 
+  IonGrid, 
+  IonRow,
+  IonIcon,
+  IonFab, 
+  IonFabButton 
+} from "@ionic/vue";
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
 //const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
 let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
-
-
+let listOfCases: ListOfCases = [];
 
 // EVENTS
 const emits = defineEmits<{
@@ -30,6 +70,7 @@ const emits = defineEmits<{
 
 onMounted(async () => {
   console.log("mounted ", mapRef.value);
+  listOfCases = await mapService.getAllCases();
   await nextTick();
   await createMap();
 });
@@ -44,10 +85,8 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
   const image = "/public/home-sharp.svg";
 
-  const markerData = await mapService.getAllCases();
-
   // each point from supabase
-  const markers = markerData.map((item) => {
+  const markers = listOfCases.map((item) => {
     return{
       coordinate: {lat: item.lat, lng: item.long},
       title: item.title,
@@ -61,8 +100,6 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
     title: "Mein Standort",
     iconUrl: image
   });
-
-  console.log(markers[2]);
 
   markerIds.value = await newMap.addMarkers(markers);
 };
@@ -102,4 +139,10 @@ async function createMap() {
     emits("onMapClicked");
   });
 }
+
+const handleRangeChange = async(event: {detail: {value: number}}) => {
+  console.log(event.detail.value);
+  listOfCases = await mapService.getNearbyCases(currentLocation.value!.latitude, currentLocation.value!.longitude, event.detail.value); 
+  await addSomeMarkers(newMap);
+};
 </script>

@@ -1,36 +1,13 @@
 <template>
-  <ion-page>
+  <ion-page v-if="markerDataLoaded">
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-title>Crime Map</ion-title>
       </ion-toolbar>
     </ion-header>
-
     <ion-content>
-      <ion-item>
-      <ion-select label="Radius" 
-      placeholder="0km" 
-      aria-label="Range"
-      @ionChange="handleRangeChange" >
-        <ion-select-option value="5">5 km</ion-select-option>
-        <ion-select-option value="10">10 km</ion-select-option>
-        <ion-select-option value="20">20 km</ion-select-option>
-        <ion-select-option value="50">50 km</ion-select-option>
-        <ion-select-option value="100">100 km</ion-select-option>
-        <ion-select-option value="200">200 km</ion-select-option>
-        <ion-select-option value="500">500 km</ion-select-option>
-        <ion-select-option value="1000">1000 km</ion-select-option>
-        <ion-select-option value="10000">10000 km</ion-select-option>
-      </ion-select>
-      </ion-item>
-      <my-map
-        @onMapClicked="mapClicked"
-        @onMarkerClicked="markerClicked"
-      ></my-map>
-      <ion-popover
-        :is-open="markerIsOpen"
-        size="cover"
-        @did-dismiss="markerIsOpen = false">
+      <my-map :markerData="markerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
+      <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
         <crime-profile :markerData="markerData"></crime-profile>
       </ion-popover>
     </ion-content>
@@ -46,40 +23,26 @@ import {
   IonToolbar,
   IonPopover,
   modalController,
-  IonItem,
-  IonSelect,
-  IonSelectOption 
 } from "@ionic/vue";
 import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
 import { Capacitor } from "@capacitor/core";
 import { mapService } from "@/services/map-service";
-import { AllCases } from "@/types/supabase-global";
+import { ListOfCases } from "@/types/supabase-global";
 
 const markerIsOpen = ref<boolean>(false);
 
 // data for the map
-let markerData: AllCases = [];
+let markerData: ListOfCases = [];
+const markerDataLoaded = ref<boolean>(false);
 
 onMounted(async () => {
   markerData = await mapService.getAllCases();
-  const currentLocation = await mapService.currentLocation();
-  markerData.push({
-      id: "0",
-      title: "Mein Standort",
-      summary: "Mein aktueller Standort",
-      status: "",
-      created_by: "",
-      created_at: new Date().getDate().toString(),
-      lat: currentLocation.latitude,
-      long: currentLocation.longitude
-  })
+  markerDataLoaded.value = true;
 });
 
-const openModal = async (markerData: AllCases) => {
-  console.log("marker to pass");
-  console.log(markerData)
+const openModal = async (markerData: ListOfCases) => {
   const modal = await modalController.create({
     component: CrimeProfile,
     componentProps: {
@@ -99,7 +62,7 @@ const mapClicked = () => {
   console.log("mapClicked");
 };
 
-const getMarkerInfo = (marker: { lat: number; long: number }) : AllCases => {
+const getMarkerInfo = (marker: { lat: number; long: number }) : ListOfCases => {
   return markerData.filter(
     (m) =>
       m.long === marker.long &&
@@ -108,15 +71,23 @@ const getMarkerInfo = (marker: { lat: number; long: number }) : AllCases => {
 };
 
 const markerClicked = (event: {latitude: number, longitude: number, mapId: string, markerId: string, snippet: string, title: string}) => {
-  // only use dialog in web since we doesnt show info window
   if (!Capacitor.isNativePlatform()) {
     const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
+    if(markerToPass.length == 0){
+      return;
+    }
+    console.log(markerToPass);
     openModal(markerToPass);
   }
 };
 
-const handleRangeChange = (event: {detail: {value: number}}) => {
-  console.log(event.detail.value);
-}
+/*        <ion-list lines="inset" :inset=true>
+          <ion-item v-for="(item, index) of markerData" :key="index">
+            <ion-label>{{ item.title }}</ion-label>
+            <ion-label>Ort</ion-label>
+            <ion-label>{{ item.status }}</ion-label>
+          </ion-item>
+        </ion-list>
+*/
 
 </script>
