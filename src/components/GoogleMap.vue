@@ -2,19 +2,19 @@
   <div>
     <ion-grid>
       <ion-row>
-        <ion-col size="3">
+        <ion-col size="2">
           <ion-fab>
-            <ion-fab-button>
-              <ion-icon name="filter-circle-sharp"></ion-icon>
+            <ion-fab-button color="secondary">
+              <ion-icon :icon="filterOutline"></ion-icon>
             </ion-fab-button>
           </ion-fab>
         </ion-col>
         <ion-col size="6">
-          <ion-searchbar></ion-searchbar>
+          <ion-searchbar color="tertiary"></ion-searchbar>
         </ion-col>
-        <ion-col size="3">
+        <ion-col size="4">
           <ion-item>
-            <ion-select label="0km" aria-label="Range" @ionChange="handleRangeChange">
+            <ion-select aria-label="Range" placeholder="10km" @ionChange="handleRangeChange">
               <ion-select-option value="5">5 km</ion-select-option>
               <ion-select-option value="10">10 km</ion-select-option>
               <ion-select-option value="20">20 km</ion-select-option>
@@ -39,6 +39,7 @@ import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
 import { Coordinate, ListOfCases } from "@/types/supabase-global";
+import { filterOutline} from "ionicons/icons"
 import{
   IonItem,
   IonSelect,
@@ -62,6 +63,10 @@ let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 
+const props = defineProps<{
+  markerData: ListOfCases;
+}>();
+
 // EVENTS
 const emits = defineEmits<{
   (event: "onMarkerClicked", info: any): void;
@@ -70,7 +75,7 @@ const emits = defineEmits<{
 
 onMounted(async () => {
   console.log("mounted ", mapRef.value);
-  listOfCases = await mapService.getAllCases();
+  listOfCases = props.markerData;
   await nextTick();
   await createMap();
 });

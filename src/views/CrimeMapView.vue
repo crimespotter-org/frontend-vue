@@ -1,6 +1,6 @@
 <template>
-  <ion-page v-if="markerDataLoaded">
-    <ion-header :translucent="true">
+  <ion-page v-if="markerDataLoaded" class="crimeBody">
+    <ion-header :translucent="true" class="crimeBody">
       <ion-toolbar>
         <ion-title>Crime Map</ion-title>
       </ion-toolbar>
@@ -38,7 +38,8 @@ let markerData: ListOfCases = [];
 const markerDataLoaded = ref<boolean>(false);
 
 onMounted(async () => {
-  markerData = await mapService.getAllCases();
+  const currentLocation = await mapService.currentLocation();
+  markerData = await mapService.getNearbyCases(currentLocation.latitude, currentLocation.longitude, 100);
   markerDataLoaded.value = true;
 });
 
