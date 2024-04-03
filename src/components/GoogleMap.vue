@@ -3,11 +3,9 @@
     <ion-grid>
       <ion-row>
         <ion-col size="2">
-          <ion-fab>
-            <ion-fab-button color="secondary">
-              <ion-icon :icon="filterOutline"></ion-icon>
-            </ion-fab-button>
-          </ion-fab>
+          <ion-button id="open-modal" expand="block">
+            <ion-icon :icon="filterOutline"></ion-icon>
+          </ion-button>
         </ion-col>
         <ion-col size="6">
           <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress">            
@@ -37,6 +35,17 @@
     </ion-fab>
     <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
     </capacitor-google-map>
+    <ion-modal ref="modal" trigger="open-modal" class="crimeMap">
+      <ion-header>
+        <ion-toolbar>
+          <ion-button @click="cancel()" slot="end">Cancel</ion-button>
+          <ion-title>Filter</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-button >Confirm</ion-button>
+      </ion-content>
+    </ion-modal>
   </div>
 </template>
 
@@ -52,15 +61,24 @@ import{
   IonSelectOption,
   //IonList,
   //IonLabel,
-  //IonModal,
+  IonModal,
   IonSearchbar,
   IonCol, 
   IonGrid, 
   IonRow,
   IonIcon,
   IonFab, 
-  IonFabButton 
+  IonFabButton,
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonToolbar,
+  IonTitle
 } from "@ionic/vue";
+
+const modal = ref();
+
+const cancel = () => modal.value.$el.dismiss(null, 'cancel');
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
@@ -194,4 +212,5 @@ const handleRangeChange = async(event: {detail: {value: number}}) => {
 const getAddress = (place: any) => {       
     console.log('Address Object', place);
 }
+
 </script>

@@ -15,27 +15,33 @@ export type Database = {
           created_by: string | null
           id: string
           location: unknown | null
+          place_name: string | null
           status: string
           summary: string | null
           title: string
+          zip_code: number | null
         }
         Insert: {
           created_at?: string | null
           created_by?: string | null
           id?: string
           location?: unknown | null
+          place_name?: string | null
           status: string
           summary?: string | null
           title: string
+          zip_code?: number | null
         }
         Update: {
           created_at?: string | null
           created_by?: string | null
           id?: string
           location?: unknown | null
+          place_name?: string | null
           status?: string
           summary?: string | null
           title?: string
+          zip_code?: number | null
         }
         Relationships: [
           {
@@ -379,7 +385,6 @@ export type Enums<
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
-
 
 export type Case = Database['public']['Tables']['cases']['Row'] 
 export type Comment = Database['public']['Tables']['comments']['Row']
