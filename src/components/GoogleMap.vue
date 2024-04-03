@@ -10,7 +10,8 @@
           </ion-fab>
         </ion-col>
         <ion-col size="6">
-          <ion-searchbar color="tertiary"></ion-searchbar>
+          <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress">            
+          </ion-searchbar>
         </ion-col>
         <ion-col size="4">
           <ion-item>
@@ -83,6 +84,7 @@ onMounted(async () => {
   listOfCases = props.markerData;
   await nextTick();
   await createMap();
+  
 });
 
 // remove markers on unmount
@@ -148,6 +150,39 @@ async function createMap() {
   newMap.setOnMapClickListener(() => {
     emits("onMapClicked");
   });
+
+  const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
+  console.log(elem);
+  const center = { lat: 50.064192, lng: -130.605469 };
+  const defaultBounds = {
+  north: center.lat + 0.1,
+  south: center.lat - 0.1,
+  east: center.lng + 0.1,
+  west: center.lng - 0.1,
+  };
+  
+  const options = {
+    bounds: defaultBounds,
+    componentRestrictions: { country: "de" },
+    fields: ["geometry", "name"],
+    strictBounds: false,
+    types: ["establishment"],
+  };
+
+  const autocomplete = new google.maps.places.Autocomplete(elem, options);
+  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+    const place = autocomplete.getPlace();
+    const location = place['geometry']!['location'];
+    const latitude = location?.lat();
+    const longitude = location?.lng();
+    // Move the map programmatically
+    newMap.setCamera({
+      coordinate: {
+        lat: latitude!,
+        lng: longitude!
+      }
+    });
+  });
 }
 
 const handleRangeChange = async(event: {detail: {value: number}}) => {
@@ -155,4 +190,8 @@ const handleRangeChange = async(event: {detail: {value: number}}) => {
   listOfCases = await mapService.getNearbyCases(currentLocation.value!.latitude, currentLocation.value!.longitude, event.detail.value); 
   await addSomeMarkers(newMap);
 };
+
+const getAddress = (place: any) => {       
+    console.log('Address Object', place);
+}
 </script>
