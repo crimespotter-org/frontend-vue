@@ -82,7 +82,7 @@ const cancel = () => modal.value.$el.dismiss(null, 'cancel');
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
-//const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM"
+//const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
