@@ -9,13 +9,15 @@
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
+          <ion-title size="large">Home</ion-title>
         </ion-toolbar>
       </ion-header>
 
       <div id="container">
+        <p>{{ accountEmail }}</p>
         <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer"
+            href="https://ionicframework.com/docs/components">UI Components</a></p>
         <ion-fab>
           <ion-fab-button tab="crime-map" href="/crime-map">
             Go To Map
@@ -32,13 +34,31 @@
 </template>
 
 <script setup lang="ts">
+import { supabase } from '@/services/supabase-service';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonFab, IonFabButton } from '@ionic/vue';
+import { ref } from "vue";
+
+
+const accountEmail = ref<any>();
+getSession();
+
+
+async function getSession() {
+ 
+const { data: { user } } = await supabase.auth.getUser();
+accountEmail.value = user?.email;
+
+}
+
+
+
+
 </script>
 
 <style scoped>
 #container {
   text-align: center;
-  
+
   position: absolute;
   left: 0;
   right: 0;
@@ -54,9 +74,9 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonFab, IonFabBut
 #container p {
   font-size: 16px;
   line-height: 22px;
-  
+
   color: #8c8c8c;
-  
+
   margin: 0;
 }
 

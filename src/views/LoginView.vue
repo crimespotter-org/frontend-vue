@@ -22,6 +22,7 @@
                 <ion-button @click="createAccount">Account erstellen</ion-button>
                 <ion-button @click="seeCurrentUser">Benutzer anzeigen</ion-button>
                 <ion-button @click="logout">Logout</ion-button>
+                <button @click="$router.push('/about')">Redirect Me</button>
             </div>
         </ion-content>
     </ion-page>
@@ -43,9 +44,9 @@ import {
     IonSelect,
     IonSelectOption
 } from "@ionic/vue";
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { supabase } from "@/services/supabase-service";
-
+import router from '../router'
 
 //variable email and password
 let email = ref("");
@@ -54,7 +55,7 @@ let password = ref("");
 
 //Function for creating an account
 async function createAccount() {
-    try {
+  
         const { data, error } = await supabase.auth.signUp({
             email: email.value,
             password: password.value
@@ -62,46 +63,45 @@ async function createAccount() {
 
         console.log("Create Account")
 
-    } catch (error) {
+    if (error) {
         console.log(error)
     }
 }
 
 //Login
 async function login() {
-    try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email.value,
-            password: password.value
-        });
 
-        console.log("Logged in")
-
-    } catch (error) {
-        console.log(error)
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.value,
+        password: password.value
+    });
+    if (!error) {
+        router.push('/crime-map');
+    } else {
+        console.log("Dasn sit err" + error)
     }
+
+
+
 }
 
 
 //Shows details from current user
 async function seeCurrentUser() {
-    try {
+    
         const localUser = await supabase.auth.getSession();
 
         console.log(localUser);
 
-    } catch (error) {
-        console.log(error)
-    }
 }
 
 //Logout  function
 async function logout() {
-    try {
-        const { error } = await supabase.auth.signOut();      
+    
+        const { error } = await supabase.auth.signOut();
         console.log("Logged out");
 
-    } catch (error) {
+    if (error) {
         console.log(error)
     }
 }

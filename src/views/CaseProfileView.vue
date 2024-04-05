@@ -9,7 +9,7 @@
     <ion-content :fullscreen="true">
       <ion-list>
         <ion-item v-for="(item, index) in dbMarkers" :key="index">
-          <ion-list >
+          <ion-list>
             <ion-item v-for="(itemInArray, index2) in item" :key="index2">
               <ion-label>
                 <h2>{{ itemInArray.title }}</h2>
@@ -20,7 +20,7 @@
           </ion-list>
         </ion-item>
       </ion-list>
-    
+
     </ion-content>
   </ion-page>
 </template>
@@ -33,11 +33,7 @@ import { mapService } from "../services/map-service";
 const dbMarkers = ref([]);
 
 onMounted(async () => {
-  try {
-    const dbMarkers = await mapService.getAllCases();
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
+  const dbMarkers = await mapService.getAllCases();
 });
 </script>
 
