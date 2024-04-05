@@ -6,7 +6,7 @@
       </ion-toolbar>
     </ion-header>
     <ion-content :scroll-y="true">
-      <my-map :markerData="markerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
+      <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
       <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
         <crime-profile :markerData="markerData"></crime-profile>
       </ion-popover>
@@ -77,10 +77,13 @@ const markerClicked = (event: {latitude: number, longitude: number, mapId: strin
     if(markerToPass.length == 0){
       return;
     }
-    console.log(markerToPass);
     openModal(markerToPass);
   }
-};
+}
+
+const receiveMarkerData = (event: ListOfCases) : void =>{
+  markerData = event;
+}
 
 /*        <ion-list lines="inset" :inset=true>
           <ion-item v-for="(item, index) of markerData" :key="index">

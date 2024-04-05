@@ -7,43 +7,54 @@
             <ion-icon :icon="filterOutline"></ion-icon>
           </ion-button>
         </ion-col>
-        <ion-col size="6">
-          <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress">            
+        <ion-col size="10">
+          <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress">
           </ion-searchbar>
-        </ion-col>
-        <ion-col size="4">
-          <ion-item>
-            <ion-select aria-label="Range" placeholder="10km" @ionChange="handleRangeChange">
-              <ion-select-option value="5">5 km</ion-select-option>
-              <ion-select-option value="10">10 km</ion-select-option>
-              <ion-select-option value="20">20 km</ion-select-option>
-              <ion-select-option value="50">50 km</ion-select-option>
-              <ion-select-option value="100">100 km</ion-select-option>
-              <ion-select-option value="200">200 km</ion-select-option>
-              <ion-select-option value="500">500 km</ion-select-option>
-              <ion-select-option value="1000">1000 km</ion-select-option>
-              <ion-select-option value="10000">10000 km</ion-select-option>
-            </ion-select>
-          </ion-item>
         </ion-col>
       </ion-row>
     </ion-grid>
     <ion-fab slot="fixed" vertical="bottom" horizontal="start">
-        <ion-fab-button color="secondary">
-          <ion-icon :icon="add"></ion-icon>
-        </ion-fab-button>
+      <ion-fab-button color="secondary">
+        <ion-icon :icon="add"></ion-icon>
+      </ion-fab-button>
     </ion-fab>
     <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
     </capacitor-google-map>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap">
-      <ion-header>
+      <ion-header class="crimeMap">
         <ion-toolbar>
           <ion-button @click="cancel()" slot="end">Cancel</ion-button>
           <ion-title>Filter</ion-title>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        <ion-button >Confirm</ion-button>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <ion-item>
+                <ion-select aria-label="Range" placeholder="Reichweite" @ionChange="handleRangeChange">
+                  <ion-select-option value="5">5 km</ion-select-option>
+                  <ion-select-option value="10">10 km</ion-select-option>
+                  <ion-select-option value="20">20 km</ion-select-option>
+                  <ion-select-option value="50">50 km</ion-select-option>
+                  <ion-select-option value="100">100 km</ion-select-option>
+                  <ion-select-option value="200">200 km</ion-select-option>
+                  <ion-select-option value="500">500 km</ion-select-option>
+                  <ion-select-option value="1000">1000 km</ion-select-option>
+                  <ion-select-option value="10000">10000 km</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item>
+                <ion-select aria-label="Fallstatus" placeholder="Fallstatus"  @ionChange="handleStatusChange">
+                  <ion-select-option value="closed">gelöst</ion-select-option>
+                  <ion-select-option value="open">ungelöst</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </ion-content>
     </ion-modal>
   </div>
@@ -59,8 +70,6 @@ import{
   IonItem,
   IonSelect,
   IonSelectOption,
-  //IonList,
-  //IonLabel,
   IonModal,
   IonSearchbar,
   IonCol, 
@@ -95,6 +104,7 @@ const props = defineProps<{
 const emits = defineEmits<{
   (event: "onMarkerClicked", info: any): void;
   (event: "onMapClicked"): void;
+  (event: "onMarkerChange", value: ListOfCases): void;
 }>();
 
 onMounted(async () => {
@@ -204,13 +214,19 @@ async function createMap() {
 }
 
 const handleRangeChange = async(event: {detail: {value: number}}) => {
-  console.log(event.detail.value);
   listOfCases = await mapService.getNearbyCases(currentLocation.value!.latitude, currentLocation.value!.longitude, event.detail.value); 
   await addSomeMarkers(newMap);
+  emits('onMarkerChange', listOfCases);
 };
 
 const getAddress = (place: any) => {       
     console.log('Address Object', place);
 }
+
+const handleStatusChange = async(event:{detail: {value: string}}) => {
+  console.log(event.detail.value);
+  listOfCases = listOfCases.filter((m) => m.status === event.detail.value);
+  await addSomeMarkers(newMap);
+};
 
 </script>
