@@ -1,10 +1,6 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>Crime Map</ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <HeaderComponent />
 
     <ion-content>
       <ion-item>
@@ -53,6 +49,7 @@ import {
 import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
+import HeaderComponent from '../components/Header.vue';
 import { Capacitor } from "@capacitor/core";
 import { mapService } from "@/services/map-service";
 import { AllCases } from "@/types/supabase-global";

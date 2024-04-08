@@ -1,20 +1,20 @@
 <template>
   <ion-header>
     <ion-toolbar color="primary">
-      <!-- Logo auf der linken Seite -->
-      <ion-avatar>
-        <ion-icon :icon="homeOutline" />
+      <ion-avatar class="ion-float-left custom-margin">
+        <router-link to="/home">
+          <ion-img src="../../public/Logo-CrimeSpotter.png" alt="Logo CrimeSpotter"></ion-img>
+        </router-link>
       </ion-avatar>
 
-      <!-- Titel oder andere Inhalte in der Mitte -->
-      <ion-title>Meine App</ion-title>
 
-      <!-- Logout-Symbol auf der rechten Seite -->
-      <ion-buttons>
-        <ion-button @click="logout">
+      <div class="custom-margin-vertikal">
+        <ion-button @click="logout" class="custom-button ion-float-right">
           <ion-icon :icon="logOutOutline" />
         </ion-button>
-      </ion-buttons>
+      </div>
+
+
     </ion-toolbar>
   </ion-header>
 </template>
@@ -37,3 +37,22 @@ async function logout() {
 }
 
 </script>
+
+<style scoped>
+.custom-button {
+  --background: red;
+  --box-shadow: none;
+
+}
+
+.custom-margin {
+  margin: 5px 5px 5px 5px;
+}
+
+.custom-margin-vertikal {
+  display: flex; /* Verwenden Sie Flexbox */
+  align-items: center; /* Vertikal zentrieren */
+  margin-right: 5px;
+}
+
+</style>
