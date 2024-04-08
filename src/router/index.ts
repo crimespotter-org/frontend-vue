@@ -11,7 +11,7 @@ let localUser;
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/login',  
+    redirect: '/home',  
   },
   {
     path: '/login',
