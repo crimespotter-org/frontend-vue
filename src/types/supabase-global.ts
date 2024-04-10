@@ -11,34 +11,40 @@ export type Database = {
     Tables: {
       cases: {
         Row: {
+          case_type: Database["public"]["Enums"]["casetype"]
           created_at: string | null
           created_by: string | null
+          crime_date_time: string | null
           id: string
           location: unknown | null
           place_name: string | null
-          status: string
+          status: Database["public"]["Enums"]["status"] | null
           summary: string | null
           title: string
           zip_code: number | null
         }
         Insert: {
+          case_type: Database["public"]["Enums"]["casetype"]
           created_at?: string | null
           created_by?: string | null
+          crime_date_time?: string | null
           id?: string
           location?: unknown | null
           place_name?: string | null
-          status: string
+          status?: Database["public"]["Enums"]["status"] | null
           summary?: string | null
           title: string
           zip_code?: number | null
         }
         Update: {
+          case_type?: Database["public"]["Enums"]["casetype"]
           created_at?: string | null
           created_by?: string | null
+          crime_date_time?: string | null
           id?: string
           location?: unknown | null
           place_name?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["status"] | null
           summary?: string | null
           title?: string
           zip_code?: number | null
@@ -97,6 +103,7 @@ export type Database = {
           case_id: string | null
           created_at: string | null
           id: string
+          link_type: Database["public"]["Enums"]["link_type"] | null
           type: string
           url: string
         }
@@ -104,6 +111,7 @@ export type Database = {
           case_id?: string | null
           created_at?: string | null
           id?: string
+          link_type?: Database["public"]["Enums"]["link_type"] | null
           type: string
           url: string
         }
@@ -111,6 +119,7 @@ export type Database = {
           case_id?: string | null
           created_at?: string | null
           id?: string
+          link_type?: Database["public"]["Enums"]["link_type"] | null
           type?: string
           url?: string
         }
@@ -195,19 +204,19 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          role: string | null
+          role: Database["public"]["Enums"]["roles"] | null
           username: string
         }
         Insert: {
           created_at?: string | null
           id: string
-          role?: string | null
+          role?: Database["public"]["Enums"]["roles"] | null
           username: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          role?: string | null
+          role?: Database["public"]["Enums"]["roles"] | null
           username?: string
         }
         Relationships: [
@@ -264,6 +273,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_case: {
+        Args: {
+          p_title: string
+          p_summary: string
+          p_location: unknown
+          p_status: string
+          p_created_by: string
+          p_place_name: string
+          p_zip_code: number
+          p_case_type: Database["public"]["Enums"]["casetype"]
+          p_links_json: Json
+        }
+        Returns: string
+      }
       find_nearby_cases: {
         Args: {
           distance: number
@@ -281,6 +304,27 @@ export type Database = {
           long: number
         }[]
       }
+      find_nearby_cases2: {
+        Args: {
+          distance: number
+          currentlat: number
+          currentlong: number
+        }
+        Returns: {
+          id: string
+          title: string
+          summary: string
+          status: Database["public"]["Enums"]["status"]
+          created_by: string
+          created_at: string
+          lat: number
+          long: number
+          place_name: string
+          zip_code: number
+          case_type: Database["public"]["Enums"]["casetype"]
+          crime_date_time: string
+        }[]
+      }
       get_all_cases: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -294,9 +338,73 @@ export type Database = {
           long: number
         }[]
       }
+      get_case_details_angular: {
+        Args: {
+          case_id_param: string
+        }
+        Returns: {
+          case_id: string
+          title: string
+          summary: string
+          lat: number
+          long: number
+          created_by: string
+          created_at: string
+          place_name: string
+          zip_code: number
+          case_type: Database["public"]["Enums"]["casetype"]
+          crime_date_time: string
+          status: Database["public"]["Enums"]["status"]
+          link_id: string
+          url: string
+          link_type: Database["public"]["Enums"]["link_type"]
+          link_created_at: string
+        }[]
+      }
+      get_enum_values_angular: {
+        Args: {
+          enum_typename: string
+        }
+        Returns: string[]
+      }
+      get_filtered_cases_angular: {
+        Args: {
+          start_date?: string
+          end_date?: string
+          currentlat?: number
+          currentlong?: number
+          distance?: number
+          crime_types?: Database["public"]["Enums"]["casetype"][]
+          case_status?: Database["public"]["Enums"]["status"]
+        }
+        Returns: {
+          id: string
+          title: string
+          summary: string
+          status: Database["public"]["Enums"]["status"]
+          created_at: string
+          lat: number
+          long: number
+          created_by: string
+          place_name: string
+          zip_code: number
+          case_type: Database["public"]["Enums"]["casetype"]
+          upvotes: number
+          downvotes: number
+          user_vote: number
+          has_newspaper: boolean
+          has_podcast: boolean
+          has_book: boolean
+          has_media: boolean
+          crime_date_time: string
+        }[]
+      }
     }
     Enums: {
+      casetype: "murder" | "theft" | "robbery-murder" | "brawl" | "rape"
+      link_type: "newspaper" | "podcast" | "book"
       roles: "crimefluencer" | "crimespotter" | "admin"
+      status: "open" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -386,13 +494,20 @@ export type Enums<
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
 
+
+
 export type Case = Database['public']['Tables']['cases']['Row'] 
 export type Comment = Database['public']['Tables']['comments']['Row']
 export type FurtherLink = Database['public']['Tables']['furtherlinks']['Row']
 export type Media = Database['public']['Tables']['media']['Row']
 export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Vote = Database['public']['Tables']['votes']['Row']
-export type ListOfCases = Database['public']['Functions']['get_all_cases']['Returns']
+export type ListOfCases = Database['public']['Functions']['find_nearby_cases2']['Returns']
+export type FilteredCases = Database['public']['Functions']['get_filtered_cases_angular']['Returns']
+export type Casetype = Database['public']['Enums']['casetype']
+export type LinkType = Database['public']['Enums']['link_type']
+export type Role = Database['public']['Enums']['roles']
+export type Status = Database['public']['Enums']['status']
 
 export interface Coordinate{
   latitude: number;

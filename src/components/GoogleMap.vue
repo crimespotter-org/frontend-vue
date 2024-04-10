@@ -32,7 +32,7 @@
           <ion-row>
             <ion-col size="6">
               <ion-item>
-                <ion-select aria-label="Range" placeholder="Reichweite" @ionChange="handleRangeChange">
+                <ion-select aria-label="Range" :value="SelectedRange" @ionChange="handleRangeChange">
                   <ion-select-option value="5">5 km</ion-select-option>
                   <ion-select-option value="10">10 km</ion-select-option>
                   <ion-select-option value="20">20 km</ion-select-option>
@@ -47,9 +47,22 @@
             </ion-col>
             <ion-col size="6">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallstatus"  @ionChange="handleStatusChange">
+                <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"  @ionChange="handleStatusChange">
                   <ion-select-option value="closed">gelöst</ion-select-option>
                   <ion-select-option value="open">ungelöst</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12">
+              <ion-item>
+                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"  @ionChange="handleCaseTypeChange">
+                  <ion-select-option value="murder">Mord</ion-select-option>
+                  <ion-select-option value="theft">Diebstahl</ion-select-option>
+                  <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
+                  <ion-select-option value="brawl">Schlägerei</ion-select-option>
+                  <ion-select-option value="rape">Vergewaltigung</ion-select-option>
                 </ion-select>
               </ion-item>
             </ion-col>
@@ -87,7 +100,11 @@ import{
 
 const modal = ref();
 
-const cancel = () => modal.value.$el.dismiss(null, 'cancel');
+const cancel = () =>{
+  modal.value.$el.dismiss(null, 'cancel');
+  filterEvent();
+
+} 
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
@@ -95,6 +112,9 @@ const markerIds = ref<string[] | undefined>();
 let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
+let SelectedRange = "100";
+let SelectedCrimeStatus = "";
+let SelectedCrimeType = "";
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -211,22 +231,37 @@ async function createMap() {
       }
     });
   });
-}
-
-const handleRangeChange = async(event: {detail: {value: number}}) => {
-  listOfCases = await mapService.getNearbyCases(currentLocation.value!.latitude, currentLocation.value!.longitude, event.detail.value); 
-  await addSomeMarkers(newMap);
-  emits('onMarkerChange', listOfCases);
 };
 
 const getAddress = (place: any) => {       
-    console.log('Address Object', place);
-}
+  console.log('Address Object', place);
+};
+
+const filterEvent = async() =>{
+  const range = Number(SelectedRange);
+  listOfCases = await mapService.getNearbyCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range);
+  if(SelectedCrimeStatus !== ""){
+    listOfCases = listOfCases.filter((m) => m.status === SelectedCrimeStatus);
+  }
+  if(SelectedCrimeType !== ""){
+    listOfCases = listOfCases.filter((m) => m.case_type === SelectedCrimeType);
+  }
+  await addSomeMarkers(newMap);
+  emits('onMarkerChange', listOfCases);
+  console.log(listOfCases);
+
+};
+
+const handleRangeChange = async(event: {detail: {value: string}}) => {
+  SelectedRange = event.detail.value;
+};
 
 const handleStatusChange = async(event:{detail: {value: string}}) => {
-  console.log(event.detail.value);
-  listOfCases = listOfCases.filter((m) => m.status === event.detail.value);
-  await addSomeMarkers(newMap);
+  SelectedCrimeStatus = event.detail.value;
 };
+
+const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
+  SelectedCrimeType = event.detail.value;
+}
 
 </script>
