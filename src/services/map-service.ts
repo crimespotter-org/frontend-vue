@@ -2,8 +2,7 @@ import { supabase } from "./supabase-service";
 import {
   Case,
   ListOfCases,
-  Coordinate,
-  FilteredCases,
+  Coordinate
 } from "@/types/supabase-global";
 import { Geolocation } from "@capacitor/geolocation";
 

@@ -20,7 +20,7 @@
     </ion-fab>
     <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
     </capacitor-google-map>
-    <ion-modal ref="modal" trigger="open-modal" class="crimeMap">
+    <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
         <ion-toolbar>
           <ion-button @click="cancel()" slot="end">Cancel</ion-button>
@@ -48,8 +48,9 @@
             <ion-col size="6">
               <ion-item>
                 <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"  @ionChange="handleStatusChange">
-                  <ion-select-option value="closed">gelöst</ion-select-option>
-                  <ion-select-option value="open">ungelöst</ion-select-option>
+                  <ion-select-option value="">Beides</ion-select-option>
+                  <ion-select-option value="closed">Gelöst</ion-select-option>
+                  <ion-select-option value="open">Ungelöst</ion-select-option>
                 </ion-select>
               </ion-item>
             </ion-col>
@@ -58,6 +59,7 @@
             <ion-col size="12">
               <ion-item>
                 <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"  @ionChange="handleCaseTypeChange">
+                  <ion-select-option value="">Alles</ion-select-option>
                   <ion-select-option value="murder">Mord</ion-select-option>
                   <ion-select-option value="theft">Diebstahl</ion-select-option>
                   <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
