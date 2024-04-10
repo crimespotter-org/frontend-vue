@@ -200,7 +200,6 @@ async function createMap() {
   });
 
   const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
-  console.log(elem);
   const center = { lat: 50.064192, lng: -130.605469 };
   const defaultBounds = {
   north: center.lat + 0.1,
