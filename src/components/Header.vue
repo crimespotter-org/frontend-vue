@@ -1,6 +1,6 @@
 <template>
   <ion-header>
-    <ion-toolbar color="primary">
+    <ion-toolbar color="primary flex justify-between">
       <ion-avatar class="ion-float-left custom-margin">
         <router-link to="/home">
           <ion-img src="../../public/Logo-CrimeSpotter.png" alt="Logo CrimeSpotter"></ion-img>
@@ -8,6 +8,9 @@
       </ion-avatar>
 
 
+      <p class="text-blue-600">
+        Hallo Test
+      </p>
       <div class="custom-margin-vertikal">
         <ion-button @click="logout" class="custom-button ion-float-right">
           <ion-icon :icon="logOutOutline" />
