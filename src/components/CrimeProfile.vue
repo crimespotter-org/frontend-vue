@@ -18,10 +18,6 @@
 <script setup lang="ts">
 import { ListOfCases } from "@/types/supabase-global";
 import { IonContent, IonHeader, IonTitle, modalController, IonButton } from "@ionic/vue";
-import { AllCases } from "@/types/supabase-global";
-import { IonContent, IonHeader, IonTitle, modalController } from "@ionic/vue";
-
-
 
 // PROPS
 const props = defineProps<{

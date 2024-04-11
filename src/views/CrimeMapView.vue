@@ -1,10 +1,6 @@
 <template>
-  <ion-page v-if="markerDataLoaded" class="crimeMap">
-    <ion-header :translucent="true">
-      <ion-toolbar class="crimeHeader">
-        <ion-title>Crime Map</ion-title>
-      </ion-toolbar>
-    </ion-header>
+  <ion-page>
+    <HeaderComponent />  
     <ion-content :scroll-y="true">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
       <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
