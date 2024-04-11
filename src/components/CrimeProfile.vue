@@ -9,12 +9,15 @@
   </ion-header>
   <ion-content class="ion-padding">
     <p>{{props.markerData[0].title}}</p>
+    <ion-button>Case bearbeiten</ion-button>
     <p>{{props.markerData[0].summary}}</p>
     <p>{{props.markerData[0].status}}</p>  
   </ion-content>
 </template>
 
 <script setup lang="ts">
+import { ListOfCases } from "@/types/supabase-global";
+import { IonContent, IonHeader, IonTitle, modalController, IonButton } from "@ionic/vue";
 import { AllCases } from "@/types/supabase-global";
 import { IonContent, IonHeader, IonTitle, modalController } from "@ionic/vue";
 
@@ -22,7 +25,7 @@ import { IonContent, IonHeader, IonTitle, modalController } from "@ionic/vue";
 
 // PROPS
 const props = defineProps<{
-  markerData: AllCases;
+  markerData: ListOfCases;
 }>();
 
 const emits = defineEmits<{
