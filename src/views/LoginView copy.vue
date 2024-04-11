@@ -19,7 +19,10 @@
             </div>
 
             <div class="buttonContainer">
-                <router-link to="/create-Account"> <ion-button>Account erstellen</ion-button>  </router-link>              
+                <ion-button @click="createAccount">Account erstellen</ion-button>
+                <ion-button @click="seeCurrentUser">Benutzer anzeigen</ion-button>
+                <ion-button @click="logout">Logout</ion-button>
+                <button @click="$router.push('/about')">Redirect Me</button>
             </div>
         </ion-content>
     </ion-page>
@@ -41,7 +44,7 @@ import {
     IonSelect,
     IonSelectOption
 } from "@ionic/vue";
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { supabase } from "@/services/supabase-service";
 import router from '../router'
 
@@ -49,6 +52,21 @@ import router from '../router'
 let email = ref("");
 let password = ref("");
 
+
+//Function for creating an account
+async function createAccount() {
+  
+        const { data, error } = await supabase.auth.signUp({
+            email: email.value,
+            password: password.value
+        });
+
+        console.log("Create Account")
+
+    if (error) {
+        console.log(error)
+    }
+}
 
 //Login
 async function login() {

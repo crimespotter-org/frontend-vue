@@ -3,6 +3,7 @@ import { RouteRecordRaw } from 'vue-router';
 import HomePage from '../views/HomePage.vue';
 import Login from '../views/LoginView.vue';
 import CaseProfileView from '../views/CaseProfileView.vue';
+import CreateAccount from '../views/CreateAccountView.vue';
 import Unauthorized from '@/views/UnauthorizedView.vue';
 import { supabase } from '@/services/supabase-service';
 
@@ -17,6 +18,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/create-Account',
+    name: 'CreateAccount',
+    component: CreateAccount
   },
   {
     path: '/unauthorized',

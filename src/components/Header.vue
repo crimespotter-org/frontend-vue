@@ -1,23 +1,21 @@
 <template>
   <ion-header>
-    <ion-toolbar color="primary flex justify-between">
-      <ion-avatar class="ion-float-left custom-margin">
-        <router-link to="/home">
-          <ion-img src="../../public/Logo-CrimeSpotter.png" alt="Logo CrimeSpotter"></ion-img>
-        </router-link>
-      </ion-avatar>
+    <ion-toolbar color="primary flex flex-row justify-between">
+      <div class="flex justify-between">
+        <div class="p-3"> 
+          <ion-avatar>
+            <router-link to="/home">
+              <ion-img src="../../public/Logo-CrimeSpotter.png" alt="Logo CrimeSpotter"></ion-img>
+            </router-link>
+          </ion-avatar>
+        </div>
 
-
-      <p class="text-blue-600">
-        Hallo Test
-      </p>
-      <div class="custom-margin-vertikal">
-        <ion-button @click="logout" class="custom-button ion-float-right">
-          <ion-icon :icon="logOutOutline" />
-        </ion-button>
+        <div class="py-4 pr-2">
+          <ion-button @click="logout" class="custom-button">
+            <ion-icon size="large" :icon="logOutOutline" />
+          </ion-button>
+        </div>
       </div>
-
-
     </ion-toolbar>
   </ion-header>
 </template>
@@ -25,7 +23,9 @@
 <script setup>
 import { ref } from 'vue';
 import { IonHeader, IonToolbar, IonTitle, IonAvatar, IonButton, IonIcon, IonButtons } from '@ionic/vue';
-import { logOutOutline, homeOutline } from 'ionicons/icons';
+import { logOutOutline } from 'ionicons/icons';
+import { supabase } from "@/services/supabase-service";
+import router from '../router'
 
 
 //Logout  function
@@ -34,8 +34,8 @@ async function logout() {
   const { error } = await supabase.auth.signOut();
   console.log("Logged out");
 
-  if (error) {
-    console.log(error)
+  if (!error) {
+    router.push('/login');
   }
 }
 
@@ -43,19 +43,7 @@ async function logout() {
 
 <style scoped>
 .custom-button {
-  --background: red;
+  --background: transparent;
   --box-shadow: none;
-
 }
-
-.custom-margin {
-  margin: 5px 5px 5px 5px;
-}
-
-.custom-margin-vertikal {
-  display: flex; /* Verwenden Sie Flexbox */
-  align-items: center; /* Vertikal zentrieren */
-  margin-right: 5px;
-}
-
 </style>
