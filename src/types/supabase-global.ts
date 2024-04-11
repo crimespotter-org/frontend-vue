@@ -96,6 +96,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "public_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       furtherlinks: {
@@ -273,20 +280,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_case: {
-        Args: {
-          p_title: string
-          p_summary: string
-          p_location: unknown
-          p_status: string
-          p_created_by: string
-          p_place_name: string
-          p_zip_code: number
-          p_case_type: Database["public"]["Enums"]["casetype"]
-          p_links_json: Json
-        }
-        Returns: string
-      }
       find_nearby_cases: {
         Args: {
           distance: number
@@ -399,6 +392,54 @@ export type Database = {
           crime_date_time: string
         }[]
       }
+      update_case:
+        | {
+            Args: {
+              title: string
+              summary: string
+              status: Database["public"]["Enums"]["status"]
+              lat: number
+              long: number
+              place_name: string
+              zip_code: number
+              case_type: Database["public"]["Enums"]["casetype"]
+              crime_date_time: string
+              created_by: string
+              email: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              title: string
+              summary: string
+              status: Database["public"]["Enums"]["status"]
+              lat: number
+              long: number
+              place_name: string
+              zip_code: number
+              case_type: Database["public"]["Enums"]["casetype"]
+              crime_date_time: string
+              email: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              title: string
+              summary: string
+              status: Database["public"]["Enums"]["status"]
+              lat: number
+              long: number
+              place_name: string
+              zip_code: number
+              case_type: Database["public"]["Enums"]["casetype"]
+              crime_date_time: string
+              email: string
+              case_id: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       casetype: "murder" | "theft" | "robbery-murder" | "brawl" | "rape"
@@ -495,7 +536,6 @@ export type Enums<
     : never
 
 
-
 export type Case = Database['public']['Tables']['cases']['Row'] 
 export type Comment = Database['public']['Tables']['comments']['Row']
 export type FurtherLink = Database['public']['Tables']['furtherlinks']['Row']
@@ -504,6 +544,7 @@ export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Vote = Database['public']['Tables']['votes']['Row']
 export type ListOfCases = Database['public']['Functions']['find_nearby_cases2']['Returns']
 export type FilteredCases = Database['public']['Functions']['get_filtered_cases_angular']['Returns']
+export type UpdateCase = Database['public']['Functions']['update_case']['Args'];
 export type Casetype = Database['public']['Enums']['casetype']
 export type LinkType = Database['public']['Enums']['link_type']
 export type Role = Database['public']['Enums']['roles']
