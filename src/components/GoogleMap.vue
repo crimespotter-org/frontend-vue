@@ -23,8 +23,8 @@
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
         <ion-toolbar>
-          <ion-button @click="cancel()" slot="end">Cancel</ion-button>
-          <ion-title>Filter</ion-title>
+          <ion-button @click="cancel()" slot="start">Zurück</ion-button>
+          <ion-button @click="confirm()" slot="end">Anwenden</ion-button>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
@@ -104,9 +104,12 @@ const modal = ref();
 
 const cancel = () =>{
   modal.value.$el.dismiss(null, 'cancel');
-  filterEvent();
-
 } 
+
+const confirm = () =>{
+  modal.value.$el.dismiss(null, 'cancel');
+  filterEvent();
+}
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();

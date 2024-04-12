@@ -535,14 +535,13 @@ export type Enums<
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
 
-
-export type Case = Database['public']['Tables']['cases']['Row'] 
 export type Comment = Database['public']['Tables']['comments']['Row']
 export type FurtherLink = Database['public']['Tables']['furtherlinks']['Row']
 export type Media = Database['public']['Tables']['media']['Row']
 export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Vote = Database['public']['Tables']['votes']['Row']
 export type ListOfCases = Database['public']['Functions']['find_nearby_cases2']['Returns']
+export type Case = Database['public']['Functions']['get_case_details_angular']['Returns']
 export type FilteredCases = Database['public']['Functions']['get_filtered_cases_angular']['Returns']
 export type UpdateCase = Database['public']['Functions']['update_case']['Args'];
 export type Casetype = Database['public']['Enums']['casetype']

@@ -20,9 +20,10 @@ const routes: Array<RouteRecordRaw> = [
     component: CrimeMapView
   },
   {
-    path: '/change-case',
+    path: '/change-case/:caseId',
     name: 'ChangeCaseView',
-    component: ChangeCaseView
+    component: ChangeCaseView,
+    props: true
   },
 ]
 

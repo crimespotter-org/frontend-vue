@@ -33,6 +33,6 @@ async function closeModal() {
 
 const routeToChangeCaseView = async () =>{
   await modalController.dismiss();
-  router.push('/change-case');
+  router.push(`/change-case/${props.markerData[0].id}`);
 }
 </script>

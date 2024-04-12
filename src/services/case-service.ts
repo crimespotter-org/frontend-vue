@@ -1,7 +1,8 @@
-import { Casetype, Status } from "@/types/supabase-global";
+import { Case, Casetype, Status } from "@/types/supabase-global";
 import { supabase } from "./supabase-service";
 
 class CaseService {
+
   async updateCase(
     case_id: string,
     case_type: Casetype,
@@ -29,8 +30,19 @@ class CaseService {
         zip_code
       })
     if (error) console.error(error);
+  }
 
-    console.log(data);
+  async getCase(case_id_param: string) : Promise<Case> {
+      const { data: cases, error } = await supabase.rpc('get_case_details_angular', 
+      {
+        case_id_param
+      });
+      if (error) {
+        console.error("Fehler beim Abrufen der Daten:", error.message);
+        return [];
+      }
+      console.log(cases);
+      return cases;
   }
 }
 

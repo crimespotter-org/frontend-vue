@@ -1,21 +1,11 @@
 import { supabase } from "./supabase-service";
 import {
-  Case,
   ListOfCases,
   Coordinate
 } from "@/types/supabase-global";
 import { Geolocation } from "@capacitor/geolocation";
 
 class MapService {
-  async getMarkers(): Promise<Case[]> {
-    const { data: cases, error } = await supabase.from("cases").select("*");
-    if (error) {
-      console.error("Fehler beim Abrufen der Daten:", error.message);
-      return [];
-    }
-    console.log(cases);
-    return cases;
-  }
 
   async getAllCases(): Promise<ListOfCases> {
     const { data: cases, error } = await supabase.rpc("get_all_cases");
