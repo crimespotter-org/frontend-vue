@@ -79,7 +79,7 @@
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
-import { Coordinate, ListOfCases } from "@/types/supabase-global";
+import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
 import { filterOutline, add} from "ionicons/icons";
 import{
   IonItem,
@@ -115,8 +115,8 @@ let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
-let SelectedCrimeStatus = "";
-let SelectedCrimeType = "";
+let SelectedCrimeStatus: Status;
+let SelectedCrimeType: Casetype;
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -240,17 +240,9 @@ const getAddress = (place: any) => {
 
 const filterEvent = async() =>{
   const range = Number(SelectedRange);
-  listOfCases = await mapService.getNearbyCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range);
-  if(SelectedCrimeStatus !== ""){
-    listOfCases = listOfCases.filter((m) => m.status === SelectedCrimeStatus);
-  }
-  if(SelectedCrimeType !== ""){
-    listOfCases = listOfCases.filter((m) => m.case_type === SelectedCrimeType);
-  }
+  listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
   await addSomeMarkers(newMap);
   emits('onMarkerChange', listOfCases);
-  console.log(listOfCases);
-
 };
 
 const handleRangeChange = async(event: {detail: {value: string}}) => {
@@ -258,11 +250,12 @@ const handleRangeChange = async(event: {detail: {value: string}}) => {
 };
 
 const handleStatusChange = async(event:{detail: {value: string}}) => {
-  SelectedCrimeStatus = event.detail.value;
+  SelectedCrimeStatus = event.detail.value as Status;
+  console.log(SelectedCrimeStatus);
 };
 
 const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
-  SelectedCrimeType = event.detail.value;
+  SelectedCrimeType = event.detail.value as Casetype;
 }
 
 </script>

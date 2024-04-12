@@ -39,7 +39,7 @@ const markerDataLoaded = ref<boolean>(false);
 
 onMounted(async () => {
   const currentLocation = await mapService.currentLocation();
-  markerData = await mapService.getNearbyCases(currentLocation.latitude, currentLocation.longitude, 100);
+  markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
   markerDataLoaded.value = true;
 });
 
@@ -84,14 +84,5 @@ const markerClicked = (event: {latitude: number, longitude: number, mapId: strin
 const receiveMarkerData = (event: ListOfCases) : void =>{
   markerData = event;
 }
-
-/*        <ion-list lines="inset" :inset=true>
-          <ion-item v-for="(item, index) of markerData" :key="index">
-            <ion-label>{{ item.title }}</ion-label>
-            <ion-label>Ort</ion-label>
-            <ion-label>{{ item.status }}</ion-label>
-          </ion-item>
-        </ion-list>
-*/
 
 </script>
