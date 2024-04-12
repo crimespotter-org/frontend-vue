@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <ion-page>
     <ion-grid>
       <ion-row>
         <ion-col size="2">
@@ -72,7 +72,7 @@
         </ion-grid>
       </ion-content>
     </ion-modal>
-  </div>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
@@ -97,7 +97,8 @@ import{
   IonContent,
   IonHeader,
   IonToolbar,
-  IonTitle
+  IonTitle,
+  IonPage
 } from "@ionic/vue";
 
 const modal = ref();
@@ -117,6 +118,7 @@ let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
 let SelectedCrimeStatus: Status;
 let SelectedCrimeType: Casetype[] = [];
+const markerDataLoaded = ref<boolean>(false);
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -132,9 +134,10 @@ const emits = defineEmits<{
 onMounted(async () => {
   console.log("mounted ", mapRef.value);
   listOfCases = props.markerData;
+  console.log(listOfCases);
   await nextTick();
   await createMap();
-  
+  markerDataLoaded.value = true;
 });
 
 // remove markers on unmount
@@ -250,14 +253,22 @@ const handleRangeChange = async(event: {detail: {value: string}}) => {
 };
 
 const handleStatusChange = async(event:{detail: {value: string}}) => {
-  SelectedCrimeStatus = event.detail.value as Status;
+  if(event.detail.value === ""){
+    SelectedCrimeStatus = null;
+  }else{
+    SelectedCrimeStatus = event.detail.value as Status;
+  }
   console.log(SelectedCrimeStatus);
 };
 
 const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
   SelectedCrimeType = [];
-  const caseType = event.detail.value as Casetype;
-  SelectedCrimeType.push(caseType);
+  if(event.detail.value === ""){
+    SelectedCrimeType.push(null);
+  }else{
+    const caseType = event.detail.value as Casetype;
+    SelectedCrimeType.push(caseType);
+  }
   console.log(SelectedCrimeType);
 }
 

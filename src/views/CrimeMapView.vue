@@ -1,5 +1,5 @@
 <template>
-  <ion-page>
+  <ion-page v-if="markerDataLoaded">
     <HeaderComponent />  
     <ion-content :scroll-y="true">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
@@ -13,10 +13,7 @@
 <script setup lang="ts">
 import {
   IonContent,
-  IonHeader,
   IonPage,
-  IonTitle,
-  IonToolbar,
   IonPopover,
   modalController,
 } from "@ionic/vue";
@@ -38,6 +35,7 @@ onMounted(async () => {
   const currentLocation = await mapService.currentLocation();
   markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
   markerDataLoaded.value = true;
+  console.log(markerData);
 });
 
 const openModal = async (markerData: ListOfCases) => {
