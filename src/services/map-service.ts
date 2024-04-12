@@ -39,25 +39,6 @@ class MapService {
     return coordinate;
   }
 
-  async getNearbyCases(
-    currentlat: number,
-    currentlong: number,
-    distance: number
-  ): Promise<ListOfCases> {
-    distance = distance * 1000;
-    const { data: cases, error } = await supabase.rpc("find_nearby_cases", {
-      currentlat,
-      currentlong,
-      distance,
-    });
-    if (error) {
-      console.error("Fehler beim Abrufen der Daten: ", error.message);
-      return [];
-    }
-    console.log(cases);
-    return cases;
-  }
-
   async getFilteredCases(
     currentlat: number,
     currentlong: number,

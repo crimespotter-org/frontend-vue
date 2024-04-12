@@ -116,7 +116,7 @@ const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
 let SelectedCrimeStatus: Status;
-let SelectedCrimeType: Casetype;
+let SelectedCrimeType: Casetype[] = [];
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -255,7 +255,10 @@ const handleStatusChange = async(event:{detail: {value: string}}) => {
 };
 
 const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
-  SelectedCrimeType = event.detail.value as Casetype;
+  SelectedCrimeType = [];
+  const caseType = event.detail.value as Casetype;
+  SelectedCrimeType.push(caseType);
+  console.log(SelectedCrimeType);
 }
 
 </script>
