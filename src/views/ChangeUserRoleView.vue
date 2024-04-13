@@ -1,87 +1,89 @@
 <template>
-    <ion-page>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Benutzerrollen ändern</ion-title>
-        </ion-toolbar>
-      </ion-header>
-  
-      <ion-content :fullscreen="true">
-        <ion-header collapse="condense">
-          <ion-toolbar>
-            <ion-title size="large">Benutzerrollen ändern</ion-title>
-          </ion-toolbar>
-        </ion-header>
-  
-        <ion-item v-if="isAdmin">
-          <ion-label position="floating">Benutzer auswählen</ion-label>
-          <ion-select v-model="selectedUser" interface="action-sheet">
-            <ion-select-option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-  
-        <ion-item v-if="isAdmin">
-          <ion-label position="floating">Neue Rolle auswählen</ion-label>
-          <ion-select v-model="selectedRole" interface="action-sheet">
-            <ion-select-option v-for="role in roles" :key="role" :value="role">{{ role }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-  
-        <ion-button v-if="isAdmin" @click="changeUserRole">Rolle ändern</ion-button>
-        
-        <div v-else>
-          <ion-text color="danger">Diese Aktion erfordert Administratorberechtigungen.</ion-text>
-        </div>
-      </ion-content>
-    </ion-page>
-  </template>
-  
-  <script>
-  import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonButton, IonText } from '@ionic/vue';
-  import { defineComponent } from 'vue';
-  import { Role } from "@/types/supabase-global"; // Stellen Sie sicher, dass dies auf Ihren Typenpfad verweist
-  
-  export default defineComponent({
-    components: {
-      IonPage,
-      IonHeader,
-      IonToolbar,
-      IonTitle,
-      IonContent,
-      IonItem,
-      IonLabel,
-      IonSelect,
-      IonSelectOption,
-      IonButton,
-      IonText
-    },
-    data() {
-      return {
-        isAdmin: true, // Simulierter Wert für Administrationsberechtigung
-        users: [
-          { id: 1, name: 'Benutzer 1' },
-          { id: 2, name: 'Benutzer 2' },
-          { id: 3, name: 'Benutzer 3' }
-        ], // Annahme: Liste der Benutzer
-        roles: [Role.Admin, Role.User, Role.Guest], // Annahme: Liste der Rollen
-        selectedUser: null, // Benutzer, dessen Rolle geändert werden soll
-        selectedRole: null // Neue Rolle für den Benutzer
-      };
-    },
-    methods: {
-      changeUserRole() {
-        if (this.selectedUser && this.selectedRole) {
-          // Simulierte Funktion zum Ändern der Benutzerrolle
-          console.log(`Die Rolle von Benutzer ${this.selectedUser} wurde auf ${this.selectedRole} geändert.`);
-        } else {
-          console.error('Bitte wählen Sie einen Benutzer und eine Rolle aus.');
-        }
-      }
-    }
-  });
-  </script>
-  
-  <style scoped>
-  /* Ihre Stile hier */
-  </style>
-  
+  <ion-page>
+    <HeaderComponent />
+    <ion-content class="ion-padding">
+      <ion-title size="large">Benutzerrollen ändern</ion-title>
+      <ion-item>
+
+        <ion-select v-model="selectedUser" aria-label="Benutzer auswählen" label="Benutzer auswählen"
+          interface="action-sheet">
+          <ion-select-option v-for="user in allUsers" :key="user.id">{{ user.username
+            }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select v-model="selectedRole" aria-label="Neue Rolle auswählen" label="Neue Rolle auswählen"
+          interface="action-sheet">
+          <ion-select-option v-for="role in allRoles" :key="role" :value="role">{{ role }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-button @click="changeUserRole()" class="ion-margin-top">Rolle ändern</ion-button>
+      <ion-toast trigger="changeSuccesful = true" message="This toast will disappear after 5 seconds" :duration="5000"></ion-toast>
+
+    </ion-content>
+  </ion-page>
+</template>
+
+<script setup lang="ts">
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonLabel, IonSelect, IonSelectOption, IonButton, IonText, IonToast } from '@ionic/vue';
+import { defineComponent } from 'vue';
+import HeaderComponent from '../components/Header.vue';
+import { supabase } from "@/services/supabase-service";
+import { ref } from 'vue';
+import { Role } from "@/types/supabase-global";
+
+
+
+let role_crimespotter: Role;
+let role_crimefluencer: Role;
+let role_admin: Role;
+let selectedUser = ref(null);
+let selectedRole = ref(null);
+let allRoles = ref([]);
+let allUsers = ref([]);
+let changeSuccesful = false;
+
+getUsers();
+
+async function getUsers() {
+  role_crimespotter = 'crimespotter';
+  role_crimefluencer = 'crimefluencer';
+  role_admin = 'admin';
+
+  allRoles = [role_admin, role_crimefluencer, role_crimespotter];
+  console.log(allRoles);
+
+  let { data: user_list, error } = await supabase
+    .from('user_profiles')
+    .select('*');
+
+  if (!error) {
+
+    allUsers.value = user_list;
+    console.log(allUsers.value[0].username);
+    console.log("Users: " + allUsers.value);
+    //return (data);
+  }
+}
+
+
+async function changeUserRole() {
+ console.log("Rolle" + selectedRole.value)
+ console.log("USer" + selectedUser.value)
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update({ role: selectedRole.value })
+    .eq('username', selectedUser.value)
+    .select()
+
+  if (!error) {
+    changeSuccesful = true;
+  } else {
+    console.log("Error" + error)
+  }
+}
+
+
+</script>

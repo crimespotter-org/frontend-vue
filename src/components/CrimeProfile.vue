@@ -15,7 +15,7 @@
   </ion-content>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ListOfCases } from "@/types/supabase-global";
 import { IonContent, IonHeader, IonTitle, modalController, IonButton } from "@ionic/vue";
 
