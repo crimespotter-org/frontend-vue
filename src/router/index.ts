@@ -4,7 +4,8 @@ import HomePage from '../views/HomePage.vue';
 import Login from '../views/LoginView.vue';
 import CaseProfileView from '../views/CaseProfileView.vue';
 import CreateAccount from '../views/CreateAccountView.vue';
-import Unauthorized from '@/views/UnauthorizedView.vue';
+import Unauthorized from '../views/UnauthorizedView.vue';
+import ChangeUserRoleView  from '../views/ChangeUserRoleView.vue';
 import { supabase } from '@/services/supabase-service';
 
 let localUser;
@@ -24,10 +25,17 @@ const routes: Array<RouteRecordRaw> = [
     name: 'CreateAccount',
     component: CreateAccount
   },
+ 
   {
     path: '/unauthorized',
     name: 'Unauthorized',
     component: Unauthorized
+  }, 
+  {
+    path: '/change-user-role',
+    name: 'ChangeUserRoleView',
+    component: ChangeUserRoleView,
+    meta: { requiresAuthentication: true}
   },
   {
     path: '/home',
