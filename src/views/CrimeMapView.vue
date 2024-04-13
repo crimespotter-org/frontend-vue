@@ -1,10 +1,6 @@
 <template>
-  <ion-page v-if="markerDataLoaded" class="crimeMap">
-    <ion-header :translucent="true">
-      <ion-toolbar class="crimeHeader">
-        <ion-title>Crime Map</ion-title>
-      </ion-toolbar>
-    </ion-header>
+  <ion-page v-if="markerDataLoaded">
+    <HeaderComponent />  
     <ion-content :scroll-y="true">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
       <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
@@ -17,16 +13,14 @@
 <script setup lang="ts">
 import {
   IonContent,
-  IonHeader,
   IonPage,
-  IonTitle,
-  IonToolbar,
   IonPopover,
   modalController,
 } from "@ionic/vue";
 import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
+import HeaderComponent from '../components/Header.vue';
 import { Capacitor } from "@capacitor/core";
 import { mapService } from "@/services/map-service";
 import { ListOfCases } from "@/types/supabase-global";
@@ -39,8 +33,9 @@ const markerDataLoaded = ref<boolean>(false);
 
 onMounted(async () => {
   const currentLocation = await mapService.currentLocation();
-  markerData = await mapService.getNearbyCases(currentLocation.latitude, currentLocation.longitude, 100);
+  markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
   markerDataLoaded.value = true;
+  console.log(markerData);
 });
 
 const openModal = async (markerData: ListOfCases) => {
@@ -84,14 +79,5 @@ const markerClicked = (event: {latitude: number, longitude: number, mapId: strin
 const receiveMarkerData = (event: ListOfCases) : void =>{
   markerData = event;
 }
-
-/*        <ion-list lines="inset" :inset=true>
-          <ion-item v-for="(item, index) of markerData" :key="index">
-            <ion-label>{{ item.title }}</ion-label>
-            <ion-label>Ort</ion-label>
-            <ion-label>{{ item.status }}</ion-label>
-          </ion-item>
-        </ion-list>
-*/
 
 </script>

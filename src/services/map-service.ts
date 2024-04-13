@@ -1,7 +1,10 @@
 import { supabase } from "./supabase-service";
 import {
   ListOfCases,
-  Coordinate
+  Coordinate,
+  Status,
+  Casetype,
+  FilteredCases
 } from "@/types/supabase-global";
 import { Geolocation } from "@capacitor/geolocation";
 
@@ -26,17 +29,25 @@ class MapService {
     return coordinate;
   }
 
-  async getNearbyCases(
+  async getFilteredCases(
     currentlat: number,
     currentlong: number,
-    distance: number
-  ): Promise<ListOfCases> {
+    distance: number,
+    case_status: Status,
+    crime_types: Casetype,
+  ): Promise<FilteredCases> {
     distance = distance * 1000;
-    const { data: cases, error } = await supabase.rpc("find_nearby_cases", {
-      currentlat,
-      currentlong,
-      distance,
-    });
+    const end_date = null;
+    const start_date = null;
+    const { data: cases, error } = await supabase.rpc('get_filtered_cases_angular', {
+      case_status, 
+      crime_types, 
+      currentlat, 
+      currentlong, 
+      distance, 
+      end_date, 
+      start_date
+    })
     if (error) {
       console.error("Fehler beim Abrufen der Daten: ", error.message);
       return [];
