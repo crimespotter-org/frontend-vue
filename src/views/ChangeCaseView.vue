@@ -1,12 +1,19 @@
 <template>
-    <ion-page v-if="dataLoaded">
-        <ion-header>
-            <ion-toolbar class="crimeHeader">
-                <ion-title>Case Bearbeiten</ion-title>
-            </ion-toolbar>
-        </ion-header>
+    <ion-page v-if="dataLoaded" class="crimeMap">
+        <HeaderComponent />
         <ion-content class="ion-padding">
             <ion-grid>
+                <ion-row>
+                    <ion-col>
+                        <ion-card>
+                            <swiper :navigation="true" :modules="navigation" class="mySwiper" @click="getSlideData">
+                                <swiper-slide v-for="(uri,index) of pictureUriList" :key="index">
+                                    <ion-img v-if="uri" :src=uri alt="Hier sollte ein Bild sein"></ion-img>
+                                </swiper-slide>
+                            </swiper>
+                        </ion-card>
+                    </ion-col>
+                </ion-row>
                 <ion-row class="input-row">
                     <ion-col size="12">
                         <ion-textarea ref="ionInputTitle" label="Title: " :value="detailCase[0].title"
@@ -38,13 +45,16 @@
                 </ion-row>
                 <ion-row class="input-row">
                     <ion-col size="12">
-                        <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress"></ion-searchbar>
+                        <div v-if="showComponent">
+                        <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress" @ion-focus="setLocation">
+                        </ion-searchbar>
+                    </div>
                     </ion-col>
                 </ion-row>
                 <ion-row>
                     <ion-col size="3">
                         <ion-fab>
-                            <ion-fab-button id="open-modal">
+                            <ion-fab-button @click="onCalenderClickEvent" color="secondary">
                                 <ion-icon :icon="calendarOutline"></ion-icon>
                             </ion-fab-button>
                         </ion-fab>
@@ -62,7 +72,7 @@
                 </ion-row>
             </ion-grid>
             <ion-button @click="updateCase">Update</ion-button>
-            <ion-modal ref="modal" trigger="open-modal" :initial-breakpoint="0.75">
+            <ion-modal ref="modal" :initial-breakpoint="0.75">
                 <ion-header>
                     <ion-toolbar>
                         <ion-button @click="cancel()" slot="start">Zurück</ion-button>
@@ -74,9 +84,13 @@
                     <ion-datetime display-format="YYYY-MM-DDTHH:mm:ssZ" v-model="SelectedDateTime"></ion-datetime>
                 </ion-content>
             </ion-modal>
+            <ion-alert :is-open="isOpen" header="A Short Title Is Best" sub-header="A Sub Header Is Optional"
+                message="A message should be a short, complete sentence." :buttons="alertButtons"
+                @didDismiss="isOpen=false"></ion-alert>
         </ion-content>
     </ion-page>
 </template>
+
 <script setup lang="ts">
 
 import { ref, onMounted } from "vue";
@@ -100,24 +114,43 @@ import {
     IonSelect,
     IonSelectOption,
     IonItem,
-    IonSearchbar
+    IonSearchbar,
+    IonImg,
+    IonAlert,
+    IonCard
+
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
-import { calendarOutline } from "ionicons/icons";
+import { calendarOutline} from "ionicons/icons";
 import { useRoute } from "vue-router";
-import { Case } from "@/types/supabase-global";
+import { Case, Status, Casetype } from "@/types/supabase-global";
+import {Swiper, SwiperSlide} from 'swiper/vue';
+import { Navigation } from 'swiper/modules';
+import HeaderComponent from '../components/Header.vue';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
 
 const dataLoaded = ref<boolean>(false);
+const showComponent = ref<boolean>(false);
 const modal = ref();
 const route = useRoute();
 let detailCase: Case;
 let SelectedDateTime: string;
-let CaseType: string;
-let CaseStatus: string;
+let CaseType: Casetype;
+let CaseStatus: Status;
 
 const ionInputTitle = ref();
 const ionInputSummary = ref();
 const ionInputCrimeTime = ref();
+
+const navigation = [Navigation];
+const isOpen = ref(false);
+const alertButtons = ['Action'];
+let searchInput: string;
+
+const pictureUriList: string[] = [];
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -130,18 +163,42 @@ const confirm = () => {
 }
 
 onMounted(async () => {
-    const caseId = await route.params['caseId'].toString();
+    const caseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(caseId);
     detailCase[0].crime_date_time = convertDateString(detailCase[0].crime_date_time);
     CaseType = detailCase[0].case_type;
     CaseStatus = detailCase[0].status;
-    setLocation();
+
+    const caseImages = await caseService.getCaseImagesFromStorage(caseId);
+    await Promise.all(caseImages!.map(async (file) => {
+    const pictureUri = await caseService.getPublicUrl(file.name, caseId);
+    pictureUriList.push(pictureUri);
+    }));
+
     dataLoaded.value = true;
+    showComponent.value = true;
+    showComponent.value = false;
+    showComponent.value = true;
+    setLocation();
 });
 
-const setLocation = async() =>{
+const setLocation = ()=> {
 
-}
+    const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
+    console.log(elem);
+    elem.setAttribute('autocomplete', 'on');
+    elem.autocomplete = 'on';
+
+    const autocomplete = new google.maps.places.Autocomplete(elem);
+    const returnFields = ["geometry", "name"];
+    autocomplete.setFields(returnFields);
+    google.maps.event.addListener(autocomplete, 'place_changed', function () {
+        const place = autocomplete.getPlace();
+        const location = place['geometry']!['location'];
+        const latitude = location?.lat();
+        const longitude = location?.lng();
+    });
+};
 
 const updateCase = () => {
     /*caseService.updateCase(
@@ -162,12 +219,16 @@ const updateCase = () => {
     console.log(ionInputTitle.value.$el.value);
 };
 
+const onCalenderClickEvent = () => {
+    modal.value.$el.present();
+}
+
 const handleStatusChange = async (event: { detail: { value: string } }) => {
-    CaseStatus = event.detail.value;
+    CaseStatus = event.detail.value as Status;
 };
 
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
-    CaseType = event.detail.value;
+    CaseType = event.detail.value as Casetype;
 };
 
 const getAddress = (place: any) => {
@@ -185,10 +246,46 @@ function convertDateString(inputDate: string): string {
 
     return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
+
+const deleteImage = () =>{
+
+}
+
+const getSlideData = (event: any) => {
+    isOpen.value = true;
+}
+
 </script>
 
 <style scoped>
 .input-row {
     margin-bottom: 20px;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+
+  /* Center slide text vertically */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+ion-button {
+    --background: #990000;
 }
 </style>

@@ -122,6 +122,7 @@ let SelectedRange = "100";
 let SelectedCrimeStatus: Status;
 let SelectedCrimeType: Casetype[] = [];
 const markerDataLoaded = ref<boolean>(false);
+let eventListener: any;
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -144,9 +145,10 @@ onMounted(async () => {
 });
 
 // remove markers on unmount
-onUnmounted(() => {
+onUnmounted(async() => {
   console.log("onunmounted");
   newMap.removeMarkers(markerIds?.value as string[]);
+  await google.maps.event.removeListener(eventListener);
 });
 
 const addSomeMarkers = async (newMap: GoogleMap) => {
@@ -225,7 +227,7 @@ async function createMap() {
   };
 
   const autocomplete = new google.maps.places.Autocomplete(elem, options);
-  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function() {
     const place = autocomplete.getPlace();
     const location = place['geometry']!['location'];
     const latitude = location?.lat();
