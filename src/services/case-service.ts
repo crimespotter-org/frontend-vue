@@ -7,8 +7,8 @@ class CaseService {
   async updateCase(
     case_id: string,
     case_type: Casetype,
+    created_by: string,
     crime_date_time: string,
-    email: string,
     lat: number,
     long: number,
     place_name: string,
@@ -16,21 +16,25 @@ class CaseService {
     summary: string,
     title: string,
     zip_code: number
-  ): Promise<void> {
-    const { data, error } = await supabase.rpc("update_case", {
-      case_id,
-      case_type,
-      crime_date_time,
-      email,
-      lat,
-      long,
-      place_name,
-      status,
-      summary,
-      title,
-      zip_code,
-    });
-    if (error) console.error(error);
+  ): Promise<boolean> {
+    const { data, error } = await supabase.rpc('update_case', {
+      case_id, 
+      case_type, 
+      created_by, 
+      crime_date_time, 
+      lat, 
+      long, 
+      place_name, 
+      status, 
+      summary, 
+      title, 
+      zip_code
+    })
+    if (error){
+      console.error(error);
+      return false;
+    } 
+    return true;
   }
 
   async getCase(case_id_param: string): Promise<Case> {

@@ -6,7 +6,7 @@
                 <ion-row>
                     <ion-col>
                         <ion-card>
-                            <swiper :navigation="true" :modules="navigation" class="mySwiper" @click="getSlideData">
+                            <swiper :navigation="true" :modules="navigation" class="mySwiper" @click="getSlideData" >
                                 <swiper-slide v-for="(uri,index) of pictureUriList" :key="index">
                                     <ion-img v-if="uri" :src=uri alt="Hier sollte ein Bild sein"></ion-img>
                                 </swiper-slide>
@@ -16,14 +16,13 @@
                 </ion-row>
                 <ion-row class="input-row">
                     <ion-col size="12">
-                        <ion-textarea ref="ionInputTitle" label="Title: " :value="detailCase[0].title"
-                            rows="2"></ion-textarea>
+                        <ion-textarea ref="ionInputTitle" label="Title: " :value="detailCase[0].title"></ion-textarea>
                     </ion-col>
                 </ion-row>
                 <ion-row class="input-row">
                     <ion-col size="6">
                         <ion-item>
-                            <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="CaseStatus"
+                            <ion-select aria-label="Fallstatus"  label="Fallstatus" label-placement="floating" fill="solid" :value="CaseStatus"
                                 @ionChange="handleStatusChange">
                                 <ion-select-option value="closed">Gelöst</ion-select-option>
                                 <ion-select-option value="open">Ungelöst</ion-select-option>
@@ -32,7 +31,7 @@
                     </ion-col>
                     <ion-col size="6">
                         <ion-item>
-                            <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="CaseType"
+                            <ion-select  label="Straftat" label-placement="floating" fill="solid" aria-label="Straftat" :value="CaseType"
                                 @ionChange="handleCaseTypeChange">
                                 <ion-select-option value="murder">Mord</ion-select-option>
                                 <ion-select-option value="theft">Diebstahl</ion-select-option>
@@ -46,9 +45,10 @@
                 <ion-row class="input-row">
                     <ion-col size="12">
                         <div v-if="showComponent">
-                        <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress" @ion-focus="setLocation">
-                        </ion-searchbar>
-                    </div>
+                            <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress"
+                                @ion-focus="setLocation" :value="PlaceName">
+                            </ion-searchbar>
+                        </div>
                     </ion-col>
                 </ion-row>
                 <ion-row>
@@ -60,8 +60,10 @@
                         </ion-fab>
                     </ion-col>
                     <ion-col>
+                        <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
+                            :value="CrimeDate"></ion-input>
                         <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
-                            :value="detailCase[0].crime_date_time"></ion-input>
+                            :value="CrimeTime"></ion-input>
                     </ion-col>
                 </ion-row>
                 <ion-row class="input-row">
@@ -70,23 +72,35 @@
                             rows="16"></ion-textarea>
                     </ion-col>
                 </ion-row>
+                <ion-row>
+                    <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
+                        @didDismiss="setOpen(false)"></ion-toast>
+                </ion-row>
             </ion-grid>
-            <ion-button @click="updateCase">Update</ion-button>
+            <ion-row>
+                <ion-col size="3">
+                    <ion-button @click="updateCase">Update</ion-button>
+                </ion-col>
+                <ion-col size="5">
+                </ion-col>
+                <ion-col size="4">
+                    <ion-button @click="navigateBack">Zurück</ion-button>
+                </ion-col>
+            </ion-row>
             <ion-modal ref="modal" :initial-breakpoint="0.75">
                 <ion-header>
                     <ion-toolbar>
                         <ion-button @click="cancel()" slot="start">Zurück</ion-button>
                         <ion-button @click="confirm()" slot="end">Anwenden</ion-button>
-                        <ion-title>Filter</ion-title>
                     </ion-toolbar>
                 </ion-header>
                 <ion-content class="ion-padding">
-                    <ion-datetime display-format="YYYY-MM-DDTHH:mm:ssZ" v-model="SelectedDateTime"></ion-datetime>
+                    <ion-datetime display-format="YYYY-MM-DDTHH:mm:ssTZD" v-model="SelectedDateTime"></ion-datetime>
                 </ion-content>
             </ion-modal>
-            <ion-alert :is-open="isOpen" header="A Short Title Is Best" sub-header="A Sub Header Is Optional"
-                message="A message should be a short, complete sentence." :buttons="alertButtons"
-                @didDismiss="isOpen=false"></ion-alert>
+            <ion-alert :is-open="isOpen" header="Bild Optionen"
+                message="show" :buttons="alertButtons" @didDismiss="isOpen=false">
+            </ion-alert>
         </ion-content>
     </ion-page>
 </template>
@@ -117,7 +131,10 @@ import {
     IonSearchbar,
     IonImg,
     IonAlert,
-    IonCard
+    IonCard,
+    useIonRouter,
+    IonToast,
+    IonButtons,
 
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
@@ -132,46 +149,83 @@ import HeaderComponent from '../components/Header.vue';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
+const ionRouter = useIonRouter();
 const dataLoaded = ref<boolean>(false);
 const showComponent = ref<boolean>(false);
 const modal = ref();
+const isToastOpen = ref(false);
 const route = useRoute();
+const ionInputTitle = ref();
+const ionInputSummary = ref();
+const ionInputCrimeDate = ref();
+const ionInputCrimeTime = ref();
+const navigation = [Navigation];
+const isOpen = ref(false);
+const pictureUriList: string[] = [];
+
 let detailCase: Case;
 let SelectedDateTime: string;
 let CaseType: Casetype;
 let CaseStatus: Status;
+let CrimeTime: string;
+let CrimeDate: string;
+let CaseId: string;
+let Latitude: number;
+let Longitude: number;
+let PlaceName: string;
+let ToastMessage: string;
 
-const ionInputTitle = ref();
-const ionInputSummary = ref();
-const ionInputCrimeTime = ref();
+const alertButtons = [
+    {
+      text: 'Bild löschen',
+      role: 'delete',
+      handler: () => {
 
-const navigation = [Navigation];
-const isOpen = ref(false);
-const alertButtons = ['Action'];
-let searchInput: string;
-
-const pictureUriList: string[] = [];
+      },
+    },
+    {
+      text: 'Kamera verwenden',
+      role: 'camera',
+      handler: () => {
+        console.log('Alert confirmed');
+      },
+    },
+    {
+      text: 'Bild hinzufügen',
+      role: 'include',
+      handler: () => {
+        console.log('Alert confirmed');
+      },
+    },
+  ];
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
 }
 
 const confirm = () => {
-    detailCase[0].crime_date_time = convertDateString(SelectedDateTime);
-    ionInputCrimeTime.value.$el.value = detailCase[0].crime_date_time
+    console.log(SelectedDateTime)
+    CrimeDate = convertDateString(SelectedDateTime);
+    ionInputCrimeDate.value.$el.value = CrimeDate;
+    ionInputCrimeTime.value.$el.value = CrimeTime;
     modal.value.$el.dismiss(null, 'cancel');
 }
 
 onMounted(async () => {
-    const caseId = route.params['caseId'].toString();
-    detailCase = await caseService.getCase(caseId);
-    detailCase[0].crime_date_time = convertDateString(detailCase[0].crime_date_time);
+    CaseId = route.params['caseId'].toString();
+    detailCase = await caseService.getCase(CaseId);
+    SelectedDateTime = detailCase[0].crime_date_time
+
+    CrimeDate = convertDateString(detailCase[0].crime_date_time);
     CaseType = detailCase[0].case_type;
     CaseStatus = detailCase[0].status;
+    Latitude = detailCase[0].lat;
+    Longitude = detailCase[0].long;
+    PlaceName = detailCase[0].place_name;
 
-    const caseImages = await caseService.getCaseImagesFromStorage(caseId);
+    const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
     await Promise.all(caseImages!.map(async (file) => {
-    const pictureUri = await caseService.getPublicUrl(file.name, caseId);
+    const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
     pictureUriList.push(pictureUri);
     }));
 
@@ -180,13 +234,14 @@ onMounted(async () => {
     showComponent.value = false;
     showComponent.value = true;
     setLocation();
+
+    
 });
 
 const setLocation = ()=> {
 
     const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
     console.log(elem);
-    elem.setAttribute('autocomplete', 'on');
     elem.autocomplete = 'on';
 
     const autocomplete = new google.maps.places.Autocomplete(elem);
@@ -195,28 +250,35 @@ const setLocation = ()=> {
     google.maps.event.addListener(autocomplete, 'place_changed', function () {
         const place = autocomplete.getPlace();
         const location = place['geometry']!['location'];
-        const latitude = location?.lat();
-        const longitude = location?.lng();
+        Latitude = location!.lat();
+        Longitude = location!.lng();
+        PlaceName = place.name!;
     });
 };
 
-const updateCase = () => {
-    /*caseService.updateCase(
-        "713af3b1-16cf-4a44-893d-5280f1fbfbd9",
-        "robbery-murder",
-        "28.12.2000",
-        "emma.weiss2000@gmail.com",
-        48.457675,
-        8.697503,
-        "Horb",
-        "open",
-        "Inmitten des geschäftigen Treibens eines Döner-Imbisses entstand plötzlich ein hitziger Streit zwischen einem Angestellten und einem türkischen Gast. Die Situation eskalierte rasch, als der Angestellte offenbar ein Messer zog und dem Gast mehrere Stiche zufügte. Spekulationen über die Tatwaffe sorgten für Aufsehen - soll es wirklich das Döner-Messer gewesen sein? Eine Frage, die die Gemüter zusätzlich erhitzte. Die Polizei rückte daraufhin zum Tatort vor einem Einkaufsmarkt aus, wo sich ein bedrückendes Szenario entfaltete. Real-Mitarbeiter versuchten hektisch, den Bereich abzusperren, während verzweifelte Angehörige des Opfers von Emotionen überwältigt waren. Der Ruf Hurensohn durchdrang die Luft, während die Beamten mühevoll versuchten, die Gemüter zu beruhigen und weitere Zwischenfälle zu verhindern. Währenddessen kämpfte die Mutter des Opfers im Krankenhaus um Fassung, während der Vater verzweifelt versuchte, einen letzten Blick auf seinen Sohn zu erhaschen. Die Szenerie war geprägt von Trauer und Unverständnis, während Real-Mitarbeiter und Seelsorger versuchten, die Lage zu beruhigen und erste Informationen zu sammeln. Im Laufe der Nacht kehrte langsam Ruhe ein, während die Polizei mit den Ermittlungen begann und die Hintergründe dieser tragischen Tat zu ergründen versuchte. In einem Bestattungshaus in Albstadt wartete der Leichnam des Opfers darauf, seine letzte Ruhe zu finden. Doch die Geschichte endet nicht hier - sie hinterließ drei kleine Kinder, deren Zukunft nun im Schatten dieser Tragödie liegt.",
-        "Tödliche Messerstecherei am Döner-Stand",
+const updateCase = async() => {
+    const successful = await caseService.updateCase(
+        CaseId,
+        CaseType,
+        "02cb674f-ff36-4e62-aeb7-dfcdf58e0eae",
+        SelectedDateTime,
+        Latitude,
+        Longitude,
+        PlaceName,
+        CaseStatus,
+        ionInputSummary.value.$el.value,
+        ionInputTitle.value.$el.value,
         72160
-    );*/
-    console.log(CaseStatus);
-    console.log(CaseType);
-    console.log(ionInputTitle.value.$el.value);
+    );
+
+    if(successful){
+        ToastMessage = "Case erfolgreich geupdatet!";
+        setOpen(true);
+    }else{
+        ToastMessage = "Etwas lief schief probier es später nochmal!"
+        setOpen(true);
+    }
+    
 };
 
 const onCalenderClickEvent = () => {
@@ -235,6 +297,10 @@ const getAddress = (place: any) => {
     console.log('Address Object', place);
 };
 
+const setOpen = (state: boolean) => {
+        isToastOpen.value = state;
+      };
+
 function convertDateString(inputDate: string): string {
     const date = new Date(inputDate);
     const day = ("0" + date.getDate()).slice(-2);
@@ -244,15 +310,22 @@ function convertDateString(inputDate: string): string {
     const minutes = ("0" + date.getMinutes()).slice(-2);
     const seconds = ("0" + date.getSeconds()).slice(-2);
 
-    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
-}
+    CrimeTime = `${hours}:${minutes}:${seconds}`;
 
-const deleteImage = () =>{
-
+    return `${day}.${month}.${year}`;
 }
 
 const getSlideData = (event: any) => {
+    console.log(event);
+    
+    console.log(swiper.activeIndex);
+
     isOpen.value = true;
+
+}
+
+const navigateBack = () => {
+    ionRouter.push("/crime-map");
 }
 
 </script>
@@ -285,7 +358,28 @@ const getSlideData = (event: any) => {
   object-fit: cover;
 }
 
+.swiper-button-next {
+    background-color: white;
+            padding: 8px 16px;
+            border-radius: 100%;
+            border: 2px solid black;
+            color: #990000;
+}
+
+.swiper-button-prev {
+    background-color: white;
+            padding: 8px 16px;
+            border-radius: 100%;
+            border: 2px solid black;
+            color: #990000;
+}
+
 ion-button {
     --background: #990000;
 }
+
+.select-fill-solid{
+    --background: #2f2f2f;
+}
+
 </style>

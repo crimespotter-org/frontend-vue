@@ -16,6 +16,7 @@ class MapService {
       console.error("Fehler beim Abrufen der Daten:", error.message);
       return [];
     }
+    console.log("get_all_cases");
     console.log(cases);
     return cases;
   }
@@ -52,6 +53,7 @@ class MapService {
       console.error("Fehler beim Abrufen der Daten: ", error.message);
       return [];
     }
+    console.log("get_filtered_cases");
     console.log(cases);
     return cases;
   }

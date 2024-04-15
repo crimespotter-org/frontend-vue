@@ -1,9 +1,14 @@
 <template>
-  <ion-page>
+  <ion-page class="crimeMap">
+    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
+      <ion-fab-button color="secondary">
+        <ion-icon :icon="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
     <ion-grid>
       <ion-row>
         <ion-col size="2">
-          <ion-button id="open-modal" expand="block">
+          <ion-button id="open-modal" expand="block" color="secondary">
             <ion-icon :icon="filterOutline"></ion-icon>
           </ion-button>
         </ion-col>
@@ -13,11 +18,6 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
-      <ion-fab-button color="secondary">
-        <ion-icon :icon="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
     <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
     </capacitor-google-map>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
@@ -97,7 +97,6 @@ import{
   IonContent,
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonPage
 } from "@ionic/vue";
 
