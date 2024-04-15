@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <ion-page>
     <ion-grid>
       <ion-row>
         <ion-col size="2">
@@ -72,14 +72,14 @@
         </ion-grid>
       </ion-content>
     </ion-modal>
-  </div>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
-import { Coordinate, ListOfCases } from "@/types/supabase-global";
+import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
 import { filterOutline, add} from "ionicons/icons";
 import{
   IonItem,
@@ -97,7 +97,8 @@ import{
   IonContent,
   IonHeader,
   IonToolbar,
-  IonTitle
+  IonTitle,
+  IonPage
 } from "@ionic/vue";
 
 const modal = ref();
@@ -115,8 +116,9 @@ let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
-let SelectedCrimeStatus = "";
-let SelectedCrimeType = "";
+let SelectedCrimeStatus: Status;
+let SelectedCrimeType: Casetype[] = [];
+const markerDataLoaded = ref<boolean>(false);
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -132,9 +134,10 @@ const emits = defineEmits<{
 onMounted(async () => {
   console.log("mounted ", mapRef.value);
   listOfCases = props.markerData;
+  console.log(listOfCases);
   await nextTick();
   await createMap();
-  
+  markerDataLoaded.value = true;
 });
 
 // remove markers on unmount
@@ -240,17 +243,9 @@ const getAddress = (place: any) => {
 
 const filterEvent = async() =>{
   const range = Number(SelectedRange);
-  listOfCases = await mapService.getNearbyCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range);
-  if(SelectedCrimeStatus !== ""){
-    listOfCases = listOfCases.filter((m) => m.status === SelectedCrimeStatus);
-  }
-  if(SelectedCrimeType !== ""){
-    listOfCases = listOfCases.filter((m) => m.case_type === SelectedCrimeType);
-  }
+  listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
   await addSomeMarkers(newMap);
   emits('onMarkerChange', listOfCases);
-  console.log(listOfCases);
-
 };
 
 const handleRangeChange = async(event: {detail: {value: string}}) => {
@@ -258,11 +253,23 @@ const handleRangeChange = async(event: {detail: {value: string}}) => {
 };
 
 const handleStatusChange = async(event:{detail: {value: string}}) => {
-  SelectedCrimeStatus = event.detail.value;
+  if(event.detail.value === ""){
+    SelectedCrimeStatus = null;
+  }else{
+    SelectedCrimeStatus = event.detail.value as Status;
+  }
+  console.log(SelectedCrimeStatus);
 };
 
 const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
-  SelectedCrimeType = event.detail.value;
+  SelectedCrimeType = [];
+  if(event.detail.value === ""){
+    SelectedCrimeType.push(null);
+  }else{
+    const caseType = event.detail.value as Casetype;
+    SelectedCrimeType.push(caseType);
+  }
+  console.log(SelectedCrimeType);
 }
 
 </script>
