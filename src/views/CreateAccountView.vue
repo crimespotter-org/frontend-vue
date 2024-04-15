@@ -58,37 +58,37 @@ let role_crimespotter: Role;
 async function createAccount() {
     role_crimespotter = "crimespotter";
 
-    /*const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
     });
 
-    if (!error) {*/
+    if (!error) {
 
         const { data, error: loginError } = await supabase.auth.signInWithPassword({
-        email: email.value,
-        password: password.value
-    });
+            email: email.value,
+            password: password.value
+        });
 
-    if (!loginError) {
-        const localUser = await supabase.auth.getSession();
-        console.log(localUser.data.session?.user.id);
+        if (!loginError) {
+            const localUser = await supabase.auth.getSession();
+            console.log(localUser.data.session?.user.id);
 
-        const { data: upsertData, error: upsertError } = await supabase
-            .from('user_profiles')
-            .upsert({ id: localUser.data.session?.user.id, username: email.value, role: role_crimespotter })
-            .select()
+            const { data: upsertData, error: upsertError } = await supabase
+                .from('user_profiles')
+                .upsert({ id: localUser.data.session?.user.id, username: email.value, role: role_crimespotter })
+                .select()
 
-        if (!upsertError) {
-            router.push('/crime-map');
+            if (!upsertError) {
+                router.push('/home');
+            }
+            else {
+                console.log("Upsert Error" + upsertError);
+            }
         }
-        else {
-            console.log("Upsert Error" + upsertError);
-        }
-    }        
-   /* } else {
+    } else {
         console.log("Auth Error" + error);
-    }*/
+    }
 
 };
 
