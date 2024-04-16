@@ -19,7 +19,7 @@
             </div>
 
             <div class="buttonContainer">
-                <router-link to="/create-Account"> <ion-button>Account erstellen</ion-button>  </router-link>              
+                <router-link to="/create-Account"> <ion-button>Account erstellen</ion-button> </router-link>
             </div>
         </ion-content>
     </ion-page>
@@ -70,18 +70,18 @@ async function login() {
 
 //Shows details from current user
 async function seeCurrentUser() {
-    
-        const localUser = await supabase.auth.getSession();
 
-        console.log(localUser);
+    const localUser = await supabase.auth.getSession();
+
+    console.log(localUser);
 
 }
 
 //Logout  function
 async function logout() {
-    
-        const { error } = await supabase.auth.signOut();
-        console.log("Logged out");
+
+    const { error } = await supabase.auth.signOut();
+    console.log("Logged out");
 
     if (error) {
         console.log(error)

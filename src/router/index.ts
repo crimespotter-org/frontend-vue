@@ -2,12 +2,12 @@ import { createRouter, createWebHistory } from "@ionic/vue-router";
 import { RouteRecordRaw } from "vue-router";
 import HomePage from "../views/HomePage.vue";
 import Login from "../views/LoginView.vue";
-import CaseProfileView from "../views/CaseProfileView.vue";
+import CaseProfile from "../views/CaseProfileView.vue";
 import CreateAccount from "../views/CreateAccountView.vue";
 import Unauthorized from "../views/UnauthorizedView.vue";
-import ChangeUserRoleView from "../views/ChangeUserRoleView.vue";
-import MenuView from "../views/MenuView.vue";
-import { supabase } from "@/services/supabase-service";
+import ChangeUserRole from "../views/ChangeUserRoleView.vue";
+import Menu from "../views/MenuView.vue";
+import CrimeMap from "../views/CrimeMapView.vue";
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 
 let localUser;
@@ -16,7 +16,7 @@ let localUserRole;
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    redirect: "/home",
+    redirect: "/crime-map",
   },
   {
     path: "/login",
@@ -36,31 +36,21 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/change-user-role",
     name: "ChangeUserRole",
-    component: ChangeUserRoleView,
+    component: ChangeUserRole,
     meta: { requiresAdminRole: true },
   },
   {
     path: "/menu",
     name: "Menu",
-    component: MenuView,
+    component: Menu,
     meta: { requiresAuthentication: true },
-  },
-  {
-    path: "/home",
-    name: "Home",
-    component: HomePage,
-    meta: { requiresAuthentication: true },
-  },
-  {
-    path: "/case-profile",
-    name: "CaseProfile",
-    component: CaseProfileView,
-    meta: { requiresAuthentication: true },
-  },
+  }, 
   {
     path: "/crime-map",
-    component: () => import("@/views/CrimeMapView.vue"),
-  },
+    name: "CrimeMap",
+    component: CrimeMap,
+    meta: { requiresAuthentication: true },
+  }  
 ];
 
 const router = createRouter({
