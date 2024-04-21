@@ -1,6 +1,5 @@
 import { supabase } from "./supabase-service";
 import {
-  Case,
   ListOfCases,
   Coordinate,
   Status,
@@ -10,15 +9,6 @@ import {
 import { Geolocation } from "@capacitor/geolocation";
 
 class MapService {
-  async getMarkers(): Promise<Case[]> {
-    const { data: cases, error } = await supabase.from("cases").select("*");
-    if (error) {
-      console.error("Fehler beim Abrufen der Daten:", error.message);
-      return [];
-    }
-    console.log(cases);
-    return cases;
-  }
 
   async getAllCases(): Promise<ListOfCases> {
     const { data: cases, error } = await supabase.rpc("get_all_cases");
@@ -26,6 +16,7 @@ class MapService {
       console.error("Fehler beim Abrufen der Daten:", error.message);
       return [];
     }
+    console.log("get_all_cases");
     console.log(cases);
     return cases;
   }
@@ -62,6 +53,7 @@ class MapService {
       console.error("Fehler beim Abrufen der Daten: ", error.message);
       return [];
     }
+    console.log("get_filtered_cases");
     console.log(cases);
     return cases;
   }

@@ -1,7 +1,7 @@
 <template>
   <ion-page v-if="markerDataLoaded">
     <HeaderComponent />  
-    <ion-content :scroll-y="true">
+    <ion-content :scroll-y="true" class="crimeMap">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
       <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
         <crime-profile :markerData="markerData"></crime-profile>
@@ -16,6 +16,7 @@ import {
   IonPage,
   IonPopover,
   modalController,
+  onIonViewDidEnter
 } from "@ionic/vue";
 import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
@@ -30,6 +31,14 @@ const markerIsOpen = ref<boolean>(false);
 // data for the map
 let markerData: ListOfCases = [];
 const markerDataLoaded = ref<boolean>(false);
+
+onIonViewDidEnter(async () => {
+      markerDataLoaded.value = false;
+      console.log('Home page did enter');
+      const currentLocation = await mapService.currentLocation();
+      markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
+      markerDataLoaded.value = true;
+});
 
 onMounted(async () => {
   const currentLocation = await mapService.currentLocation();

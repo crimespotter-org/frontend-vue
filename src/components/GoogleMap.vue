@@ -1,9 +1,14 @@
 <template>
-  <ion-page>
+  <ion-page class="crimeMap">
+    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
+      <ion-fab-button color="secondary">
+        <ion-icon :icon="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
     <ion-grid>
       <ion-row>
         <ion-col size="2">
-          <ion-button id="open-modal" expand="block">
+          <ion-button id="open-modal" expand="block" color="secondary">
             <ion-icon :icon="filterOutline"></ion-icon>
           </ion-button>
         </ion-col>
@@ -13,18 +18,13 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
-      <ion-fab-button color="secondary">
-        <ion-icon :icon="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
     <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
     </capacitor-google-map>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
         <ion-toolbar>
-          <ion-button @click="cancel()" slot="end">Cancel</ion-button>
-          <ion-title>Filter</ion-title>
+          <ion-button @click="cancel()" slot="start">Zurück</ion-button>
+          <ion-button @click="confirm()" slot="end">Anwenden</ion-button>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
@@ -97,7 +97,6 @@ import{
   IonContent,
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonPage
 } from "@ionic/vue";
 
@@ -105,9 +104,12 @@ const modal = ref();
 
 const cancel = () =>{
   modal.value.$el.dismiss(null, 'cancel');
-  filterEvent();
-
 } 
+
+const confirm = () =>{
+  modal.value.$el.dismiss(null, 'cancel');
+  filterEvent();
+}
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
@@ -119,6 +121,7 @@ let SelectedRange = "100";
 let SelectedCrimeStatus: Status;
 let SelectedCrimeType: Casetype[] = [];
 const markerDataLoaded = ref<boolean>(false);
+let eventListener: any;
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -141,9 +144,10 @@ onMounted(async () => {
 });
 
 // remove markers on unmount
-onUnmounted(() => {
+onUnmounted(async() => {
   console.log("onunmounted");
   newMap.removeMarkers(markerIds?.value as string[]);
+  await google.maps.event.removeListener(eventListener);
 });
 
 const addSomeMarkers = async (newMap: GoogleMap) => {
@@ -222,7 +226,7 @@ async function createMap() {
   };
 
   const autocomplete = new google.maps.places.Autocomplete(elem, options);
-  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function() {
     const place = autocomplete.getPlace();
     const location = place['geometry']!['location'];
     const latitude = location?.lat();

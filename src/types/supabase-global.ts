@@ -96,6 +96,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "public_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       furtherlinks: {
@@ -104,7 +111,7 @@ export type Database = {
           created_at: string | null
           id: string
           link_type: Database["public"]["Enums"]["link_type"] | null
-          type: string
+          type: string | null
           url: string
         }
         Insert: {
@@ -112,7 +119,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           link_type?: Database["public"]["Enums"]["link_type"] | null
-          type: string
+          type?: string | null
           url: string
         }
         Update: {
@@ -120,7 +127,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           link_type?: Database["public"]["Enums"]["link_type"] | null
-          type?: string
+          type?: string | null
           url?: string
         }
         Relationships: [
@@ -204,19 +211,19 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          role: Database["public"]["Enums"]["roles"] | null
+          role: Database["public"]["Enums"]["role"] | null
           username: string
         }
         Insert: {
           created_at?: string | null
           id: string
-          role?: Database["public"]["Enums"]["roles"] | null
+          role?: Database["public"]["Enums"]["role"] | null
           username: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["roles"] | null
+          role?: Database["public"]["Enums"]["role"] | null
           username?: string
         }
         Relationships: [
@@ -273,17 +280,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_case: {
+      add_custom_claims_to_jwt_hook: {
+        Args: {
+          event: Json
+        }
+        Returns: Json
+      }
+      create_crime_case_angular: {
         Args: {
           p_title: string
           p_summary: string
-          p_location: unknown
-          p_status: string
+          p_longitude: number
+          p_latitude: number
           p_created_by: string
           p_place_name: string
           p_zip_code: number
           p_case_type: Database["public"]["Enums"]["casetype"]
-          p_links_json: Json
+          p_crime_date_time: string
+          p_status: Database["public"]["Enums"]["status"]
+          p_links: Json
         }
         Returns: string
       }
@@ -399,11 +414,44 @@ export type Database = {
           crime_date_time: string
         }[]
       }
+      update_case:
+        | {
+            Args: {
+              title: string
+              summary: string
+              status: Database["public"]["Enums"]["status"]
+              lat: number
+              long: number
+              place_name: string
+              zip_code: number
+              case_type: Database["public"]["Enums"]["casetype"]
+              crime_date_time: string
+              case_id: string
+              created_by: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              title: string
+              summary: string
+              status: Database["public"]["Enums"]["status"]
+              lat: number
+              long: number
+              place_name: string
+              zip_code: number
+              case_type: Database["public"]["Enums"]["casetype"]
+              crime_date_time: string
+              case_id: string
+              created_by: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       casetype: "murder" | "theft" | "robbery-murder" | "brawl" | "rape" | null
       link_type: "newspaper" | "podcast" | "book"
-      roles: "crimefluencer" | "crimespotter" | "admin"
+      role: "crimefluencer" | "crimespotter" | "admin"
       status: "open" | "closed" | null
     }
     CompositeTypes: {
@@ -494,19 +542,18 @@ export type Enums<
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
 
-
-
-export type Case = Database['public']['Tables']['cases']['Row'] 
 export type Comment = Database['public']['Tables']['comments']['Row']
 export type FurtherLink = Database['public']['Tables']['furtherlinks']['Row']
 export type Media = Database['public']['Tables']['media']['Row']
 export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Vote = Database['public']['Tables']['votes']['Row']
 export type ListOfCases = Database['public']['Functions']['find_nearby_cases2']['Returns']
+export type Case = Database['public']['Functions']['get_case_details_angular']['Returns']
 export type FilteredCases = Database['public']['Functions']['get_filtered_cases_angular']['Returns']
+export type UpdateCase = Database['public']['Functions']['update_case']['Args'];
 export type Casetype = Database['public']['Enums']['casetype']
 export type LinkType = Database['public']['Enums']['link_type']
-export type Role = Database['public']['Enums']['roles']
+export type Role = Database['public']['Enums']['role']
 export type Status = Database['public']['Enums']['status']
 
 export interface Coordinate{
