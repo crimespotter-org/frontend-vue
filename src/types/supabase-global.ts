@@ -286,6 +286,14 @@ export type Database = {
         }
         Returns: Json
       }
+      add_user_profile_angular: {
+        Args: {
+          user_id: string
+          username: string
+          role: Database["public"]["Enums"]["role"]
+        }
+        Returns: undefined
+      }
       create_crime_case_angular: {
         Args: {
           p_title: string
@@ -374,6 +382,8 @@ export type Database = {
           url: string
           link_type: Database["public"]["Enums"]["link_type"]
           link_created_at: string
+          user_id: string
+          username: string
         }[]
       }
       get_enum_values_angular: {
@@ -391,6 +401,7 @@ export type Database = {
           distance?: number
           crime_types?: Database["public"]["Enums"]["casetype"][]
           case_status?: Database["public"]["Enums"]["status"]
+          crimefluencer_ids?: string[]
         }
         Returns: {
           id: string
@@ -401,6 +412,7 @@ export type Database = {
           lat: number
           long: number
           created_by: string
+          creator_username: string
           place_name: string
           zip_code: number
           case_type: Database["public"]["Enums"]["casetype"]
@@ -412,10 +424,11 @@ export type Database = {
           has_book: boolean
           has_media: boolean
           crime_date_time: string
+          distance_to_location: number
         }[]
       }
       update_case:
-        | {
+          {
             Args: {
               title: string
               summary: string
@@ -428,22 +441,7 @@ export type Database = {
               crime_date_time: string
               case_id: string
               created_by: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              title: string
-              summary: string
-              status: Database["public"]["Enums"]["status"]
-              lat: number
-              long: number
-              place_name: string
-              zip_code: number
-              case_type: Database["public"]["Enums"]["casetype"]
-              crime_date_time: string
-              case_id: string
-              created_by: string
+              p_links: Json
             }
             Returns: undefined
           }
@@ -542,6 +540,7 @@ export type Enums<
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
 
+
 export type Comment = Database['public']['Tables']['comments']['Row']
 export type FurtherLink = Database['public']['Tables']['furtherlinks']['Row']
 export type Media = Database['public']['Tables']['media']['Row']
@@ -560,3 +559,14 @@ export interface Coordinate{
   latitude: number;
   longitude: number;
 } 
+
+export interface ImageData{
+  pictureUri: string;
+  imageName: string;
+}
+
+export interface Link{
+  linkId: string;
+  type: LinkType;
+  linkUrl: string;
+}

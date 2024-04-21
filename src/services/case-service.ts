@@ -1,4 +1,4 @@
-import { Case, Casetype, Status } from "@/types/supabase-global";
+import { Case, Casetype, Status, Link } from "@/types/supabase-global";
 import { supabase } from "./supabase-service";
 import { FileObject } from "@supabase/storage-js";
 
@@ -14,22 +14,32 @@ class CaseService {
     status: Status,
     summary: string,
     title: string,
-    zip_code: number
+    zip_code: number | null,
+    linkList: Link[]
   ): Promise<boolean> {
-    const { data, error } = await supabase.rpc("update_case", {
-      case_id,
-      case_type,
-      created_by,
-      crime_date_time,
-      lat,
-      long,
-      place_name,
-      status,
-      summary,
-      title,
+
+    console.log(linkList);
+
+    const p_links = linkList.map(link => ({
+      url: link.linkUrl,
+      link_type: link.type
+  }));
+
+    const { data, error } = await supabase.rpc('update_case', {
+      case_id, 
+      case_type, 
+      created_by, 
+      crime_date_time, 
+      lat, 
+      long, 
+      place_name, 
+      status, 
+      summary, 
+      title, 
       zip_code,
-    });
-    if (error) {
+      p_links
+    })
+    if (error){
       console.error(error);
       return false;
     }
@@ -72,11 +82,11 @@ class CaseService {
     const { data, error } = await supabase.storage
       .from("media")
       .remove([`case-${caseId}/${imageName}`]);
-    if (error) {
-      console.error("Fehler beim Abrufen der Bilder:", error.message);
-      return false;
-    }
-    return true;
+      if(error){
+        console.error("Fehler beim löschen des Bildes", error.message);
+        return false;
+      }
+      return true;
   }
 
   async getPublicUrl(imageName: string, caseId: string): Promise<string> {

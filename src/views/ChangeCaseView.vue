@@ -1,92 +1,164 @@
 <template>
-    <ion-page v-if="dataLoaded" class="crimeMap">
+    <ion-page v-if="dataLoaded">
         <HeaderComponent />
         <ion-content class="ion-padding">
-            <ion-grid>
-                <ion-row>
-                    <ion-col>
-                        <ion-card>
-                            <swiper :navigation="true" :modules="navigation" class="mySwiper" @click="getSlideData" >
-                                <swiper-slide v-for="(uri,index) of pictureUriList" :key="index">
-                                    <ion-img v-if="uri" :src=uri alt="Hier sollte ein Bild sein"></ion-img>
-                                </swiper-slide>
-                            </swiper>
-                        </ion-card>
-                    </ion-col>
-                </ion-row>
-                <ion-row class="input-row">
-                    <ion-col size="12">
-                        <ion-textarea ref="ionInputTitle" label="Title: " :value="detailCase[0].title"></ion-textarea>
-                    </ion-col>
-                </ion-row>
-                <ion-row class="input-row">
-                    <ion-col size="6">
-                        <ion-item>
-                            <ion-select aria-label="Fallstatus"  label="Fallstatus" label-placement="floating" fill="solid" :value="CaseStatus"
-                                @ionChange="handleStatusChange">
-                                <ion-select-option value="closed">Gelöst</ion-select-option>
-                                <ion-select-option value="open">Ungelöst</ion-select-option>
-                            </ion-select>
+            <ion-toolbar>
+                <ion-segment v-model="segment">
+                    <ion-segment-button value="info">
+                        <ion-label>Info</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="picture">
+                        <ion-label>Bilder</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="links">
+                        <ion-label>Links</ion-label>
+                    </ion-segment-button>
+                </ion-segment>
+            </ion-toolbar>
+            <ion-card v-show="segment === 'info'">
+                <ion-grid>
+                    <ion-row>
+                        <ion-col>
+                            <ion-card>
+
+                            </ion-card>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row class="input-row">
+                        <ion-col size="12">
+                            <ion-textarea ref="ionInputTitle" label="Title: "
+                                :value="detailCase[0].title"></ion-textarea>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row class="input-row">
+                        <ion-col size="6">
+                            <ion-item>
+                                <ion-select aria-label="Fallstatus" label="Fallstatus" label-placement="floating"
+                                    fill="solid" :value="CaseStatus" @ionChange="handleStatusChange">
+                                    <ion-select-option value="closed">Gelöst</ion-select-option>
+                                    <ion-select-option value="open">Ungelöst</ion-select-option>
+                                </ion-select>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col size="6">
+                            <ion-item>
+                                <ion-select label="Straftat" label-placement="floating" fill="solid"
+                                    aria-label="Straftat" :value="CaseType" @ionChange="handleCaseTypeChange">
+                                    <ion-select-option value="murder">Mord</ion-select-option>
+                                    <ion-select-option value="theft">Diebstahl</ion-select-option>
+                                    <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
+                                    <ion-select-option value="brawl">Schlägerei</ion-select-option>
+                                    <ion-select-option value="rape">Vergewaltigung</ion-select-option>
+                                </ion-select>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row class="input-row">
+                        <ion-col size="12">
+                            <div v-if="showComponent">
+                                <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress"
+                                    @ion-focus="setLocation" :value="PlaceName">
+                                </ion-searchbar>
+                            </div>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col size="3">
+                            <ion-fab>
+                                <ion-fab-button @click="onCalenderClickEvent" color="secondary">
+                                    <ion-icon :icon="calendarOutline"></ion-icon>
+                                </ion-fab-button>
+                            </ion-fab>
+                        </ion-col>
+                        <ion-col>
+                            <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
+                                :value="CrimeDate"></ion-input>
+                            <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
+                                :value="CrimeTime"></ion-input>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row class="input-row">
+                        <ion-col size="12">
+                            <ion-textarea ref="ionInputSummary" label="Inhalt:" :value="detailCase[0].summary"
+                                rows="16"></ion-textarea>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
+                            @didDismiss="setOpen(false)"></ion-toast>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col size="3">
+                            <ion-button @click="updateCase">Update</ion-button>
+                        </ion-col>
+                        <ion-col size="5">
+                        </ion-col>
+                        <ion-col size="4">
+                            <ion-button @click="navigateBack">Zurück</ion-button>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </ion-card>
+            <ion-card v-if="pictureLoaded" v-show="segment === 'picture'">
+                <ion-card-content>
+                    <ion-list>
+                        <ion-item v-for="(pic, index) of picture" :key="index">
+                            <ion-thumbnail slot="start">
+                                <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
+                            </ion-thumbnail>
+                            <ion-label>{{ pic.imageName }}</ion-label>
+                            <ion-button @click="deletePicture(pic)">
+                                <ion-icon :icon="trashOutline"></ion-icon>
+                            </ion-button>
                         </ion-item>
-                    </ion-col>
-                    <ion-col size="6">
-                        <ion-item>
-                            <ion-select  label="Straftat" label-placement="floating" fill="solid" aria-label="Straftat" :value="CaseType"
-                                @ionChange="handleCaseTypeChange">
-                                <ion-select-option value="murder">Mord</ion-select-option>
-                                <ion-select-option value="theft">Diebstahl</ion-select-option>
-                                <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
-                                <ion-select-option value="brawl">Schlägerei</ion-select-option>
-                                <ion-select-option value="rape">Vergewaltigung</ion-select-option>
-                            </ion-select>
+                    </ion-list>
+                </ion-card-content>
+                <ion-button @click="takePicture">
+                    <ion-icon :icon="cameraOutline"></ion-icon>
+                </ion-button>
+                <ion-button @click="getPicture">
+                    <ion-icon :icon="imageOutline"></ion-icon>
+                </ion-button>
+            </ion-card>
+            <ion-card v-show="segment === 'links'">
+                <ion-card-content>
+                    Updaten über den Update Button auf der Info Seite!
+                    <ion-list>
+                        <ion-item v-for="(link, index) in linkList" :key="index">
+                            <ion-grid>
+                                <ion-row>
+                                    <ion-col>
+                                        <ion-select :value="link.type">
+                                            <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
+                                            <ion-select-option value="podcast">🎧Podcast</ion-select-option>
+                                            <ion-select-option value="book">📖Buch</ion-select-option>
+                                        </ion-select>
+                                    </ion-col>
+                                    <ion-col>
+                                        <a :href=link.linkUrl>{{ link.linkUrl }}</a>
+                                    </ion-col>
+                                    <ion-col>
+                                        <ion-button @click="deleteLink(link)">
+                                            <ion-icon :icon="trashOutline"></ion-icon>
+                                        </ion-button>
+                                    </ion-col>
+                                </ion-row>
+                            </ion-grid>
                         </ion-item>
-                    </ion-col>
-                </ion-row>
-                <ion-row class="input-row">
-                    <ion-col size="12">
-                        <div v-if="showComponent">
-                            <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress"
-                                @ion-focus="setLocation" :value="PlaceName">
-                            </ion-searchbar>
-                        </div>
-                    </ion-col>
-                </ion-row>
-                <ion-row>
-                    <ion-col size="3">
-                        <ion-fab>
-                            <ion-fab-button @click="onCalenderClickEvent" color="secondary">
-                                <ion-icon :icon="calendarOutline"></ion-icon>
-                            </ion-fab-button>
-                        </ion-fab>
-                    </ion-col>
-                    <ion-col>
-                        <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
-                            :value="CrimeDate"></ion-input>
-                        <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
-                            :value="CrimeTime"></ion-input>
-                    </ion-col>
-                </ion-row>
-                <ion-row class="input-row">
-                    <ion-col size="12">
-                        <ion-textarea ref="ionInputSummary" label="Inhalt:" :value="detailCase[0].summary"
-                            rows="16"></ion-textarea>
-                    </ion-col>
-                </ion-row>
-                <ion-row>
-                    <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
-                        @didDismiss="setOpen(false)"></ion-toast>
-                </ion-row>
-            </ion-grid>
-            <ion-row>
-                <ion-col size="3">
-                    <ion-button @click="updateCase">Update</ion-button>
-                </ion-col>
-                <ion-col size="5">
-                </ion-col>
-                <ion-col size="4">
-                    <ion-button @click="navigateBack">Zurück</ion-button>
-                </ion-col>
-            </ion-row>
+                    </ion-list>
+                    <ion-item>
+                        <ion-select :value="linkTyp">
+                            <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
+                            <ion-select-option value="podcast">🎧Podcast</ion-select-option>
+                            <ion-select-option value="book">📖Buch</ion-select-option>
+                        </ion-select>
+                        <ion-input ref="linkInputUrl" placeholder="Url"></ion-input>
+                        <ion-button @click="includeLink">
+                            <ion-icon :icon="arrowUpOutline"></ion-icon>
+                        </ion-button>
+                    </ion-item>
+                </ion-card-content>
+            </ion-card>
             <ion-modal ref="modal" :initial-breakpoint="0.75">
                 <ion-header>
                     <ion-toolbar>
@@ -98,9 +170,6 @@
                     <ion-datetime display-format="YYYY-MM-DDTHH:mm:ssTZD" v-model="SelectedDateTime"></ion-datetime>
                 </ion-content>
             </ion-modal>
-            <ion-alert :is-open="isOpen" header="Bild Optionen"
-                message="show" :buttons="alertButtons" @didDismiss="isOpen=false">
-            </ion-alert>
         </ion-content>
     </ion-page>
 </template>
@@ -111,7 +180,6 @@ import { ref, onMounted } from "vue";
 import {
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
     IonButton,
     IonGrid,
@@ -130,27 +198,26 @@ import {
     IonItem,
     IonSearchbar,
     IonImg,
-    IonAlert,
     IonCard,
     useIonRouter,
     IonToast,
-    IonButtons,
+    IonSegment,
+    IonSegmentButton,
+    IonLabel,
+    IonList,
+    IonCardContent,
+    IonThumbnail,
 
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
-import { calendarOutline} from "ionicons/icons";
+import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline, micOutline, newspaperOutline, bookOutline } from "ionicons/icons";
 import { useRoute } from "vue-router";
-import { Case, Status, Casetype } from "@/types/supabase-global";
-import {Swiper, SwiperSlide} from 'swiper/vue';
-import { Navigation } from 'swiper/modules';
+import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
-
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
 
 const ionRouter = useIonRouter();
 const dataLoaded = ref<boolean>(false);
+const pictureLoaded = ref<boolean>(false);
 const showComponent = ref<boolean>(false);
 const modal = ref();
 const isToastOpen = ref(false);
@@ -159,10 +226,12 @@ const ionInputTitle = ref();
 const ionInputSummary = ref();
 const ionInputCrimeDate = ref();
 const ionInputCrimeTime = ref();
-const navigation = [Navigation];
-const isOpen = ref(false);
-const pictureUriList: string[] = [];
+const linkInputUrl = ref();
+const segment = ref('info');
 
+let linkListUpdate = ref();
+let picture: ImageData[] = [];
+const linkList = ref<Link[]>([]);
 let detailCase: Case;
 let SelectedDateTime: string;
 let CaseType: Casetype;
@@ -174,30 +243,7 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-
-const alertButtons = [
-    {
-      text: 'Bild löschen',
-      role: 'delete',
-      handler: () => {
-
-      },
-    },
-    {
-      text: 'Kamera verwenden',
-      role: 'camera',
-      handler: () => {
-        console.log('Alert confirmed');
-      },
-    },
-    {
-      text: 'Bild hinzufügen',
-      role: 'include',
-      handler: () => {
-        console.log('Alert confirmed');
-      },
-    },
-  ];
+let linkTyp: LinkType = "newspaper";
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -225,9 +271,24 @@ onMounted(async () => {
 
     const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
     await Promise.all(caseImages!.map(async (file) => {
-    const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-    pictureUriList.push(pictureUri);
+        const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
+        let imageData: ImageData = {
+            pictureUri: pictureUri,
+            imageName: file.name
+        };
+        picture.push(imageData);
     }));
+
+    detailCase.forEach(function (item) {
+        let link: Link = {
+            linkId: item.link_id,
+            type: item.link_type,
+            linkUrl: item.url
+        };
+        linkList.value.push(link);
+    });
+
+    pictureLoaded.value = true;
 
     dataLoaded.value = true;
     showComponent.value = true;
@@ -235,10 +296,10 @@ onMounted(async () => {
     showComponent.value = true;
     setLocation();
 
-    
+
 });
 
-const setLocation = ()=> {
+const setLocation = () => {
 
     const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
     console.log(elem);
@@ -256,7 +317,7 @@ const setLocation = ()=> {
     });
 };
 
-const updateCase = async() => {
+const updateCase = async () => {
     const successful = await caseService.updateCase(
         CaseId,
         CaseType,
@@ -268,22 +329,82 @@ const updateCase = async() => {
         CaseStatus,
         ionInputSummary.value.$el.value,
         ionInputTitle.value.$el.value,
-        72160
+        null,
+        linkList.value
     );
 
-    if(successful){
+    if (successful) {
         ToastMessage = "Case erfolgreich geupdatet!";
         setOpen(true);
-    }else{
+    } else {
         ToastMessage = "Etwas lief schief probier es später nochmal!"
         setOpen(true);
     }
-    
+
+};
+
+function convertDateString(inputDate: string): string {
+    const date = new Date(inputDate);
+    const day = ("0" + date.getDate()).slice(-2);
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
+    const year = date.getFullYear();
+    const hours = ("0" + date.getHours()).slice(-2);
+    const minutes = ("0" + date.getMinutes()).slice(-2);
+    const seconds = ("0" + date.getSeconds()).slice(-2);
+
+    CrimeTime = `${hours}:${minutes}:${seconds}`;
+    return `${day}.${month}.${year}`;
+}
+
+const deletePicture = async (picture: ImageData) => {
+    console.log(picture);
+    console.log(CaseId);
+    console.log(picture.imageName);
+    const successful = await caseService.deleteCaseImageFromStorage(picture.imageName, CaseId);
+
+    if (successful) {
+        ToastMessage = "Bild erfolgreich angelegt";
+        setOpen(true);
+    } else {
+        ToastMessage = "Etwas lief schief probier es später nochmal!"
+        setOpen(true);
+    }
+};
+
+const getPicture = () => {
+
+};
+
+const takePicture = () => {
+
+};
+
+const navigateBack = () => {
+    ionRouter.push("/crime-map");
+};
+
+const deleteLink = (link: Link) => {
+    console.log(link);
+    linkList.value = linkList.value.filter(function(item) {
+    return item !== link;
+    });
+};
+
+const includeLink = () => {
+    console.log(linkInputUrl.value.$el.value);
+    let link: Link = {
+        linkId: "",
+        type: linkTyp,
+        linkUrl: linkInputUrl.value.$el.value
+    };
+    linkList.value.push(link);
+    console.log(linkList);
+    linkInputUrl.value.$el.value = "";
 };
 
 const onCalenderClickEvent = () => {
     modal.value.$el.present();
-}
+};
 
 const handleStatusChange = async (event: { detail: { value: string } }) => {
     CaseStatus = event.detail.value as Status;
@@ -298,36 +419,8 @@ const getAddress = (place: any) => {
 };
 
 const setOpen = (state: boolean) => {
-        isToastOpen.value = state;
-      };
-
-function convertDateString(inputDate: string): string {
-    const date = new Date(inputDate);
-    const day = ("0" + date.getDate()).slice(-2);
-    const month = ("0" + (date.getMonth() + 1)).slice(-2);
-    const year = date.getFullYear();
-    const hours = ("0" + date.getHours()).slice(-2);
-    const minutes = ("0" + date.getMinutes()).slice(-2);
-    const seconds = ("0" + date.getSeconds()).slice(-2);
-
-    CrimeTime = `${hours}:${minutes}:${seconds}`;
-
-    return `${day}.${month}.${year}`;
-}
-
-const getSlideData = (event: any) => {
-    console.log(event);
-    
-    console.log(swiper.activeIndex);
-
-    isOpen.value = true;
-
-}
-
-const navigateBack = () => {
-    ionRouter.push("/crime-map");
-}
-
+    isToastOpen.value = state;
+};
 </script>
 
 <style scoped>
@@ -336,50 +429,49 @@ const navigateBack = () => {
 }
 
 .swiper {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .swiper-slide {
-  text-align: center;
-  font-size: 18px;
-  background: #fff;
+    text-align: center;
+    font-size: 18px;
+    background: #fff;
 
-  /* Center slide text vertically */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    /* Center slide text vertically */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .swiper-slide img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .swiper-button-next {
     background-color: white;
-            padding: 8px 16px;
-            border-radius: 100%;
-            border: 2px solid black;
-            color: #990000;
+    padding: 8px 16px;
+    border-radius: 100%;
+    border: 2px solid black;
+    color: #990000;
 }
 
 .swiper-button-prev {
     background-color: white;
-            padding: 8px 16px;
-            border-radius: 100%;
-            border: 2px solid black;
-            color: #990000;
+    padding: 8px 16px;
+    border-radius: 100%;
+    border: 2px solid black;
+    color: #990000;
 }
 
 ion-button {
     --background: #990000;
 }
 
-.select-fill-solid{
-    --background: #2f2f2f;
+.select-fill-solid {
+    --background: white;
 }
-
 </style>
