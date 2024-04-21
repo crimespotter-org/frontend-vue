@@ -4,7 +4,7 @@
       <div class="flex justify-between">
         <div class="p-3">
           <ion-avatar>
-            <router-link to="/home">
+            <router-link to="/">
               <ion-img src="../../public/Logo-CrimeSpotter.png" alt="Logo CrimeSpotter"></ion-img>
             </router-link>
           </ion-avatar>

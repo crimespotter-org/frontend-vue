@@ -1,13 +1,12 @@
 import { createRouter, createWebHistory } from "@ionic/vue-router";
 import { RouteRecordRaw } from "vue-router";
-import HomePage from "../views/HomePage.vue";
 import Login from "../views/LoginView.vue";
-import CaseProfile from "../views/CaseProfileView.vue";
 import CreateAccount from "../views/CreateAccountView.vue";
 import Unauthorized from "../views/UnauthorizedView.vue";
 import ChangeUserRole from "../views/ChangeUserRoleView.vue";
 import Menu from "../views/MenuView.vue";
 import CrimeMap from "../views/CrimeMapView.vue";
+import ChangeCase from "../views/ChangeCaseView.vue";
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 
 let localUser;
@@ -38,6 +37,12 @@ const routes: Array<RouteRecordRaw> = [
     name: "ChangeUserRole",
     component: ChangeUserRole,
     meta: { requiresAdminRole: true },
+  },
+  {
+    path: "/change-case/:id",
+    name: "ChangeCase",
+    component: ChangeCase,
+    meta: { requiresCrimeFluencerRole: true },
   },
   {
     path: "/menu",
