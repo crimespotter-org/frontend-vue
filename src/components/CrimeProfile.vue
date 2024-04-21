@@ -2,8 +2,9 @@
 
   <ion-header>
     <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-badge slot="start">11</ion-badge>
+      <ion-buttons slot="start" class="ml-4">
+        <ion-badge slot="start">{{ upVotes }}</ion-badge>
+ 
         <ion-button>
           
           <ion-icon slot="icon-only" :icon="thumbsUpOutline"></ion-icon>
@@ -12,7 +13,7 @@
         <ion-button>
           <ion-icon slot="icon-only" :icon="thumbsDownOutline"></ion-icon>
         </ion-button>
-        <ion-badge slot="start">11</ion-badge>
+        <ion-badge slot="start" >{{ upVotes }}</ion-badge>        
       </ion-buttons>
       <ion-buttons slot="end">
         <ion-button @click="routeToChangeCaseView">
@@ -134,9 +135,10 @@ onMounted(async () => {
     pictureUriList.push(pictureUri);
   }));
 
-  upVotes = await caseService.getUpvotes(CaseId);
+  upVotes.value = await caseService.getUpvotes(CaseId);
 
-  console.log(props.markerData[0].crime_date_time);
+
+
 
 });
 
