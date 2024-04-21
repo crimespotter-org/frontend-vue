@@ -113,7 +113,7 @@ const confirm = () =>{
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
-//const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
+const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
@@ -182,7 +182,7 @@ async function createMap() {
   newMap = await GoogleMap.create({
     id: "map-id",
     element: mapRef.value,
-    apiKey: import.meta.env.VITE_APP_YOUR_API_KEY_HERE as string, //use apikey here
+    apiKey: googleApiKey, //use apikey here
     config: {
       center: {
         lat: currentLocation.value!.latitude,
@@ -191,8 +191,6 @@ async function createMap() {
       zoom: 15,
     },
   });
-
-  newMap.enableCurrentLocation(true);
 
   // add markers to map
   addSomeMarkers(newMap);

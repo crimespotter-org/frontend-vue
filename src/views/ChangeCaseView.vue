@@ -428,50 +428,15 @@ const setOpen = (state: boolean) => {
     margin-bottom: 20px;
 }
 
-.swiper {
-    width: 100%;
-    height: 100%;
-}
-
-.swiper-slide {
-    text-align: center;
-    font-size: 18px;
-    background: #fff;
-
-    /* Center slide text vertically */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.swiper-slide img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.swiper-button-next {
-    background-color: white;
-    padding: 8px 16px;
-    border-radius: 100%;
-    border: 2px solid black;
-    color: #990000;
-}
-
-.swiper-button-prev {
-    background-color: white;
-    padding: 8px 16px;
-    border-radius: 100%;
-    border: 2px solid black;
-    color: #990000;
-}
-
 ion-button {
     --background: #990000;
 }
 
 .select-fill-solid {
     --background: white;
+}
+
+ion-content{
+    --background: transparent:  !important;
 }
 </style>
