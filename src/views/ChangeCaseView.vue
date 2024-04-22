@@ -31,6 +31,12 @@
                         </ion-col>
                     </ion-row>
                     <ion-row class="input-row">
+                        <ion-col size="12">
+                            <ion-textarea ref="ionInputSummary" label="Inhalt:" :value="detailCase[0].summary"
+                                rows="16"></ion-textarea>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row class="input-row">
                         <ion-col size="6">
                             <ion-item>
                                 <ion-select aria-label="Fallstatus" label="Fallstatus" label-placement="floating"
@@ -75,12 +81,6 @@
                                 :value="CrimeDate"></ion-input>
                             <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
                                 :value="CrimeTime"></ion-input>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row class="input-row">
-                        <ion-col size="12">
-                            <ion-textarea ref="ionInputSummary" label="Inhalt:" :value="detailCase[0].summary"
-                                rows="16"></ion-textarea>
                         </ion-col>
                     </ion-row>
                     <ion-row>
@@ -128,7 +128,7 @@
                             <ion-grid>
                                 <ion-row>
                                     <ion-col>
-                                        <ion-select :value="link.type">
+                                        <ion-select :value="link.type" @ionChange="changeLinkType(link, $event)">
                                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                                             <ion-select-option value="book">📖Buch</ion-select-option>
@@ -391,15 +391,33 @@ const deleteLink = (link: Link) => {
 };
 
 const includeLink = () => {
-    console.log(linkInputUrl.value.$el.value);
     let link: Link = {
         linkId: "",
         type: linkTyp,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    console.log(linkList);
     linkInputUrl.value.$el.value = "";
+};
+
+const changeLinkType = (link: Link, type: {detail: {value: LinkType}}) => {
+    let linkId = ""
+
+    if(link.linkId !== ""){
+        linkId = link.linkId;
+    }
+
+    linkList.value = linkList.value.filter(function(item) {
+    return item !== link;
+    });
+
+    let newLink: Link = {
+        linkId: linkId,
+        type: type.detail.value,
+        linkUrl: link.linkUrl
+    };
+    linkList.value.push(newLink);
+
 };
 
 const onCalenderClickEvent = () => {
@@ -428,50 +446,15 @@ const setOpen = (state: boolean) => {
     margin-bottom: 20px;
 }
 
-.swiper {
-    width: 100%;
-    height: 100%;
-}
-
-.swiper-slide {
-    text-align: center;
-    font-size: 18px;
-    background: #fff;
-
-    /* Center slide text vertically */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.swiper-slide img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.swiper-button-next {
-    background-color: white;
-    padding: 8px 16px;
-    border-radius: 100%;
-    border: 2px solid black;
-    color: #990000;
-}
-
-.swiper-button-prev {
-    background-color: white;
-    padding: 8px 16px;
-    border-radius: 100%;
-    border: 2px solid black;
-    color: #990000;
-}
-
 ion-button {
     --background: #990000;
 }
 
 .select-fill-solid {
     --background: white;
+}
+
+ion-content{
+    --background: transparent:  !important;
 }
 </style>

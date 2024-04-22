@@ -34,7 +34,6 @@ const markerDataLoaded = ref<boolean>(false);
 
 onIonViewDidEnter(async () => {
       markerDataLoaded.value = false;
-      console.log('Home page did enter');
       const currentLocation = await mapService.currentLocation();
       markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
       markerDataLoaded.value = true;
@@ -76,13 +75,11 @@ const getMarkerInfo = (marker: { lat: number; long: number }) : ListOfCases => {
 };
 
 const markerClicked = (event: {latitude: number, longitude: number, mapId: string, markerId: string, snippet: string, title: string}) => {
-  if (!Capacitor.isNativePlatform()) {
     const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
     if(markerToPass.length == 0){
       return;
     }
     openModal(markerToPass);
-  }
 }
 
 const receiveMarkerData = (event: ListOfCases) : void =>{
@@ -90,3 +87,9 @@ const receiveMarkerData = (event: ListOfCases) : void =>{
 }
 
 </script>
+
+<style>
+ion-content {
+  --background: transparent: !important;
+}
+</style>
