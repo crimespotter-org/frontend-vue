@@ -24,12 +24,12 @@ import CrimeProfile from "../components/CrimeProfile.vue";
 import HeaderComponent from '../components/Header.vue';
 import { Capacitor } from "@capacitor/core";
 import { mapService } from "@/services/map-service";
-import { ListOfCases } from "@/types/supabase-global";
+import { ListOfCases, FilteredCases } from "@/types/supabase-global";
 
 const markerIsOpen = ref<boolean>(false);
 
 // data for the map
-let markerData: ListOfCases = [];
+let markerData: FilteredCases = [];
 const markerDataLoaded = ref<boolean>(false);
 
 onIonViewDidEnter(async () => {

@@ -1,4 +1,4 @@
-import { Case, Casetype, Status, Link } from "@/types/supabase-global";
+import { Case, Casetype, Status, Link, Vote } from "@/types/supabase-global";
 import { supabase } from "./supabase-service";
 import { FileObject } from "@supabase/storage-js";
 
@@ -101,42 +101,6 @@ class CaseService {
     return data!.signedUrl;
   }
 
-  async getUpvotes(caseId: string): Promise<any> {
-    let {
-      data: upVotes,
-      count,
-      error,
-    } = await supabase
-      .from("votes")
-      .select("*", { count: "exact" })
-      .eq("id", caseId)
-      .eq("vote", 1);
-
-    if (upVotes && count != null) {
-      console.log("Upvotes " + count);
-      return count;
-    } else {
-      return 0;
-    }
-  }
-
-  async getDownvotes(caseId: string): Promise<any> {
-    let {
-      data: upVotes,
-      count,
-      error,
-    } = await supabase
-      .from("votes")
-      .select("vote", { count: "exact" })
-      .eq("id", caseId);
-
-    if (upVotes && upVotes.length > 0) {
-      console.log("Upvotes " + upVotes[0].vote);
-      return upVotes[0].vote;
-    } else {
-      return 0;
-    }
-  }
 }
 
 export const caseService = new CaseService();

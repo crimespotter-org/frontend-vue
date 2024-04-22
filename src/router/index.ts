@@ -39,10 +39,11 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAdminRole: true },
   },
   {
-    path: "/change-case/:id",
+    path: "/change-case/:caseId",
     name: "ChangeCase",
     component: ChangeCase,
-    meta: { requiresCrimeFluencerRole: true },
+    props: true,
+    meta: { requiresCrimeFluencerRole: true },    
   },
   {
     path: "/menu",
@@ -83,7 +84,7 @@ async function getInformationAboutAdminRole(next) {
 
 async function getInformationAboutCrimeFluencerRole(next) {
   localUserRole = await currentUserInformation.getCurrentUserRole();
-  if (localUserRole == "crimespotter") {
+  if (localUserRole == "crimefluencer") {
     next();
   } else if (localUserRole == "admin") {
     next();
