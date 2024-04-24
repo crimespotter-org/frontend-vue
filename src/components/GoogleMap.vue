@@ -18,7 +18,7 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <div class="map" id="map">
+    <div id="map" style="height: 93.8%; width: 100%; position: absolute">
     </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
@@ -47,7 +47,8 @@
             </ion-col>
             <ion-col size="6">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"  @ionChange="handleStatusChange">
+                <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"
+                  @ionChange="handleStatusChange">
                   <ion-select-option value="">Beides</ion-select-option>
                   <ion-select-option value="closed">Gelöst</ion-select-option>
                   <ion-select-option value="open">Ungelöst</ion-select-option>
@@ -58,7 +59,8 @@
           <ion-row>
             <ion-col size="12">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"  @ionChange="handleCaseTypeChange">
+                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"
+                  @ionChange="handleCaseTypeChange">
                   <ion-select-option value="">Alles</ion-select-option>
                   <ion-select-option value="murder">Mord</ion-select-option>
                   <ion-select-option value="theft">Diebstahl</ion-select-option>
@@ -76,23 +78,22 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, nextTick, ref, onUnmounted } from "vue";
+import { onMounted, nextTick, ref } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
 import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
-import { filterOutline, add} from "ionicons/icons";
-import GMap from "@/components/GMap.vue";
-import{
+import { filterOutline, add } from "ionicons/icons";
+import {
   IonItem,
   IonSelect,
   IonSelectOption,
   IonModal,
   IonSearchbar,
-  IonCol, 
-  IonGrid, 
+  IonCol,
+  IonGrid,
   IonRow,
   IonIcon,
-  IonFab, 
+  IonFab,
   IonFabButton,
   IonButton,
   IonContent,
@@ -103,18 +104,15 @@ import{
 
 const modal = ref();
 
-const cancel = () =>{
+const cancel = () => {
   modal.value.$el.dismiss(null, 'cancel');
-} 
+}
 
-const confirm = () =>{
+const confirm = () => {
   modal.value.$el.dismiss(null, 'cancel');
   filterEvent();
 }
 
-const mapRef = ref<HTMLElement>();
-const markerIds = ref<string[] | undefined>();
-let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
@@ -122,6 +120,7 @@ let SelectedCrimeStatus: Status;
 let SelectedCrimeType: Casetype[] = [];
 const markerDataLoaded = ref<boolean>(false);
 let eventListener: any;
+let map: google.maps.Map;
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -136,41 +135,73 @@ const emits = defineEmits<{
 
 onMounted(async () => {
   listOfCases = props.markerData;
-    currentLocation.value = await mapService.currentLocation();
-  await document.getElementById("map")?.appendChild(mapService.mapDiv);
+  currentLocation.value = await mapService.currentLocation();
+  console.log(currentLocation.value);
+  document.getElementById("map")?.appendChild(mapService.mapDiv);
   mapService.mapDiv.style.height = "93.8%";
   mapService.mapDiv.style.width = "100%";
-  mapService.map?.setCenter({
-    lat: currentLocation.value!.latitude,
-    lng: currentLocation.value!.longitude,
-  });
-  await nextTick();
-  Sleep(1000);
-  await createMarkers();
-  mapService.showMarkersOnMap(mapService.map);
-  markerDataLoaded.value = true;
-});
+  const googleMapScript = document.createElement("SCRIPT");
+  googleMapScript.setAttribute(
+    "src",
+    `https://maps.googleapis.com/maps/api/js?key=${mapService.googleAPIKey}&libraries=places,geometry`
+  );
+  googleMapScript.setAttribute("defer", "");
+  googleMapScript.setAttribute("async", "");
+  googleMapScript.setAttribute("type", "text/javascript");
+  document.head.appendChild(googleMapScript);
 
-async function createMarkers() {
-  listOfCases.forEach(function(caseDetails) {
-    mapService.createMarker(
+  await nextTick();
+  Sleep(5000);
+  listOfCases.forEach((caseDetails) => {
+    createMarker(
       caseDetails.lat,
       caseDetails.long,
       mapService.map,
-      caseDetails.title,
-      caseDetails.status!
+      caseDetails.title
     );
   });
+  createSearchbar();
+  showMarkersOnMap(mapService.map);
+  markerDataLoaded.value = true;
+});
 
+function createMarker(
+  lat: number,
+  lng: number,
+  map: google.maps.Map,
+  caseTitle: string
+) {
+  const marker = new google.maps.Marker({
+    position: new google.maps.LatLng(lat, lng),
+    map: map,
+    title: caseTitle,
+  });
+
+  marker.addListener("click", async () => {
+    map?.setCenter(new google.maps.LatLng(lat, lng));
+  });
+  mapService.markers.push(marker);
+}
+
+function showMarkersOnMap(map: google.maps.Map) {
+  mapService.markers.forEach((marker) => marker.setMap(map));
+}
+
+function deleteMarkers() {
+  mapService.markers.forEach((marker) => marker.setMap(null));
+  mapService.markers = [];
+}
+
+function createSearchbar() {
   const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
   const center = { lat: 50.064192, lng: -130.605469 };
   const defaultBounds = {
-  north: center.lat + 0.1,
-  south: center.lat - 0.1,
-  east: center.lng + 0.1,
-  west: center.lng - 0.1,
+    north: center.lat + 0.1,
+    south: center.lat - 0.1,
+    east: center.lng + 0.1,
+    west: center.lng - 0.1,
   };
-  
+
   const options = {
     bounds: defaultBounds,
     componentRestrictions: { country: "de" },
@@ -180,50 +211,43 @@ async function createMarkers() {
   };
 
   const autocomplete = new google.maps.places.Autocomplete(elem, options);
-  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function() {
+  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function () {
     const place = autocomplete.getPlace();
     const location = place['geometry']!['location'];
     const latitude = location?.lat();
     const longitude = location?.lng();
     // Move the map programmatically
-    newMap.setCamera({
-      coordinate: {
-        lat: latitude!,
-        lng: longitude!
-      }
-    });
   });
-}
+};
 
-const getAddress = (place: any) => {       
+const getAddress = (place: any) => {
   console.log('Address Object', place);
 };
 
-const filterEvent = async() =>{
+const filterEvent = async () => {
   const range = Number(SelectedRange);
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
-
   emits('onMarkerChange', listOfCases);
 };
 
-const handleRangeChange = async(event: {detail: {value: string}}) => {
+const handleRangeChange = async (event: { detail: { value: string } }) => {
   SelectedRange = event.detail.value;
 };
 
-const handleStatusChange = async(event:{detail: {value: string}}) => {
-  if(event.detail.value === ""){
+const handleStatusChange = async (event: { detail: { value: string } }) => {
+  if (event.detail.value === "") {
     SelectedCrimeStatus = null;
-  }else{
+  } else {
     SelectedCrimeStatus = event.detail.value as Status;
   }
   console.log(SelectedCrimeStatus);
 };
 
-const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
+const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   SelectedCrimeType = [];
-  if(event.detail.value === ""){
+  if (event.detail.value === "") {
     SelectedCrimeType.push(null);
-  }else{
+  } else {
     const caseType = event.detail.value as Casetype;
     SelectedCrimeType.push(caseType);
   }
@@ -231,7 +255,14 @@ const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
 }
 
 function Sleep(milliseconds: number) {
-return new Promise(resolve => setTimeout(resolve, milliseconds));
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
 </script>
+
+<style lang="css" scoped>
+.map {
+  width: 100%;
+  height: 100%;
+}
+</style>

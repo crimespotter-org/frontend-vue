@@ -14,8 +14,9 @@ class MapService {
   public googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
   public markers: google.maps.Marker[];
   public infoWindow: google.maps.InfoWindow | undefined;
-  public map: google.maps.Map | undefined;
+  public map: google.maps.Map;
   public mapDiv: HTMLElement = document.createElement("div");
+  public location: Coordinate;
 
   constructor() {
     this.loader = new Loader({
@@ -23,50 +24,14 @@ class MapService {
       version: "weekly",
     });
     this.loader.load().then(async () => {
+      this.location = await this.currentLocation();
       this.map = await new window.google.maps.Map(this.mapDiv, {
-        zoom: 16,
-        disableDefaultUI: true,
+        center: new google.maps.LatLng(this.location.latitude, this.location.longitude),
+        zoom: 16
       });
-      this.infoWindow = new google.maps.InfoWindow();
     });
     this.markers = [];
   }
-
-  createMarker(
-    lat: number,
-    lng: number,
-    map: google.maps.Map | undefined,
-    caseTitle: string,
-    windowContent: string
-  ) {
-    const marker = new google.maps.Marker({
-      position: new google.maps.LatLng(lat, lng),
-      icon: "",
-      title: caseTitle,
-      optimized: false,
-    });
-
-    marker.addListener("click", async () => {
-      this.infoWindow?.close();
-      this.infoWindow?.setContent(windowContent);
-      this.infoWindow?.open(marker.getMap(), marker);
-      this.infoWindow?.focus();
-      map?.setCenter(new google.maps.LatLng(lat, lng));
-    });
-
-    this.markers.push(marker);
-  }
-
-  showMarkersOnMap(map: google.maps.Map | undefined) {
-    this.markers.forEach((marker) => marker.setMap(map as google.maps.Map));
-    mapService.map?.setZoom(10);
-  }
-
-  deleteMarkers() {
-    this.markers.forEach((marker) => marker.setMap(null));
-    this.markers = [];
-  }
-
 
   async getAllCases(): Promise<ListOfCases> {
     const { data: cases, error } = await supabase.rpc("get_all_cases");
