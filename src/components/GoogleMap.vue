@@ -18,8 +18,9 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
-    </capacitor-google-map>
+    <div class="map" id="map">
+      <g-map></g-map>
+    </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
         <ion-toolbar>
@@ -81,6 +82,7 @@ import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
 import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
 import { filterOutline, add} from "ionicons/icons";
+import GMap from "./components/GMap.vue";
 import{
   IonItem,
   IonSelect,
@@ -135,20 +137,65 @@ const emits = defineEmits<{
 }>();
 
 onMounted(async () => {
-  console.log("mounted ", mapRef.value);
   listOfCases = props.markerData;
-  console.log(listOfCases);
+    currentLocation.value = await mapService.currentLocation();
+  await document.getElementById("map")?.appendChild(mapService.mapDiv);
+  mapService.mapDiv.style.height = "93.8%";
+  mapService.mapDiv.style.width = "100%";
+  mapService.map?.setCenter({
+    lat: currentLocation.value!.latitude,
+    lng: currentLocation.value!.longitude,
+  });
   await nextTick();
-  await createMap();
+  Sleep(1000);
+  await createMarkers();
+  mapService.showMarkersOnMap(mapService.map);
   markerDataLoaded.value = true;
 });
 
-// remove markers on unmount
-onUnmounted(async() => {
-  console.log("onunmounted");
-  newMap.removeMarkers(markerIds?.value as string[]);
-  await google.maps.event.removeListener(eventListener);
-});
+async function createMarkers() {
+  listOfCases.forEach(function(caseDetails) {
+    mapService.createMarker(
+      caseDetails.lat,
+      caseDetails.long,
+      mapService.map,
+      caseDetails.title,
+      caseDetails.status!
+    );
+  });
+
+  const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
+  const center = { lat: 50.064192, lng: -130.605469 };
+  const defaultBounds = {
+  north: center.lat + 0.1,
+  south: center.lat - 0.1,
+  east: center.lng + 0.1,
+  west: center.lng - 0.1,
+  };
+  
+  const options = {
+    bounds: defaultBounds,
+    componentRestrictions: { country: "de" },
+    fields: ["geometry", "name"],
+    strictBounds: false,
+    types: ["establishment"],
+  };
+
+  const autocomplete = new google.maps.places.Autocomplete(elem, options);
+  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function() {
+    const place = autocomplete.getPlace();
+    const location = place['geometry']!['location'];
+    const latitude = location?.lat();
+    const longitude = location?.lng();
+    // Move the map programmatically
+    newMap.setCamera({
+      coordinate: {
+        lat: latitude!,
+        lng: longitude!
+      }
+    });
+  });
+}
 
 const addSomeMarkers = async (newMap: GoogleMap) => {
   markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
@@ -176,7 +223,7 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
 async function createMap() {
   if (!mapRef.value) return;
 
-  currentLocation.value = await mapService.currentLocation();
+
 
   // render map using capacitor plugin
   newMap = await GoogleMap.create({
@@ -272,6 +319,10 @@ const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
     SelectedCrimeType.push(caseType);
   }
   console.log(SelectedCrimeType);
+}
+
+function Sleep(milliseconds: number) {
+return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
 </script>
