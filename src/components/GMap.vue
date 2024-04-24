@@ -5,6 +5,7 @@
   <script setup lang="ts">
   import { ref, onMounted } from "vue";
   import { Loader } from "@googlemaps/js-api-loader";
+import { mapService } from "@/services/map-service";
   
   // the google map object
   const map = ref();
@@ -14,18 +15,17 @@
   // load in the google script
   onMounted(() => {
     // key is is the .env file
-    const key = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
+
   
     // create the script element to load
     const googleMapScript = document.createElement("SCRIPT");
     googleMapScript.setAttribute(
       "src",
-      `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initMap`
+      `https://maps.googleapis.com/maps/api/js?key=${mapService.googleAPIKey}&libraries=places&callback=initMap`
     );
     googleMapScript.setAttribute("defer", "");
     googleMapScript.setAttribute("async", "");
     document.head.appendChild(googleMapScript);
-    initMap();
   });
   
   /**

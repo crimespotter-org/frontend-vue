@@ -11,7 +11,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 
 class MapService {
   public loader: Loader | undefined;
-  private googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
+  public googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
   public markers: google.maps.Marker[];
   public infoWindow: google.maps.InfoWindow | undefined;
   public map: google.maps.Map | undefined;
@@ -23,6 +23,10 @@ class MapService {
       version: "weekly",
     });
     this.loader.load().then(async () => {
+      this.map = await new window.google.maps.Map(this.mapDiv, {
+        zoom: 16,
+        disableDefaultUI: true,
+      });
       this.infoWindow = new google.maps.InfoWindow();
     });
     this.markers = [];

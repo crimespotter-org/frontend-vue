@@ -19,7 +19,6 @@
       </ion-row>
     </ion-grid>
     <div class="map" id="map">
-      <g-map></g-map>
     </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
@@ -82,7 +81,7 @@ import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
 import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
 import { filterOutline, add} from "ionicons/icons";
-import GMap from "./components/GMap.vue";
+import GMap from "@/components/GMap.vue";
 import{
   IonItem,
   IonSelect,
@@ -115,7 +114,6 @@ const confirm = () =>{
 
 const mapRef = ref<HTMLElement>();
 const markerIds = ref<string[] | undefined>();
-const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
@@ -197,95 +195,6 @@ async function createMarkers() {
   });
 }
 
-const addSomeMarkers = async (newMap: GoogleMap) => {
-  markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
-  const image = "/public/home-sharp.svg";
-
-  // each point from supabase
-  const markers = listOfCases.map((item) => {
-    return{
-      coordinate: {lat: item.lat, lng: item.long},
-      title: item.title,
-      iconUrl: ""
-    }
-  });
-
-  //Location from User
-  markers.push({
-    coordinate: {lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude},
-    title: "Mein Standort",
-    iconUrl: image
-  });
-
-  markerIds.value = await newMap.addMarkers(markers);
-};
-
-async function createMap() {
-  if (!mapRef.value) return;
-
-
-
-  // render map using capacitor plugin
-  newMap = await GoogleMap.create({
-    id: "map-id",
-    element: mapRef.value,
-    apiKey: googleApiKey, //use apikey here
-    config: {
-      center: {
-        lat: currentLocation.value!.latitude,
-        lng: currentLocation.value!.longitude,
-      },
-      zoom: 15,
-    },
-  });
-
-  // add markers to map
-  addSomeMarkers(newMap);
-
-  // Set Event Listeners...
-  // Handle marker click, send event back to parent
-  newMap.setOnMarkerClickListener((event) => {
-    emits("onMarkerClicked", event);
-  });
-
-  // Handle map click, send event back to parent
-  newMap.setOnMapClickListener(() => {
-    emits("onMapClicked");
-  });
-
-  const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
-  const center = { lat: 50.064192, lng: -130.605469 };
-  const defaultBounds = {
-  north: center.lat + 0.1,
-  south: center.lat - 0.1,
-  east: center.lng + 0.1,
-  west: center.lng - 0.1,
-  };
-  
-  const options = {
-    bounds: defaultBounds,
-    componentRestrictions: { country: "de" },
-    fields: ["geometry", "name"],
-    strictBounds: false,
-    types: ["establishment"],
-  };
-
-  const autocomplete = new google.maps.places.Autocomplete(elem, options);
-  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function() {
-    const place = autocomplete.getPlace();
-    const location = place['geometry']!['location'];
-    const latitude = location?.lat();
-    const longitude = location?.lng();
-    // Move the map programmatically
-    newMap.setCamera({
-      coordinate: {
-        lat: latitude!,
-        lng: longitude!
-      }
-    });
-  });
-};
-
 const getAddress = (place: any) => {       
   console.log('Address Object', place);
 };
@@ -293,7 +202,7 @@ const getAddress = (place: any) => {
 const filterEvent = async() =>{
   const range = Number(SelectedRange);
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
-  await addSomeMarkers(newMap);
+
   emits('onMarkerChange', listOfCases);
 };
 
