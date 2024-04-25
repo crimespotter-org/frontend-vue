@@ -7,7 +7,7 @@
                 Fall hinzufügen
             </ion-title>
             
-            <ion-list class="custom">
+       
                 <!-- Titel -->
                 <ion-item class="custom">
                     <ion-input v-model="caseData.title" label="Titel" label-placement="floating"
@@ -15,20 +15,20 @@
                 </ion-item>
 
                 <!-- Zusammenfassung -->
-                <ion-item>
+                <ion-item class="custom"> 
                     <ion-textarea v-model="caseData.summary" label="Zusammenfassung" label-placement="floating"
                         :auto-grow="true"></ion-textarea>
                 </ion-item>
 
                 <!-- Location (Dropdown) -->
-                <ion-item>
+                <ion-item class="custom">
                     <ion-searchbar class="custom" autocomplete="on" @ion-focus="setLocation" show-clear-button="always"
                         :clear-icon="trashOutline" value="Tatort"></ion-searchbar>
 
                 </ion-item>
 
                 <!-- Status (Dropdown) -->
-                <ion-item>
+                <ion-item class="custom">
                     <ion-select aria-label="Fallstatus" label="Fallstatus" label-placement="floating"
                         v-model="caseData.status">
                         <ion-select-option value="closed">Gelöst</ion-select-option>
@@ -37,7 +37,7 @@
                 </ion-item>
 
                 <!-- Typ (Dropdown) -->
-                <ion-item>
+                <ion-item class="custom">
                     <ion-select label="Straftat" label-placement="floating" aria-label="Straftat"
                         v-model="caseData.type">
                         <ion-select-option value="murder">Mord</ion-select-option>
@@ -49,7 +49,7 @@
                 </ion-item>
 
                 <!-- Tatzeitpunkt (Kalender) -->
-                <ion-item>
+                <ion-item class="custom">
                     <ion-grid>
                         <ion-row>
                             <ion-col size="3" class="my-auto mx-2">
@@ -71,7 +71,7 @@
 
                 <!-- Links hinzufügen -->
                 <!-- Hier kannst du eine Komponente für das Hinzufügen von Links einfügen -->
-            </ion-list>
+        
             <ion-modal ref="modal" :initial-breakpoint="0.75">
                 <ion-header>
                     <ion-toolbar>
