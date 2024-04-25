@@ -18,7 +18,7 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <div id="map" style="height: 93.8%; width: 100%; position: absolute">
+    <div class="map" ref="mapDivRef">
     </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
@@ -78,11 +78,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, nextTick, ref } from "vue";
-import { GoogleMap } from "@capacitor/google-maps";
+import { onMounted, nextTick, ref, onBeforeMount } from "vue";
 import { mapService } from "@/services/map-service";
 import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
 import { filterOutline, add } from "ionicons/icons";
+import { Loader} from "@googlemaps/js-api-loader";
 import {
   IonItem,
   IonSelect,
@@ -119,8 +119,13 @@ let SelectedRange = "100";
 let SelectedCrimeStatus: Status;
 let SelectedCrimeType: Casetype[] = [];
 const markerDataLoaded = ref<boolean>(false);
+const googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let eventListener: any;
-let map: google.maps.Map;
+
+//google map object
+const map = ref<google.maps.Map>();
+const mapDivRef = ref();
+
 
 const props = defineProps<{
   markerData: ListOfCases;
@@ -133,63 +138,51 @@ const emits = defineEmits<{
   (event: "onMarkerChange", value: ListOfCases): void;
 }>();
 
-onMounted(async () => {
-  listOfCases = props.markerData;
-  currentLocation.value = await mapService.currentLocation();
-  console.log(currentLocation.value);
-  document.getElementById("map")?.appendChild(mapService.mapDiv);
-  mapService.mapDiv.style.height = "93.8%";
-  mapService.mapDiv.style.width = "100%";
+onBeforeMount(()=>{
   const googleMapScript = document.createElement("SCRIPT");
   googleMapScript.setAttribute(
     "src",
-    `https://maps.googleapis.com/maps/api/js?key=${mapService.googleAPIKey}&libraries=places,geometry`
+    `https://maps.googleapis.com/maps/api/js?key=${googleAPIKey}&libraries=geometry,places,marker&callback=initMap`
   );
   googleMapScript.setAttribute("defer", "");
   googleMapScript.setAttribute("async", "");
-  googleMapScript.setAttribute("type", "text/javascript");
   document.head.appendChild(googleMapScript);
+});
 
+window.initMap = async() => {
+  listOfCases = props.markerData;
+  currentLocation.value = await mapService.currentLocation();
+  console.log(currentLocation);
+  map.value = new window.google.maps.Map(mapDivRef.value, {
+    zoom: 16,
+    disableDefaultUI: false,
+    center: {lat:currentLocation.value!.latitude, lng: currentLocation.value!.longitude}
+  });
+  Sleep(5000);
+  loadMapMarkers();
+}
+
+onMounted(async () => {
+  currentLocation.value = await mapService.currentLocation();
   await nextTick();
   Sleep(5000);
-  listOfCases.forEach((caseDetails) => {
-    createMarker(
-      caseDetails.lat,
-      caseDetails.long,
-      mapService.map,
-      caseDetails.title
-    );
-  });
   createSearchbar();
-  showMarkersOnMap(mapService.map);
   markerDataLoaded.value = true;
 });
 
-function createMarker(
-  lat: number,
-  lng: number,
-  map: google.maps.Map,
-  caseTitle: string
-) {
-  const marker = new google.maps.Marker({
-    position: new google.maps.LatLng(lat, lng),
-    map: map,
-    title: caseTitle,
-  });
+const loadMapMarkers = () => {
 
-  marker.addListener("click", async () => {
-    map?.setCenter(new google.maps.LatLng(lat, lng));
-  });
-  mapService.markers.push(marker);
-}
+  listOfCases.forEach(markerInfo =>{
+    const mapMarker = new window.google.maps.Marker({
+      position: new window.google.maps.LatLng(markerInfo.lat, markerInfo.long),
+      map: map.value
+    })
+  })
 
-function showMarkersOnMap(map: google.maps.Map) {
-  mapService.markers.forEach((marker) => marker.setMap(map));
 }
 
 function deleteMarkers() {
-  mapService.markers.forEach((marker) => marker.setMap(null));
-  mapService.markers = [];
+
 }
 
 function createSearchbar() {

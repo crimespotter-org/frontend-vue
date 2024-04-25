@@ -7,31 +7,9 @@ import {
   FilteredCases
 } from "@/types/supabase-global";
 import { Geolocation } from "@capacitor/geolocation";
-import { Loader } from "@googlemaps/js-api-loader";
+
 
 class MapService {
-  public loader: Loader | undefined;
-  public googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
-  public markers: google.maps.Marker[];
-  public infoWindow: google.maps.InfoWindow | undefined;
-  public map: google.maps.Map;
-  public mapDiv: HTMLElement = document.createElement("div");
-  public location: Coordinate;
-
-  constructor() {
-    this.loader = new Loader({
-      apiKey: this.googleAPIKey,
-      version: "weekly",
-    });
-    this.loader.load().then(async () => {
-      this.location = await this.currentLocation();
-      this.map = await new window.google.maps.Map(this.mapDiv, {
-        center: new google.maps.LatLng(this.location.latitude, this.location.longitude),
-        zoom: 16
-      });
-    });
-    this.markers = [];
-  }
 
   async getAllCases(): Promise<ListOfCases> {
     const { data: cases, error } = await supabase.rpc("get_all_cases");

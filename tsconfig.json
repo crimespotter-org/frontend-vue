@@ -13,12 +13,20 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "noEmit": true,
+    "types": ["google.maps"],
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue","./.dot/**/*.vue",
+  "include": [
+  "src/**/*.ts", 
+  "src/**/*.d.ts", 
+  "src/**/*.tsx", 
+  "src/**/*.vue",
+  "./.dot/**/*.vue",
   "./dot/**/*.vue",
-  "./src/**/*.vue"],
+  "./src/**/*.vue",
+  "./src/types", 
+  "./types"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
