@@ -107,8 +107,7 @@ class CaseService {
       .from("votes")
       .update({ vote: vote })
       .eq("case_id", caseIdforvote)
-      .eq("user_id", localUser.data.session?.user.id)
-      .select();
+      .eq("user_id", localUser.data.session?.user.id);
     if (!error) {
       console.log("Voted" + vote);
       return true;

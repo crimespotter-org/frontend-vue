@@ -88,7 +88,7 @@
 
 
     </div>
-    <ion-toast :is-open="changeNotSuccesful" @didDismiss="setOpenChangeSuccessful(false)" message=changemessage
+    <ion-toast :is-open="changeNotSuccesful" @didDismiss="setOpenChangeSuccessful(false)" message="{{ changemessage }}"
       :duration="5000"></ion-toast>
 
   </ion-content>
@@ -226,11 +226,11 @@ getCurrentUserRoleFromService();
 async function updateVote(vote: number) {
   const voteSuccesful = await caseService.updateVote(props.markerData[0].id, vote);
   if (voteSuccesful) {
-    changeNotSuccesful.value = true;
     changemessage.value = "Das Voting war erfolgreich."
-  } else if (!voteSuccesful) {
     changeNotSuccesful.value = true;
+  } else if (!voteSuccesful) {
     changemessage.value = "Das Voting war nicht erfolgreich. Bitte versuchen Sie es erneut."
+    changeNotSuccesful.value = true;
   }
 }
 
@@ -290,18 +290,18 @@ async function closeModal() {
 
 
 async function getCurrentUserRoleFromService() {
-    const currentUserRole: Role = await currentUserInformation.getCurrentUserRole();
-    checkRole(currentUserRole);
+  const currentUserRole: Role = await currentUserInformation.getCurrentUserRole();
+  checkRole(currentUserRole);
 }
 
 function checkRole(currentUserRole: Role) {
-    if (currentUserRole == "admin") {
-        isAdmin.value = true;
-        isCrimefluencer.value = true;
-    }
-    else if (currentUserRole == "crimefluencer") {
-        isCrimefluencer.value = true;
-    }
+  if (currentUserRole == "admin") {
+    isAdmin.value = true;
+    isCrimefluencer.value = true;
+  }
+  else if (currentUserRole == "crimefluencer") {
+    isCrimefluencer.value = true;
+  }
 }
 
 const routeToChangeCaseView = async () => {
