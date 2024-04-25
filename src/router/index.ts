@@ -7,6 +7,7 @@ import ChangeUserRole from "../views/ChangeUserRoleView.vue";
 import Menu from "../views/MenuView.vue";
 import CrimeMap from "../views/CrimeMapView.vue";
 import ChangeCase from "../views/ChangeCaseView.vue";
+import AddCase from "../views/AddCaseView.vue";
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 
 let localUser;
@@ -43,20 +44,26 @@ const routes: Array<RouteRecordRaw> = [
     name: "ChangeCase",
     component: ChangeCase,
     props: true,
-    meta: { requiresCrimeFluencerRole: true },    
+    meta: { requiresCrimeFluencerRole: true },
+  },
+  {
+    path: "/create-case",
+    name: "AddCase",
+    component: AddCase,
+    meta: { requiresCrimeFluencerRole: true },
   },
   {
     path: "/menu",
     name: "Menu",
     component: Menu,
     meta: { requiresAuthentication: true },
-  }, 
+  },
   {
     path: "/crime-map",
     name: "CrimeMap",
     component: CrimeMap,
     meta: { requiresAuthentication: true },
-  }  
+  },
 ];
 
 const router = createRouter({

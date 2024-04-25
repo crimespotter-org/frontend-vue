@@ -1,9 +1,11 @@
 <template>
   <ion-page class="crimeMap">
     <ion-fab slot="fixed" vertical="bottom" horizontal="start">
-      <ion-fab-button color="secondary">
-        <ion-icon :icon="add"></ion-icon>
-      </ion-fab-button>
+      <router-link to="/create-case">
+        <ion-fab-button color="secondary">
+          <ion-icon :icon="add"></ion-icon>
+        </ion-fab-button>
+      </router-link>
     </ion-fab>
     <ion-grid>
       <ion-row>
@@ -47,7 +49,8 @@
             </ion-col>
             <ion-col size="6">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"  @ionChange="handleStatusChange">
+                <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"
+                  @ionChange="handleStatusChange">
                   <ion-select-option value="">Beides</ion-select-option>
                   <ion-select-option value="closed">Gelöst</ion-select-option>
                   <ion-select-option value="open">Ungelöst</ion-select-option>
@@ -58,7 +61,8 @@
           <ion-row>
             <ion-col size="12">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"  @ionChange="handleCaseTypeChange">
+                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"
+                  @ionChange="handleCaseTypeChange">
                   <ion-select-option value="">Alles</ion-select-option>
                   <ion-select-option value="murder">Mord</ion-select-option>
                   <ion-select-option value="theft">Diebstahl</ion-select-option>
@@ -80,18 +84,18 @@ import { onMounted, nextTick, ref, onUnmounted } from "vue";
 import { GoogleMap } from "@capacitor/google-maps";
 import { mapService } from "@/services/map-service";
 import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
-import { filterOutline, add} from "ionicons/icons";
-import{
+import { filterOutline, add } from "ionicons/icons";
+import {
   IonItem,
   IonSelect,
   IonSelectOption,
   IonModal,
   IonSearchbar,
-  IonCol, 
-  IonGrid, 
+  IonCol,
+  IonGrid,
   IonRow,
   IonIcon,
-  IonFab, 
+  IonFab,
   IonFabButton,
   IonButton,
   IonContent,
@@ -102,11 +106,11 @@ import{
 
 const modal = ref();
 
-const cancel = () =>{
+const cancel = () => {
   modal.value.$el.dismiss(null, 'cancel');
-} 
+}
 
-const confirm = () =>{
+const confirm = () => {
   modal.value.$el.dismiss(null, 'cancel');
   filterEvent();
 }
@@ -144,7 +148,7 @@ onMounted(async () => {
 });
 
 // remove markers on unmount
-onUnmounted(async() => {
+onUnmounted(async () => {
   console.log("onunmounted");
   newMap.removeMarkers(markerIds?.value as string[]);
   await google.maps.event.removeListener(eventListener);
@@ -156,8 +160,8 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
 
   // each point from supabase
   const markers = listOfCases.map((item) => {
-    return{
-      coordinate: {lat: item.lat, lng: item.long},
+    return {
+      coordinate: { lat: item.lat, lng: item.long },
       title: item.title,
       iconUrl: ""
     }
@@ -165,7 +169,7 @@ const addSomeMarkers = async (newMap: GoogleMap) => {
 
   //Location from User
   markers.push({
-    coordinate: {lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude},
+    coordinate: { lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude },
     title: "Mein Standort",
     iconUrl: image
   });
@@ -209,12 +213,12 @@ async function createMap() {
   const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
   const center = { lat: 50.064192, lng: -130.605469 };
   const defaultBounds = {
-  north: center.lat + 0.1,
-  south: center.lat - 0.1,
-  east: center.lng + 0.1,
-  west: center.lng - 0.1,
+    north: center.lat + 0.1,
+    south: center.lat - 0.1,
+    east: center.lng + 0.1,
+    west: center.lng - 0.1,
   };
-  
+
   const options = {
     bounds: defaultBounds,
     componentRestrictions: { country: "de" },
@@ -224,7 +228,7 @@ async function createMap() {
   };
 
   const autocomplete = new google.maps.places.Autocomplete(elem, options);
-  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function() {
+  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function () {
     const place = autocomplete.getPlace();
     const location = place['geometry']!['location'];
     const latitude = location?.lat();
@@ -239,35 +243,35 @@ async function createMap() {
   });
 };
 
-const getAddress = (place: any) => {       
+const getAddress = (place: any) => {
   console.log('Address Object', place);
 };
 
-const filterEvent = async() =>{
+const filterEvent = async () => {
   const range = Number(SelectedRange);
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
   await addSomeMarkers(newMap);
   emits('onMarkerChange', listOfCases);
 };
 
-const handleRangeChange = async(event: {detail: {value: string}}) => {
+const handleRangeChange = async (event: { detail: { value: string } }) => {
   SelectedRange = event.detail.value;
 };
 
-const handleStatusChange = async(event:{detail: {value: string}}) => {
-  if(event.detail.value === ""){
+const handleStatusChange = async (event: { detail: { value: string } }) => {
+  if (event.detail.value === "") {
     SelectedCrimeStatus = null;
-  }else{
+  } else {
     SelectedCrimeStatus = event.detail.value as Status;
   }
   console.log(SelectedCrimeStatus);
 };
 
-const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
+const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   SelectedCrimeType = [];
-  if(event.detail.value === ""){
+  if (event.detail.value === "") {
     SelectedCrimeType.push(null);
-  }else{
+  } else {
     const caseType = event.detail.value as Casetype;
     SelectedCrimeType.push(caseType);
   }
