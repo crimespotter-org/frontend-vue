@@ -5,46 +5,24 @@
       <ion-buttons slot="start" class="ml-4">
         <ion-badge slot="start">{{ props.markerData[0].upvotes }}</ion-badge>
 
-        <ion-button>
+        <ion-button @click="updateVote(1)">
 
           <ion-icon slot="icon-only" :icon="thumbsUpOutline"></ion-icon>
         </ion-button>
 
-        <ion-button>
+        <ion-button @click="updateVote(-1)">
           <ion-icon slot="icon-only" :icon="thumbsDownOutline"></ion-icon>
         </ion-button>
         <ion-badge slot="start">{{ props.markerData[0].downvotes }}</ion-badge>
       </ion-buttons>
-      <ion-buttons slot="end">
+      <ion-buttons slot="end" v-if="isCrimefluencer">
         <ion-button @click="routeToChangeCaseView">
           <ion-icon slot="icon-only" :icon="createOutline"></ion-icon>
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content class="ion-padding case" :fullscreen="true">
-
-    <ion-card>
-      <ion-card-content>
-        Updaten über den Update Button auf der Info Seite!
-        <ion-list>
-          <ion-item v-for="(link, index) in linkList" :key="index">
-            <ion-grid>
-              <ion-row>
-                <ion-col>
-                  <p>Hallo</p>
-                </ion-col>
-                <ion-col>
-                  <a :href=link.linkUrl>{{ link.linkUrl }}</a>
-                </ion-col>
-
-              </ion-row>
-            </ion-grid>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
+  <ion-content class="case ion-padding" :fullscreen="true">
 
     <div>
       <div class="grid justify-items-center">
@@ -68,19 +46,17 @@
         <p>{{ typeOfCaseGerman }}</p>
       </div>
 
-      <div class="ion-padding" slot="content">
-        <ion-card>
-          <Swiper>
-            <SwiperSlide v-for="(pic, index) in picture" :key="index">
-              <ion-img :src=pic.pictureUri alt="Hier sollte ein Bild sein"></ion-img>
-            </SwiperSlide>
-          </Swiper>
-        </ion-card>
-      </div>
+
+      <Swiper class="custom-delete-white">
+        <SwiperSlide v-for="(pic, index) in picture" :key="index" class="custom-delete-white">
+          <ion-img :src=pic.pictureUri alt="Hier sollte ein Bild sein" class="custom-delete-white"></ion-img>
+        </SwiperSlide>
+      </Swiper>
+
 
       <ion-accordion-group class="mt-6">
 
-        <ion-accordion value="first" class="custom-accordion" color="primary">
+        <ion-accordion value="first" class="custom-transparent" color="primary">
           <ion-item slot="header" color="light-shade">
             <ion-label>Zusammenfassung</ion-label>
           </ion-item>
@@ -89,34 +65,31 @@
           </div>
         </ion-accordion>
 
-        <ion-accordion value="second" class="custom-accordion">
-          <ion-item slot="header" color="light-shade">
-            <ion-label>Bilder zu diesem Fall</ion-label>
-          </ion-item>
 
-          <ion-list>
-            <ion-item v-for="(pic, index) of picture" :key="index">
-              <ion-thumbnail slot="start">
-                <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
-              </ion-thumbnail>
-              <ion-label>{{ pic.imageName }}</ion-label>
-            </ion-item>
-          </ion-list>
-
-
-        </ion-accordion>
-
-        <ion-accordion value="third" class="custom-accordion">
+        <ion-accordion value="third" class="custom-transparent">
           <ion-item slot="header" color="light-shade">
             <ion-label>Links zu diesem Fall</ion-label>
           </ion-item>
-          <div class="ion-padding" slot="content">Third Content</div>
+          <div class="ion-padding custom-transparent" slot="content">
+            <ion-list class="custom-transparent">
+              <div class="grid gap-4 grid-cols-2" v-for="(link, index) in linkList" :key="index">
+                <div>
+                  <p v-if='link.type == "newspaper"'>📰Zeitung: </p>
+                  <p v-if='link.type == "podcast"'>🎧Podcast: </p>
+                  <p v-if='link.type == "book"'>📖Buch: </p>
+                </div>
+                <div><a :href=link.linkUrl>{{ link.linkUrl }}</a></div>
+              </div>
+            </ion-list>
+          </div>
         </ion-accordion>
 
       </ion-accordion-group>
 
 
     </div>
+    <ion-toast :is-open="changeNotSuccesful" @didDismiss="setOpenChangeSuccessful(false)" message=changemessage
+      :duration="5000"></ion-toast>
 
   </ion-content>
 
@@ -126,14 +99,19 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { ListOfCases } from "@/types/supabase-global";
-import { IonContent, IonHeader, IonTitle, modalController, IonButton, IonToolbar, IonButtons, IonIcon, IonAccordion, IonAccordionGroup, IonItem, IonLabel } from "@ionic/vue";
-import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
+import { IonContent, IonHeader, IonTitle, modalController, IonButton, IonToolbar, IonButtons, IonIcon, IonAccordion, IonAccordionGroup, IonItem, IonLabel, IonToast } from "@ionic/vue";
+import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, newspaper } from 'ionicons/icons';
 import router from '../router';
 import { caseService } from '@/services/case-service';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Case, Status, Casetype, ImageData, Link, LinkType, FilteredCases } from "@/types/supabase-global";
-import { StatusBar } from "@capacitor/status-bar";
+import { Role } from "@/types/supabase-global";
+import { currentUserInformation } from '@/services/currentUserInformation-service';
+
+
+//import { SwiperCore, Virtual } from "swiper";
+import "swiper/swiper-bundle.css";
 
 
 //Emma
@@ -178,6 +156,12 @@ let formattedDate: string;
 let upVotes: any[] | null;
 let typeOfCase: Casetype;
 let typeOfCaseGerman = ref("");
+let typeOfLink: LinkType;
+let typeOfLinkGerman = ref("");
+let changeNotSuccesful = ref(false);
+let changemessage = ref("");
+const isAdmin = ref(false);
+const isCrimefluencer = ref(false);
 
 
 
@@ -195,6 +179,7 @@ onMounted(async () => {
     picture.value.push(imageData);
   }));
 
+  detailCase = await caseService.getCase(CaseId);
   detailCase.forEach(function (item) {
     let link: Link = {
       linkId: item.link_id,
@@ -203,7 +188,6 @@ onMounted(async () => {
     };
     linkList.value.push(link);
   });
-
 
 
   pictureLoaded.value = true;
@@ -237,6 +221,26 @@ const getPicture = () => {
 setStatusAndIcon();
 modifyDate();
 setCaseType();
+getCurrentUserRoleFromService();
+
+async function updateVote(vote: number) {
+  const voteSuccesful = await caseService.updateVote(props.markerData[0].id, vote);
+  if (voteSuccesful) {
+    changeNotSuccesful.value = true;
+    changemessage.value = "Das Voting war erfolgreich."
+  } else if (!voteSuccesful) {
+    changeNotSuccesful.value = true;
+    changemessage.value = "Das Voting war nicht erfolgreich. Bitte versuchen Sie es erneut."
+  }
+}
+
+const setOpenChangeSuccessful = (state: boolean) => {
+  changeNotSuccesful.value = state;
+};
+
+
+
+
 
 async function setStatusAndIcon() {
   stateOfCase = props.markerData[0].status;
@@ -266,6 +270,7 @@ async function setCaseType() {
   }
 };
 
+
 function modifyDate() {
   const crimeDateTime = new Date(props.markerData[0].crime_date_time);
   formattedDate = crimeDateTime.toLocaleDateString('de-DE', {
@@ -283,6 +288,22 @@ async function closeModal() {
   await modalController.dismiss();
 };
 
+
+async function getCurrentUserRoleFromService() {
+    const currentUserRole: Role = await currentUserInformation.getCurrentUserRole();
+    checkRole(currentUserRole);
+}
+
+function checkRole(currentUserRole: Role) {
+    if (currentUserRole == "admin") {
+        isAdmin.value = true;
+        isCrimefluencer.value = true;
+    }
+    else if (currentUserRole == "crimefluencer") {
+        isCrimefluencer.value = true;
+    }
+}
+
 const routeToChangeCaseView = async () => {
   await modalController.dismiss();
   router.push(`/change-case/${props.markerData[0].id}`);
@@ -290,64 +311,16 @@ const routeToChangeCaseView = async () => {
 </script>
 
 <style scoped>
-.custom-accordion {
+.custom-transparent {
   background-color: rgba(255, 255, 255, 0);
   /* Hintergrundfarbe transparent setzen */
   --box-shadow: none;
 }
 
-div[slot='content'] {
-  background: rgba(var(--ion-color-light-shade), 0.25);
-}
-
-.input-row {
-  margin-bottom: 20px;
-}
-
-.swiper {
-  width: 100%;
-  height: 100%;
-}
-
-.swiper-slide {
-  text-align: center;
-  font-size: 18px;
-  background: #ffffff00;
-
-  /* Center slide text vertically */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.swiper-slide img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.swiper-button-next {
-  background-color: rgb(0, 0, 0);
-  padding: 8px 16px;
-  border-radius: 100%;
-  border: 2px solid black;
-  color: #990000;
-}
-
-.swiper-button-prev {
-  background-color: rgb(0, 0, 0);
-  padding: 8px 16px;
-  border-radius: 100%;
-  border: 2px solid black;
-  color: #990000;
-}
-
-ion-button {
-  --background: #990000;
-}
-
-.select-fill-solid {
-  --background: rgba(255, 255, 255, 0);
+.custom-delete-white {
+  padding: 0;
+  /* Padding entfernen */
+  margin: 0;
+  background-color: rgba(0, 0, 0, 0);
 }
 </style>

@@ -241,12 +241,12 @@ http://ionicframework.com/docs/theming/ */
   --background: var(--ion-color-primary);
 }
 
-ion-content.case {
-  --background: url(../../public/bg-content.jpg) no-repeat 100% 100%; 
+.case {
+  background: url(../../public/bg-content.jpg) no-repeat 100% 100%; /* Hintergrundbild setzen */
+  background-size: cover; /* Hintergrundbild skalieren, um den gesamten Bereich zu bedecken */
   --ion-font-family: "American Typewriter Regular";
   text-align: justify;
 }
-
 
 html {
   /* For more information on dynamic font scaling, visit the documentation: 
