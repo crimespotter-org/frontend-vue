@@ -248,6 +248,15 @@ http://ionicframework.com/docs/theming/ */
   text-align: justify;
 }
 
+.customTransparent {
+  --background: transparent: !important;
+}
+
+.customTransparentAndShadowNone {
+  --background: transparent;
+  --box-shadow: none;
+}
+
 html {
   /* For more information on dynamic font scaling, visit the documentation: 
   https://ionicframework.com/docs/layout/dynamic-font-scaling */

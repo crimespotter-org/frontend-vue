@@ -6,29 +6,44 @@
             <ion-title>
                 Fall hinzufügen
             </ion-title>
-            
-       
-                <!-- Titel -->
-                <ion-item class="custom">
+
+            <ion-toolbar class="customTransparent">
+                <ion-segment v-model="segment">
+                    <ion-segment-button value="info">
+                        <ion-label>Info</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="picture">
+                        <ion-label>Bilder</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="links">
+                        <ion-label>Links</ion-label>
+                    </ion-segment-button>
+                </ion-segment>
+            </ion-toolbar>
+            <!-- Segment one information -->
+            <ion-card v-show="segment === 'info'" class="customTransparent">
+
+                <!-- title -->
+                <ion-item class="customTransparent">
                     <ion-input v-model="caseData.title" label="Titel" label-placement="floating"
                         :auto-grow="true"></ion-input>
                 </ion-item>
 
-                <!-- Zusammenfassung -->
-                <ion-item class="custom"> 
+                <!-- summary -->
+                <ion-item class="customTransparent">
                     <ion-textarea v-model="caseData.summary" label="Zusammenfassung" label-placement="floating"
                         :auto-grow="true"></ion-textarea>
                 </ion-item>
 
-                <!-- Location (Dropdown) -->
-                <ion-item class="custom">
-                    <ion-searchbar class="custom" autocomplete="on" @ion-focus="setLocation" show-clear-button="always"
+                <!-- Location -->
+                <ion-item class="customTransparent">
+                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on" @ion-focus="setLocation" show-clear-button="always"
                         :clear-icon="trashOutline" value="Tatort"></ion-searchbar>
 
                 </ion-item>
 
-                <!-- Status (Dropdown) -->
-                <ion-item class="custom">
+                <!-- state -->
+                <ion-item class="customTransparent">
                     <ion-select aria-label="Fallstatus" label="Fallstatus" label-placement="floating"
                         v-model="caseData.status">
                         <ion-select-option value="closed">Gelöst</ion-select-option>
@@ -36,8 +51,8 @@
                     </ion-select>
                 </ion-item>
 
-                <!-- Typ (Dropdown) -->
-                <ion-item class="custom">
+                <!-- type -->
+                <ion-item class="customTransparent">
                     <ion-select label="Straftat" label-placement="floating" aria-label="Straftat"
                         v-model="caseData.type">
                         <ion-select-option value="murder">Mord</ion-select-option>
@@ -48,8 +63,8 @@
                     </ion-select>
                 </ion-item>
 
-                <!-- Tatzeitpunkt (Kalender) -->
-                <ion-item class="custom">
+                <!-- case date -->
+                <ion-item class="customTransparent">
                     <ion-grid>
                         <ion-row>
                             <ion-col size="3" class="my-auto mx-2">
@@ -58,20 +73,64 @@
                                 </ion-fab-button>
                             </ion-col>
                             <ion-col>
-                                <ion-input ref="ionInputCrimeDate" label="Tatdatum: " :value="CrimeDate"></ion-input>
-                                <ion-input ref="ionInputCrimeTime" label="Tatzeit: " :value="CrimeTime"></ion-input>
+                                <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
+                                    :value="CrimeDate"></ion-input>
+                                <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
+                                    :value="CrimeTime"></ion-input>
                             </ion-col>
                         </ion-row>
                     </ion-grid>
                 </ion-item>
+            </ion-card>
 
 
-                <!-- Kamera-Symbol/Bilder hochladen -->
-                <!-- Hier kannst du eine Komponente für das Hochladen von Bildern einfügen -->
+            <!-- segment two pictures -->
+            <ion-card v-show="segment === 'picture'" class="customTransparent">
+                <ion-card-content >
+                  
+                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
+                            <ion-grid>
+                                <ion-row>
+                                    <ion-col size="3">
+                                        <ion-thumbnail slot="start">
+                                            <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
+                                        </ion-thumbnail>
+                                    </ion-col>
+                                    <ion-col>
+                                        <ion-label>{{ pic.imageName }}</ion-label>
+                                    </ion-col>
+                                    <ion-col>
+                                        <ion-button @click="deletePicture(pic)">
+                                            <ion-icon :icon="trashOutline"></ion-icon>
+                                        </ion-button>
+                                    </ion-col>
+                                </ion-row>
+                            </ion-grid>
+                        </ion-item>
+              
+                    <div class="flex justify-center customTransparent">
+                        <ion-button @click="takePicture">
+                            <ion-icon :icon="cameraOutline"></ion-icon>
+                        </ion-button>
+                        <ion-button @click="getPicture">
+                            <ion-icon :icon="imageOutline"></ion-icon>
+                        </ion-button>
+                    </div>
+                </ion-card-content>
 
-                <!-- Links hinzufügen -->
-                <!-- Hier kannst du eine Komponente für das Hinzufügen von Links einfügen -->
-        
+            </ion-card>
+
+
+
+            <!-- segment three links -->
+            <ion-card v-show="segment === 'links'">
+                <p>Drei Links</p>
+            </ion-card>
+
+
+
+
+            <!-- modal calender -->
             <ion-modal ref="modal" :initial-breakpoint="0.75">
                 <ion-header>
                     <ion-toolbar>
@@ -83,6 +142,11 @@
                     <ion-datetime display-format="YYYY-MM-DDTHH:mm:ssTZD" v-model="SelectedDateTime"></ion-datetime>
                 </ion-content>
             </ion-modal>
+
+
+            <!-- toast as information -->
+            <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
+                @didDismiss="setOpen(false)"></ion-toast>
         </ion-content>
     </ion-page>
 </template>
@@ -214,6 +278,33 @@ const setLocation = () => {
     });
 };
 
+const deletePicture = async (picture: ImageData) => {
+    console.log(picture);
+    console.log(CaseId);
+    console.log(picture.imageName);
+    const successful = await caseService.deleteCaseImageFromStorage(picture.imageName, CaseId);
+
+    if (successful) {
+        ToastMessage = "Bild erfolgreich angelegt";
+        setOpen(true);
+    } else {
+        ToastMessage = "Etwas lief schief probier es später nochmal!"
+        setOpen(true);
+    }
+};
+
+const getPicture = () => {
+
+};
+
+const takePicture = () => {
+
+};
+
+const setOpen = (state: boolean) => {
+    isToastOpen.value = state;
+};
+
 const getAddress = (place: any) => {
     console.log('Address Object', place);
 };
@@ -237,7 +328,7 @@ ion-content {
 }
 
 
-ion-searchbar.custom {
+ion-searchbar.customTransparentAndShadowNoneSeearchbar {
     --background: #19422d00;
     --color: #000000;
     --placeholder-color: #000000;
@@ -247,9 +338,6 @@ ion-searchbar.custom {
     --border-radius: 4px;
 }
 
-.custom {
-    --background: transparent:  !important;
-}
 
 ion-searchbar.ios.custom {
     --cancel-button-color: #000000;
