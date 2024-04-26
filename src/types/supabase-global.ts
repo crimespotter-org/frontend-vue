@@ -386,9 +386,9 @@ export type Database = {
           username: string;
         }[];
       };
-      get_case_votes: {
+      get_case_votes_by_id: {
         Args: {
-          case_id: string;
+          p_case_id: string;
         };
         Returns: {
           upvotes: number;
@@ -552,7 +552,7 @@ export type Comment = Database["public"]["Tables"]["comments"]["Row"];
 export type FurtherLink = Database["public"]["Tables"]["furtherlinks"]["Row"];
 export type Media = Database["public"]["Tables"]["media"]["Row"];
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
-//export type Vote = Database["public"]["Tables"]["votes"]["Row"];
+export type Vote = Database["public"]["Tables"]["votes"]["Row"];
 export type ListOfCases =
   Database["public"]["Functions"]["find_nearby_cases2"]["Returns"];
 export type Case =
@@ -564,7 +564,8 @@ export type Casetype = Database["public"]["Enums"]["casetype"];
 export type LinkType = Database["public"]["Enums"]["link_type"];
 export type Role = Database["public"]["Enums"]["role"];
 export type Status = Database["public"]["Enums"]["status"];
-export type Votes = Database["public"]["Functions"]["get_case_votes"]["Returns"];
+export type CaseVote =
+  Database["public"]["Functions"]["get_case_votes_by_id"]["Returns"];
 
 export interface Coordinate {
   latitude: number;

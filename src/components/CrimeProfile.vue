@@ -3,7 +3,7 @@
   <ion-header>
     <ion-toolbar>
       <ion-buttons slot="start" class="ml-4">
-        <ion-badge slot="start">{{ props.markerData[0].upvotes }}</ion-badge>
+        <ion-badge slot="start" ref="votes[0].upvotes"></ion-badge>
 
         <ion-button @click="updateVote(1)">
 
@@ -12,8 +12,8 @@
 
         <ion-button @click="updateVote(-1)">
           <ion-icon slot="icon-only" :icon="thumbsDownOutline"></ion-icon>
-        </ion-button>
-        <ion-badge slot="start">{{ props.markerData[0].downvotes }}</ion-badge>
+        </ion-button>    
+        <ion-badge slot="start" ref="votes[0].downvotes" ></ion-badge>
       </ion-buttons>
       <ion-buttons slot="end" v-if="isCrimefluencer">
         <ion-button @click="routeToChangeCaseView">
@@ -88,8 +88,8 @@
 
 
     </div>
-    <ion-toast :is-open="changeNotSuccesful" @didDismiss="setOpenChangeSuccessful(false)" message="{{ changemessage }}"
-      :duration="5000"></ion-toast>
+    <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
+      @didDismiss="setOpen(false)"></ion-toast>
 
   </ion-content>
 
@@ -105,7 +105,7 @@ import router from '../router';
 import { caseService } from '@/services/case-service';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Case, Status, Casetype, ImageData, Link, LinkType, FilteredCases, Role, Votes } from "@/types/supabase-global";
+import { Case, Status, Casetype, ImageData, Link, LinkType, FilteredCases, Role, CaseVote } from "@/types/supabase-global";
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 
 
@@ -162,7 +162,7 @@ let changeNotSuccesful = ref(false);
 let changemessage = ref("");
 const isAdmin = ref(false);
 const isCrimefluencer = ref(false);
-let votes: Votes;
+let votes = ref<CaseVote>([]);
 
 
 
@@ -181,9 +181,7 @@ onMounted(async () => {
   }));
 
 
-  votes = await caseService.getVotes(CaseId);
-  console.log("upvotes: " + votes[0].upvotes)
-  console.log("doenvotes: " + votes[0].downvotes)
+  votes.value = await caseService.getVotes(CaseId);
 
   detailCase = await caseService.getCase(CaseId);
   detailCase.forEach(function (item) {
@@ -231,20 +229,21 @@ getCurrentUserRoleFromService();
 
 async function updateVote(vote: number) {
   const voteSuccesful = await caseService.updateVote(props.markerData[0].id, vote);
+  votes.value = await caseService.getVotes(CaseId);
   if (voteSuccesful) {
-    changemessage.value = "Das Voting war erfolgreich."
-    changeNotSuccesful.value = true;
-    votes = await caseService.getVotes(CaseId);
+    ToastMessage = "Das Voting war erfolgreich.";
+    setOpen(true);    
   } else if (!voteSuccesful) {
-    changemessage.value = "Das Voting war nicht erfolgreich. Bitte versuchen Sie es erneut."
-    changeNotSuccesful.value = true;
+
+    ToastMessage = "Das Voting war nicht erfolgreich. Bitte versuchen Sie es erneut.";
+    setOpen(true);
   }
 }
 
-const setOpenChangeSuccessful = (state: boolean) => {
-  changeNotSuccesful.value = state;
-};
 
+const setOpen = (state: boolean) => {
+  isToastOpen.value = state;
+};
 
 
 
