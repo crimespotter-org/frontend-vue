@@ -20,7 +20,7 @@
   </ion-header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { IonHeader, IonToolbar, IonAvatar, IonButton, IonIcon } from '@ionic/vue';
 import { logOutOutline } from 'ionicons/icons';
 import { supabase } from "@/services/supabase-service";

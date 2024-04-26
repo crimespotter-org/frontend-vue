@@ -6,13 +6,17 @@ import CaseProfileView from '../views/CaseProfileView.vue';
 import CreateAccount from '../views/CreateAccountView.vue';
 import Unauthorized from '@/views/UnauthorizedView.vue';
 import { supabase } from '@/services/supabase-service';
+import CrimeMapView from '@/views/CrimeMapView.vue';
+import ChangeCaseView from '@/views/ChangeCaseView.vue';
 
 let localUser;
+
+
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/home',  
+    redirect: '/login',
   },
   {
     path: '/login',
@@ -43,8 +47,15 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/crime-map',
-    component: () => import('@/views/CrimeMapView.vue')
-  },  
+    name: 'CrimeMapView',
+    component: CrimeMapView
+  },
+  {
+    path: '/change-case/:caseId',
+    name: 'ChangeCaseView',
+    component: ChangeCaseView,
+    props: true
+  },
 ]
 
 const router = createRouter({

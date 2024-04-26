@@ -1,7 +1,7 @@
 <template>
   <ion-page v-if="markerDataLoaded">
     <HeaderComponent />  
-    <ion-content :scroll-y="true">
+    <ion-content :scroll-y="true" class="crimeMap">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
       <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
         <crime-profile :markerData="markerData"></crime-profile>
@@ -16,20 +16,27 @@ import {
   IonPage,
   IonPopover,
   modalController,
+  onIonViewDidEnter
 } from "@ionic/vue";
 import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
 import HeaderComponent from '../components/Header.vue';
-import { Capacitor } from "@capacitor/core";
 import { mapService } from "@/services/map-service";
-import { ListOfCases } from "@/types/supabase-global";
+import { FilteredCases, ListOfCases, Coordinate } from "@/types/supabase-global";
 
 const markerIsOpen = ref<boolean>(false);
 
 // data for the map
-let markerData: ListOfCases = [];
+let markerData: FilteredCases = [];
 const markerDataLoaded = ref<boolean>(false);
+
+onIonViewDidEnter(async () => {
+      markerDataLoaded.value = false;
+      const currentLocation = await mapService.currentLocation();
+      markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
+      markerDataLoaded.value = true;
+});
 
 onMounted(async () => {
   const currentLocation = await mapService.currentLocation();
@@ -66,18 +73,23 @@ const getMarkerInfo = (marker: { lat: number; long: number }) : ListOfCases => {
   );
 };
 
-const markerClicked = (event: {latitude: number, longitude: number, mapId: string, markerId: string, snippet: string, title: string}) => {
-  if (!Capacitor.isNativePlatform()) {
+const markerClicked = (event: Coordinate) => {
+    console.log(event);
     const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
     if(markerToPass.length == 0){
       return;
     }
     openModal(markerToPass);
-  }
 }
 
-const receiveMarkerData = (event: ListOfCases) : void =>{
+const receiveMarkerData = (event: FilteredCases) : void =>{
   markerData = event;
 }
 
 </script>
+
+<style>
+ion-content {
+  --background: transparent: !important;
+}
+</style>

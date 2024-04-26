@@ -1,9 +1,14 @@
 <template>
-  <ion-page>
+  <ion-page class="crimeMap">
+    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
+      <ion-fab-button color="secondary">
+        <ion-icon :icon="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
     <ion-grid>
       <ion-row>
         <ion-col size="2">
-          <ion-button id="open-modal" expand="block">
+          <ion-button id="open-modal" expand="block" color="secondary">
             <ion-icon :icon="filterOutline"></ion-icon>
           </ion-button>
         </ion-col>
@@ -13,18 +18,13 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
-      <ion-fab-button color="secondary">
-        <ion-icon :icon="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
-    <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
-    </capacitor-google-map>
+    <div class="map" ref="mapDivRef">
+    </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
         <ion-toolbar>
-          <ion-button @click="cancel()" slot="end">Cancel</ion-button>
-          <ion-title>Filter</ion-title>
+          <ion-button @click="cancel()" slot="start">Zurück</ion-button>
+          <ion-button @click="confirm()" slot="end">Anwenden</ion-button>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
@@ -47,7 +47,8 @@
             </ion-col>
             <ion-col size="6">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"  @ionChange="handleStatusChange">
+                <ion-select aria-label="Fallstatus" placeholder="Fallstatus" :value="SelectedCrimeStatus"
+                  @ionChange="handleStatusChange">
                   <ion-select-option value="">Beides</ion-select-option>
                   <ion-select-option value="closed">Gelöst</ion-select-option>
                   <ion-select-option value="open">Ungelöst</ion-select-option>
@@ -58,8 +59,8 @@
           <ion-row>
             <ion-col size="12">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"  @ionChange="handleCaseTypeChange">
-                  <ion-select-option value="">Alles</ion-select-option>
+                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType" :multiple="true"
+                  @ionChange="handleCaseTypeChange">
                   <ion-select-option value="murder">Mord</ion-select-option>
                   <ion-select-option value="theft">Diebstahl</ion-select-option>
                   <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
@@ -76,143 +77,138 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, nextTick, ref, onUnmounted } from "vue";
-import { GoogleMap } from "@capacitor/google-maps";
+import { onMounted, nextTick, ref, onBeforeMount } from "vue";
 import { mapService } from "@/services/map-service";
-import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
-import { filterOutline, add} from "ionicons/icons";
-import{
+import { Casetype, Coordinate, ListOfCases, Status, FilteredCases } from "@/types/supabase-global";
+import { filterOutline, add } from "ionicons/icons";
+import {
   IonItem,
   IonSelect,
   IonSelectOption,
   IonModal,
   IonSearchbar,
-  IonCol, 
-  IonGrid, 
+  IonCol,
+  IonGrid,
   IonRow,
   IonIcon,
-  IonFab, 
+  IonFab,
   IonFabButton,
   IonButton,
   IonContent,
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonPage
 } from "@ionic/vue";
 
 const modal = ref();
 
-const cancel = () =>{
+const cancel = () => {
+  modal.value.$el.dismiss(null, 'cancel');
+}
+
+const confirm = () => {
   modal.value.$el.dismiss(null, 'cancel');
   filterEvent();
+}
 
-} 
-
-const mapRef = ref<HTMLElement>();
-const markerIds = ref<string[] | undefined>();
-//const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
-let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
-let SelectedCrimeStatus: Status;
-let SelectedCrimeType: Casetype[] = [];
+let SelectedCrimeStatus: Status | null;
+let SelectedCrimeType: Casetype[] | null = [];
 const markerDataLoaded = ref<boolean>(false);
+const googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
+let eventListener: any;
+
+//google map object
+const map = ref<google.maps.Map>();
+const mapDivRef = ref();
+let currentMarkers: google.maps.Marker[] = [];
+
 
 const props = defineProps<{
-  markerData: ListOfCases;
+  markerData: FilteredCases;
 }>();
 
 // EVENTS
 const emits = defineEmits<{
-  (event: "onMarkerClicked", info: any): void;
+  (event: "onMarkerClicked", info: Coordinate): void;
   (event: "onMapClicked"): void;
   (event: "onMarkerChange", value: ListOfCases): void;
 }>();
 
-onMounted(async () => {
-  console.log("mounted ", mapRef.value);
+
+
+onBeforeMount(() => {
+  const googleMapScript = document.createElement("SCRIPT");
+  googleMapScript.setAttribute(
+    "src",
+    `https://maps.googleapis.com/maps/api/js?key=${googleAPIKey}&libraries=geometry,places,marker&callback=initMap`
+  );
+  googleMapScript.setAttribute("defer", "");
+  googleMapScript.setAttribute("async", "");
+  document.head.appendChild(googleMapScript);
+});
+
+window.initMap = async () => {
   listOfCases = props.markerData;
-  console.log(listOfCases);
+  currentLocation.value = await mapService.currentLocation();
+  console.log(currentLocation);
+  map.value = new window.google.maps.Map(mapDivRef.value, {
+    zoom: 16,
+    disableDefaultUI: false,
+    center: { lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude }
+  });
+  Sleep(5000);
+  loadMapMarkers();
+}
+
+onMounted(async () => {
+  currentLocation.value = await mapService.currentLocation();
   await nextTick();
-  await createMap();
+  Sleep(5000);
+  createSearchbar();
   markerDataLoaded.value = true;
 });
 
-// remove markers on unmount
-onUnmounted(() => {
-  console.log("onunmounted");
-  newMap.removeMarkers(markerIds?.value as string[]);
-});
+const loadMapMarkers = () => {
+  deleteMarkers();
+  listOfCases.forEach(markerInfo => {
+    const mapMarker = new window.google.maps.Marker({
+      position: new window.google.maps.LatLng(markerInfo.lat, markerInfo.long),
+      map: map.value,
+      title: markerInfo.title
+    });
 
-const addSomeMarkers = async (newMap: GoogleMap) => {
-  markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
-  const image = "/public/home-sharp.svg";
+    let coordinate: Coordinate = {
+      latitude: markerInfo.lat,
+      longitude: markerInfo.long
+    };
 
-  // each point from supabase
-  const markers = listOfCases.map((item) => {
-    return{
-      coordinate: {lat: item.lat, lng: item.long},
-      title: item.title,
-      iconUrl: ""
-    }
-  });
+    mapMarker.addListener('click', () => {
+      emits('onMarkerClicked', coordinate);
+    })
 
-  //Location from User
-  markers.push({
-    coordinate: {lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude},
-    title: "Mein Standort",
-    iconUrl: image
-  });
+    currentMarkers.push(mapMarker);
+  })
 
-  markerIds.value = await newMap.addMarkers(markers);
 };
 
-async function createMap() {
-  if (!mapRef.value) return;
+function deleteMarkers() {
+  currentMarkers.forEach(m => { m.setMap(null) });
+  currentMarkers = [];
+}
 
-  currentLocation.value = await mapService.currentLocation();
-
-  // render map using capacitor plugin
-  newMap = await GoogleMap.create({
-    id: "map-id",
-    element: mapRef.value,
-    apiKey: import.meta.env.VITE_APP_YOUR_API_KEY_HERE as string, //use apikey here
-    config: {
-      center: {
-        lat: currentLocation.value!.latitude,
-        lng: currentLocation.value!.longitude,
-      },
-      zoom: 15,
-    },
-  });
-
-  newMap.enableCurrentLocation(true);
-
-  // add markers to map
-  addSomeMarkers(newMap);
-
-  // Set Event Listeners...
-  // Handle marker click, send event back to parent
-  newMap.setOnMarkerClickListener((event) => {
-    emits("onMarkerClicked", event);
-  });
-
-  // Handle map click, send event back to parent
-  newMap.setOnMapClickListener(() => {
-    emits("onMapClicked");
-  });
-
+function createSearchbar() {
   const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
   const center = { lat: 50.064192, lng: -130.605469 };
   const defaultBounds = {
-  north: center.lat + 0.1,
-  south: center.lat - 0.1,
-  east: center.lng + 0.1,
-  west: center.lng - 0.1,
+    north: center.lat + 0.1,
+    south: center.lat - 0.1,
+    east: center.lng + 0.1,
+    west: center.lng - 0.1,
   };
-  
+
   const options = {
     bounds: defaultBounds,
     componentRestrictions: { country: "de" },
@@ -222,54 +218,61 @@ async function createMap() {
   };
 
   const autocomplete = new google.maps.places.Autocomplete(elem, options);
-  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+  eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function () {
     const place = autocomplete.getPlace();
     const location = place['geometry']!['location'];
     const latitude = location?.lat();
     const longitude = location?.lng();
     // Move the map programmatically
-    newMap.setCamera({
-      coordinate: {
-        lat: latitude!,
-        lng: longitude!
-      }
-    });
   });
 };
 
-const getAddress = (place: any) => {       
+const getAddress = (place: any) => {
   console.log('Address Object', place);
 };
 
-const filterEvent = async() =>{
+const filterEvent = async () => {
   const range = Number(SelectedRange);
+  console.log(SelectedCrimeType);
+  console.log(SelectedCrimeStatus);
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
-  await addSomeMarkers(newMap);
+  loadMapMarkers();
   emits('onMarkerChange', listOfCases);
 };
 
-const handleRangeChange = async(event: {detail: {value: string}}) => {
+const handleRangeChange = async (event: { detail: { value: string } }) => {
   SelectedRange = event.detail.value;
 };
 
-const handleStatusChange = async(event:{detail: {value: string}}) => {
-  if(event.detail.value === ""){
+const handleStatusChange = async (event: { detail: { value: string } }) => {
+  if (event.detail.value === "") {
     SelectedCrimeStatus = null;
-  }else{
+  } else {
     SelectedCrimeStatus = event.detail.value as Status;
   }
   console.log(SelectedCrimeStatus);
 };
 
-const handleCaseTypeChange = async(event:{detail:{value:string}}) =>{
+const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   SelectedCrimeType = [];
-  if(event.detail.value === ""){
-    SelectedCrimeType.push(null);
-  }else{
+  if (event.detail.value.length === 0) {
+    SelectedCrimeType  = null;
+  } else {
     const caseType = event.detail.value as Casetype;
     SelectedCrimeType.push(caseType);
   }
   console.log(SelectedCrimeType);
 }
 
+function Sleep(milliseconds: number) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
 </script>
+
+<style lang="css" scoped>
+.map {
+  width: 100%;
+  height: 100%;
+}
+</style>
