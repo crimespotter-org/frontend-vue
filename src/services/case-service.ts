@@ -1,4 +1,4 @@
-import { Case, Casetype, Status, Link, Vote } from "@/types/supabase-global";
+import { Case, Casetype, Status, Link, Votes } from "@/types/supabase-global";
 import { supabase } from "./supabase-service";
 import { FileObject } from "@supabase/storage-js";
 import { currentUserInformation } from "@/services/currentUserInformation-service";
@@ -114,6 +114,18 @@ class CaseService {
     } else {
       console.log(error);
       return false;
+    }
+  }
+
+  async getVotes(case_id: string): Promise<Votes> {
+    let { data: votes, error } = await supabase.rpc("get_case_votes", {
+      case_id,
+    });
+    if (error) {
+      console.error(error);
+      return [];
+    } else {
+      return votes;
     }
   }
 }

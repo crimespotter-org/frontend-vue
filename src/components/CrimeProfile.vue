@@ -105,8 +105,7 @@ import router from '../router';
 import { caseService } from '@/services/case-service';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Case, Status, Casetype, ImageData, Link, LinkType, FilteredCases } from "@/types/supabase-global";
-import { Role } from "@/types/supabase-global";
+import { Case, Status, Casetype, ImageData, Link, LinkType, FilteredCases, Role, Votes } from "@/types/supabase-global";
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 
 
@@ -132,6 +131,7 @@ let linkListUpdate = ref();
 let picture = ref<ImageData[]>([]);
 const linkList = ref<Link[]>([]);
 let detailCase: Case;
+
 let SelectedDateTime: string;
 let CaseType: Casetype;
 let CaseStatus: Status;
@@ -162,6 +162,7 @@ let changeNotSuccesful = ref(false);
 let changemessage = ref("");
 const isAdmin = ref(false);
 const isCrimefluencer = ref(false);
+let votes: Votes;
 
 
 
@@ -178,6 +179,11 @@ onMounted(async () => {
     };
     picture.value.push(imageData);
   }));
+
+
+  votes = await caseService.getVotes(CaseId);
+  console.log("upvotes: " + votes[0].upvotes)
+  console.log("doenvotes: " + votes[0].downvotes)
 
   detailCase = await caseService.getCase(CaseId);
   detailCase.forEach(function (item) {
@@ -228,6 +234,7 @@ async function updateVote(vote: number) {
   if (voteSuccesful) {
     changemessage.value = "Das Voting war erfolgreich."
     changeNotSuccesful.value = true;
+    votes = await caseService.getVotes(CaseId);
   } else if (!voteSuccesful) {
     changemessage.value = "Das Voting war nicht erfolgreich. Bitte versuchen Sie es erneut."
     changeNotSuccesful.value = true;
