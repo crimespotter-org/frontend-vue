@@ -59,9 +59,8 @@
           <ion-row>
             <ion-col size="12">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"
+                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType" :multiple="true"
                   @ionChange="handleCaseTypeChange">
-                  <ion-select-option value="">Alles</ion-select-option>
                   <ion-select-option value="murder">Mord</ion-select-option>
                   <ion-select-option value="theft">Diebstahl</ion-select-option>
                   <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
@@ -80,9 +79,8 @@
 <script setup lang="ts">
 import { onMounted, nextTick, ref, onBeforeMount } from "vue";
 import { mapService } from "@/services/map-service";
-import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
+import { Casetype, Coordinate, ListOfCases, Status, FilteredCases } from "@/types/supabase-global";
 import { filterOutline, add } from "ionicons/icons";
-import { Loader} from "@googlemaps/js-api-loader";
 import {
   IonItem,
   IonSelect,
@@ -116,8 +114,8 @@ const confirm = () => {
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
-let SelectedCrimeStatus: Status;
-let SelectedCrimeType: Casetype[] = [];
+let SelectedCrimeStatus: Status | null;
+let SelectedCrimeType: Casetype[] | null = [];
 const markerDataLoaded = ref<boolean>(false);
 const googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let eventListener: any;
@@ -125,20 +123,23 @@ let eventListener: any;
 //google map object
 const map = ref<google.maps.Map>();
 const mapDivRef = ref();
+let currentMarkers: google.maps.Marker[] = [];
 
 
 const props = defineProps<{
-  markerData: ListOfCases;
+  markerData: FilteredCases;
 }>();
 
 // EVENTS
 const emits = defineEmits<{
-  (event: "onMarkerClicked", info: any): void;
+  (event: "onMarkerClicked", info: Coordinate): void;
   (event: "onMapClicked"): void;
   (event: "onMarkerChange", value: ListOfCases): void;
 }>();
 
-onBeforeMount(()=>{
+
+
+onBeforeMount(() => {
   const googleMapScript = document.createElement("SCRIPT");
   googleMapScript.setAttribute(
     "src",
@@ -149,14 +150,14 @@ onBeforeMount(()=>{
   document.head.appendChild(googleMapScript);
 });
 
-window.initMap = async() => {
+window.initMap = async () => {
   listOfCases = props.markerData;
   currentLocation.value = await mapService.currentLocation();
   console.log(currentLocation);
   map.value = new window.google.maps.Map(mapDivRef.value, {
     zoom: 16,
     disableDefaultUI: false,
-    center: {lat:currentLocation.value!.latitude, lng: currentLocation.value!.longitude}
+    center: { lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude }
   });
   Sleep(5000);
   loadMapMarkers();
@@ -171,18 +172,31 @@ onMounted(async () => {
 });
 
 const loadMapMarkers = () => {
-
-  listOfCases.forEach(markerInfo =>{
+  deleteMarkers();
+  listOfCases.forEach(markerInfo => {
     const mapMarker = new window.google.maps.Marker({
       position: new window.google.maps.LatLng(markerInfo.lat, markerInfo.long),
-      map: map.value
+      map: map.value,
+      title: markerInfo.title
+    });
+
+    let coordinate: Coordinate = {
+      latitude: markerInfo.lat,
+      longitude: markerInfo.long
+    };
+
+    mapMarker.addListener('click', () => {
+      emits('onMarkerClicked', coordinate);
     })
+
+    currentMarkers.push(mapMarker);
   })
 
-}
+};
 
 function deleteMarkers() {
-
+  currentMarkers.forEach(m => { m.setMap(null) });
+  currentMarkers = [];
 }
 
 function createSearchbar() {
@@ -219,7 +233,10 @@ const getAddress = (place: any) => {
 
 const filterEvent = async () => {
   const range = Number(SelectedRange);
+  console.log(SelectedCrimeType);
+  console.log(SelectedCrimeStatus);
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
+  loadMapMarkers();
   emits('onMarkerChange', listOfCases);
 };
 
@@ -238,8 +255,8 @@ const handleStatusChange = async (event: { detail: { value: string } }) => {
 
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   SelectedCrimeType = [];
-  if (event.detail.value === "") {
-    SelectedCrimeType.push(null);
+  if (event.detail.value.length === 0) {
+    SelectedCrimeType  = null;
   } else {
     const caseType = event.detail.value as Casetype;
     SelectedCrimeType.push(caseType);
