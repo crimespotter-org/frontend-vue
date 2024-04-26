@@ -37,8 +37,9 @@
 
                 <!-- Location -->
                 <ion-item class="customTransparent">
-                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on" @ion-focus="setLocation" show-clear-button="always"
-                        :clear-icon="trashOutline" value="Tatort"></ion-searchbar>
+                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
+                        @ion-focus="setLocation" show-clear-button="always" :clear-icon="trashOutline"
+                        value="Tatort"></ion-searchbar>
 
                 </ion-item>
 
@@ -86,28 +87,28 @@
 
             <!-- segment two pictures -->
             <ion-card v-show="segment === 'picture'" class="customTransparent">
-                <ion-card-content >
-                  
-                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
-                            <ion-grid>
-                                <ion-row>
-                                    <ion-col size="3">
-                                        <ion-thumbnail slot="start">
-                                            <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
-                                        </ion-thumbnail>
-                                    </ion-col>
-                                    <ion-col>
-                                        <ion-label>{{ pic.imageName }}</ion-label>
-                                    </ion-col>
-                                    <ion-col>
-                                        <ion-button @click="deletePicture(pic)">
-                                            <ion-icon :icon="trashOutline"></ion-icon>
-                                        </ion-button>
-                                    </ion-col>
-                                </ion-row>
-                            </ion-grid>
-                        </ion-item>
-              
+                <ion-card-content>
+
+                    <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
+                        <ion-grid>
+                            <ion-row>
+                                <ion-col size="3">
+                                    <ion-thumbnail slot="start">
+                                        <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
+                                    </ion-thumbnail>
+                                </ion-col>
+                                <ion-col>
+                                    <ion-label>{{ pic.imageName }}</ion-label>
+                                </ion-col>
+                                <ion-col>
+                                    <ion-button @click="deletePicture(pic)">
+                                        <ion-icon :icon="trashOutline"></ion-icon>
+                                    </ion-button>
+                                </ion-col>
+                            </ion-row>
+                        </ion-grid>
+                    </ion-item>
+
                     <div class="flex justify-center customTransparent">
                         <ion-button @click="takePicture">
                             <ion-icon :icon="cameraOutline"></ion-icon>

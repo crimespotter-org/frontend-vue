@@ -2,17 +2,21 @@
     <ion-page>
         <HeaderComponent />
 
-        <ion-content class="case">
+        <ion-content class="case ion-padding">
             <ion-title>
                 Hauptmenü
             </ion-title>
-            <ion-item class="customTransparent"><ion-icon :icon="arrowForwardOutline"></ion-icon>  Liste aller
+            <router-link to="/crime-map">
+                <ion-item class="customTransparent"><ion-icon :icon="mapOutline" class="pr-4"></ion-icon>Karte
+                öffnen</ion-item>
+            </router-link>           
+            <ion-item class="customTransparent"><ion-icon :icon="folderOpenOutline" class="pr-4"></ion-icon>Liste aller
                 Fälle</ion-item>
             <router-link to="/create-case" v-if="isCrimefluencer"><ion-item class="customTransparent"><ion-icon
-                        :icon="arrowForwardOutline"></ion-icon>  Fall
+                        :icon="addOutline" class="pr-4"></ion-icon>Fall
                     hinzufügen</ion-item></router-link>
             <router-link to="/change-user-role" v-if="isAdmin"><ion-item class="customTransparent"><ion-icon
-                        :icon="arrowForwardOutline"></ion-icon>  Benutzerrollen
+                        :icon="peopleOutline" class="pr-4"></ion-icon>Benutzerrollen
                     ändern</ion-item></router-link>
         </ion-content>
     </ion-page>
@@ -24,7 +28,7 @@ import { Role } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 import { onMounted, ref } from "vue";
-import { arrowForwardOutline } from "ionicons/icons";
+import { addOutline, folderOpenOutline, peopleOutline, mapOutline } from "ionicons/icons";
 
 
 const isAdmin = ref(false);
