@@ -1,0 +1,68 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="capacitor.cordova.android.plugins.test" >
+4
+5    <uses-sdk
+5-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:5:5-74
+6        android:minSdkVersion="22"
+6-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:5:15-41
+7        android:targetSdkVersion="33" />
+7-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:5:42-71
+8
+9    <instrumentation
+9-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:11:5-15:88
+10        android:name="android.test.InstrumentationTestRunner"
+10-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:11:22-75
+11        android:functionalTest="false"
+11-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:14:22-52
+12        android:handleProfiling="false"
+12-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:13:22-53
+13        android:label="Tests for capacitor.cordova.android.plugins.test"
+13-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:15:22-86
+14        android:targetPackage="capacitor.cordova.android.plugins.test" />
+14-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:12:22-84
+15
+16    <permission
+16-->[androidx.core:core:1.9.0] /Users/sperlin/.gradle/caches/transforms-3/d8b5a5bdb3d1e5a36a6112f5edd0ec88/transformed/core-1.9.0/AndroidManifest.xml:22:5-24:47
+17        android:name="capacitor.cordova.android.plugins.test.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+17-->[androidx.core:core:1.9.0] /Users/sperlin/.gradle/caches/transforms-3/d8b5a5bdb3d1e5a36a6112f5edd0ec88/transformed/core-1.9.0/AndroidManifest.xml:23:9-81
+18        android:protectionLevel="signature" />
+18-->[androidx.core:core:1.9.0] /Users/sperlin/.gradle/caches/transforms-3/d8b5a5bdb3d1e5a36a6112f5edd0ec88/transformed/core-1.9.0/AndroidManifest.xml:24:9-44
+19
+20    <uses-permission android:name="capacitor.cordova.android.plugins.test.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+20-->[androidx.core:core:1.9.0] /Users/sperlin/.gradle/caches/transforms-3/d8b5a5bdb3d1e5a36a6112f5edd0ec88/transformed/core-1.9.0/AndroidManifest.xml:26:5-97
+20-->[androidx.core:core:1.9.0] /Users/sperlin/.gradle/caches/transforms-3/d8b5a5bdb3d1e5a36a6112f5edd0ec88/transformed/core-1.9.0/AndroidManifest.xml:26:22-94
+21
+22    <application
+22-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:7:5-9:19
+23        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+23-->[androidx.core:core:1.9.0] /Users/sperlin/.gradle/caches/transforms-3/d8b5a5bdb3d1e5a36a6112f5edd0ec88/transformed/core-1.9.0/AndroidManifest.xml:28:18-86
+24        android:debuggable="true" >
+25        <uses-library android:name="android.test.runner" />
+25-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:8:9-60
+25-->/Users/sperlin/Emma/frontend-vue/android/capacitor-cordova-android-plugins/build/intermediates/tmp/manifest/androidTest/debug/tempFile1ProcessTestManifest17777248761052616189.xml:8:23-57
+26
+27        <provider
+27-->[androidx.emoji2:emoji2:1.2.0] /Users/sperlin/.gradle/caches/transforms-3/bc4e404d2e4e27a8333e074e645fe6c4/transformed/emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+28            android:name="androidx.startup.InitializationProvider"
+28-->[androidx.emoji2:emoji2:1.2.0] /Users/sperlin/.gradle/caches/transforms-3/bc4e404d2e4e27a8333e074e645fe6c4/transformed/emoji2-1.2.0/AndroidManifest.xml:25:13-67
+29            android:authorities="capacitor.cordova.android.plugins.test.androidx-startup"
+29-->[androidx.emoji2:emoji2:1.2.0] /Users/sperlin/.gradle/caches/transforms-3/bc4e404d2e4e27a8333e074e645fe6c4/transformed/emoji2-1.2.0/AndroidManifest.xml:26:13-68
+30            android:exported="false" >
+30-->[androidx.emoji2:emoji2:1.2.0] /Users/sperlin/.gradle/caches/transforms-3/bc4e404d2e4e27a8333e074e645fe6c4/transformed/emoji2-1.2.0/AndroidManifest.xml:27:13-37
+31            <meta-data
+31-->[androidx.emoji2:emoji2:1.2.0] /Users/sperlin/.gradle/caches/transforms-3/bc4e404d2e4e27a8333e074e645fe6c4/transformed/emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+32                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+32-->[androidx.emoji2:emoji2:1.2.0] /Users/sperlin/.gradle/caches/transforms-3/bc4e404d2e4e27a8333e074e645fe6c4/transformed/emoji2-1.2.0/AndroidManifest.xml:30:17-75
+33                android:value="androidx.startup" />
+33-->[androidx.emoji2:emoji2:1.2.0] /Users/sperlin/.gradle/caches/transforms-3/bc4e404d2e4e27a8333e074e645fe6c4/transformed/emoji2-1.2.0/AndroidManifest.xml:31:17-49
+34            <meta-data
+34-->[androidx.lifecycle:lifecycle-process:2.4.1] /Users/sperlin/.gradle/caches/transforms-3/568d28fed62d58892151513ae091b0ec/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:31:13-33:52
+35                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+35-->[androidx.lifecycle:lifecycle-process:2.4.1] /Users/sperlin/.gradle/caches/transforms-3/568d28fed62d58892151513ae091b0ec/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:32:17-78
+36                android:value="androidx.startup" />
+36-->[androidx.lifecycle:lifecycle-process:2.4.1] /Users/sperlin/.gradle/caches/transforms-3/568d28fed62d58892151513ae091b0ec/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:33:17-49
+37        </provider>
+38    </application>
+39
+40</manifest>

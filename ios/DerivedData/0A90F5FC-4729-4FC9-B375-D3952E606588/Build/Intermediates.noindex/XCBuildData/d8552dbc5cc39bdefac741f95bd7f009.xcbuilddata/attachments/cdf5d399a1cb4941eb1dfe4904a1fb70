@@ -1,0 +1,28 @@
+{
+  "" : {
+    "diagnostics" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-master.dia",
+    "emit-module-dependencies" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-master-emit-module.dia",
+    "swift-dependencies" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/App-master.swiftdeps"
+  },
+  "/Users/sperlin/Emma/frontend-vue/ios/App/App/AppDelegate.swift" : {
+    "const-values" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate.swiftconstvalues",
+    "dependencies" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate.d",
+    "diagnostics" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate.dia",
+    "index-unit-output-path" : "/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate.o",
+    "llvm-bc" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate.bc",
+    "object" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate.o",
+    "swift-dependencies" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate.swiftdeps",
+    "swiftmodule" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/AppDelegate~partial.swiftmodule"
+  },
+  "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/sperlin/Emma/frontend-vue/ios/DerivedData/0A90F5FC-4729-4FC9-B375-D3952E606588/Build/Intermediates.noindex/App.build/Debug-iphonesimulator/App.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}
