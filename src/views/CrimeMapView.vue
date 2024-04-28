@@ -1,11 +1,12 @@
 <template>
   <ion-page v-if="markerDataLoaded">
-    <HeaderComponent />  
+    <HeaderComponent />
     <ion-content :scroll-y="true" class="crimeMap">
-      <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
-      <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
-        <crime-profile :markerData="markerData" @onDismissModal="modalClicked"></crime-profile>
-      </ion-popover>
+      <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked"
+        @onMarkerClicked="markerClicked"></my-map>
+      <ion-modal ref="modalRef" :can-dismiss="canDismiss">
+        <crime-profile :markerData="markerToPass" :modal="modalRef"/>
+      </ion-modal>
     </ion-content>
   </ion-page>
 </template>
@@ -14,29 +15,34 @@
 import {
   IonContent,
   IonPage,
-  IonPopover,
-  modalController,
-  onIonViewDidEnter
+  onIonViewDidEnter,
+  IonModal
 } from "@ionic/vue";
 import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
 import HeaderComponent from '../components/Header.vue';
 import { mapService } from "@/services/map-service";
-import { FilteredCases, ListOfCases, Coordinate } from "@/types/supabase-global";
+import { FilteredCases, Coordinate } from "@/types/supabase-global";
 
-const markerIsOpen = ref<boolean>(false);
-let modal: HTMLIonModalElement
+const modalRef = ref();
 
 // data for the map
 let markerData: FilteredCases = [];
 const markerDataLoaded = ref<boolean>(false);
 
+let markerToPass: FilteredCases = [];
+
+const canDismiss = async () => {
+  return true;
+};
+
+
 onIonViewDidEnter(async () => {
-      markerDataLoaded.value = false;
-      const currentLocation = await mapService.currentLocation();
-      markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
-      markerDataLoaded.value = true;
+  markerDataLoaded.value = false;
+  const currentLocation = await mapService.currentLocation();
+  markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
+  markerDataLoaded.value = true;
 });
 
 onMounted(async () => {
@@ -46,28 +52,11 @@ onMounted(async () => {
   console.log(markerData);
 });
 
-const openModal = async (markerData: ListOfCases) => {
-  modal = await modalController.create({
-    component: CrimeProfile,
-    componentProps: {
-      markerData,
-    },
-    showBackdrop: false,
-    backdropDismiss: false,
-  });
-
-  modal.present();
-};
-
 const mapClicked = () => {
   console.log("mapClicked");
 };
 
-const modalClicked = () => {
-  console.log("Modal soll sich schließen");
-};
-
-const getMarkerInfo = (marker: { lat: number; long: number }) : ListOfCases => {
+const getMarkerInfo = (marker: { lat: number; long: number }): FilteredCases => {
   return markerData.filter(
     (m) =>
       m.long === marker.long &&
@@ -76,15 +65,15 @@ const getMarkerInfo = (marker: { lat: number; long: number }) : ListOfCases => {
 };
 
 const markerClicked = (event: Coordinate) => {
-    console.log(event);
-    const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
-    if(markerToPass.length == 0){
-      return;
-    }
-    openModal(markerToPass);
+  console.log(event);
+  markerToPass = getMarkerInfo({ lat: event.latitude, long: event.longitude });
+  if (markerToPass.length == 0) {
+    return;
+  }
+  modalRef.value.$el.present();
 }
 
-const receiveMarkerData = (event: FilteredCases) : void =>{
+const receiveMarkerData = (event: FilteredCases): void => {
   markerData = event;
 }
 

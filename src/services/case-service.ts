@@ -102,7 +102,7 @@ class CaseService {
   }
 
   async updateVote(caseIdforvote: string, vote: number): Promise<boolean> {
-    let localUser = await currentUserInformation.getCurrentUser();
+    const localUser = await currentUserInformation.getCurrentUser();
     const { data, error } = await supabase
       .from("votes")
       .update({ vote: vote })

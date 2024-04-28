@@ -1,11 +1,8 @@
 <template>
-  <ion-header>
+  <ion-header >
     <ion-toolbar>
-      <ion-buttons slot="start">
-            <ion-button @click="cancelModal()">Cancel</ion-button>
-      </ion-buttons>
       <ion-buttons slot="start" class="ml-4">
-        <ion-badge slot="start" ref="upvote"></ion-badge>
+        <ion-badge slot="start"  ref="upvote.value">{{ upvote?.toString() }}</ion-badge>
 
         <ion-button @click="updateVote(1)">
 
@@ -15,12 +12,13 @@
         <ion-button @click="updateVote(-1)">
           <ion-icon slot="icon-only" :icon="thumbsDownOutline"></ion-icon>
         </ion-button>
-        <ion-badge slot="start" ref="downvotes"></ion-badge>
+        <ion-badge slot="start" ref="downvotes.value">{{ downvote?.toString() }}</ion-badge>
       </ion-buttons>
       <ion-buttons slot="end" v-if="isCrimefluencer">
         <ion-button @click="routeToChangeCaseView">
           <ion-icon slot="icon-only" :icon="createOutline"></ion-icon>
         </ion-button>
+        <ion-button @click="dismiss()">Cancel</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -28,7 +26,7 @@
 
     <div>
       <div class="grid justify-items-center">
-        <ion-title size="large" class="font-bold">{{ props.markerData[0].title }}</ion-title>
+        <ion-title size="large" class="font-bold" color="dark">{{props.markerData[0].title }}</ion-title>
       </div>
 
       <div class="flex gap-x-4">
@@ -49,7 +47,7 @@
       </div>
 
       <ion-card>
-        <swiper :navigation="true" :modules="navigation" class="mySwiper" >
+        <swiper :navigation="true" :modules="navigation" class="mySwiper">
           <swiper-slide v-for="(pic, index) in picture" :key="index" class="custom-delete-white">
             <ion-img :src=pic.pictureUri alt="Hier sollte ein Bild sein" class="custom-delete-white"></ion-img>
           </swiper-slide>
@@ -60,7 +58,7 @@
 
         <ion-accordion value="first" class="custom-transparent" color="primary">
           <ion-item slot="header" color="light-shade">
-            <ion-label>Zusammenfassung</ion-label>
+            <ion-label color="dark">Zusammenfassung</ion-label>
           </ion-item>
           <div class="ion-padding" slot="content">
             <p>{{ props.markerData[0].summary }}</p>
@@ -70,7 +68,7 @@
 
         <ion-accordion value="third" class="custom-transparent">
           <ion-item slot="header" color="light-shade">
-            <ion-label>Links zu diesem Fall</ion-label>
+            <ion-label color="dark">Links zu diesem Fall</ion-label>
           </ion-item>
           <div class="ion-padding custom-transparent" slot="content">
             <ion-list class="custom-transparent">
@@ -99,7 +97,27 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { IonContent, IonHeader, IonTitle, modalController, IonButton, IonToolbar, IonButtons, IonIcon, IonAccordion, IonAccordionGroup, IonItem, IonLabel, IonToast, IonCard, IonImg, IonBadge} from "@ionic/vue";
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  modalController,
+  IonButton,
+  IonToolbar,
+  IonButtons,
+  IonIcon,
+  IonAccordion,
+  IonAccordionGroup,
+  IonItem,
+  IonLabel,
+  IonToast,
+  IonCard,
+  IonImg,
+  IonBadge,
+  IonList
+} from "@ionic/vue";
+
+
 import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
 import router from '../router';
 import { caseService } from '@/services/case-service';
@@ -175,15 +193,11 @@ onMounted(async () => {
 // PROPS
 const props = defineProps<{
   markerData: FilteredCases;
+  modal: any;
 }>();
 
-const emits = defineEmits<{
-  (event: "onDismissModal"): void;
-}>();
-
-const cancelModal = () => {
-  console.log("Dismiss");
-  emits('onDismissModal');
+const dismiss = () => {
+  props.modal.$el.dismiss();
 };
 
 setStatusAndIcon();
@@ -194,16 +208,17 @@ getCurrentUserRoleFromService();
 async function updateVote(vote: number) {
   const voteSuccesful = await caseService.updateVote(props.markerData[0].id, vote);
   votes.value = await caseService.getVotes(CaseId);
+  upvote.value = votes.value[0].upvotes;
+  downvote.value = votes.value[0].downvotes;
   if (voteSuccesful) {
     ToastMessage = "Das Voting war erfolgreich.";
-    setOpen(true);    
+    setOpen(true);
   } else if (!voteSuccesful) {
 
     ToastMessage = "Das Voting war nicht erfolgreich. Bitte versuchen Sie es erneut.";
     setOpen(true);
   }
 }
-
 
 const setOpen = (state: boolean) => {
   isToastOpen.value = state;
@@ -213,7 +228,7 @@ async function setStatusAndIcon() {
   stateOfCase = props.markerData[0].status;
 
   if (stateOfCase == "closed") {
-    stateOfCaseGerman .value= "Fall geschlossen";
+    stateOfCaseGerman.value = "Fall geschlossen";
     iconName.value = checkmarkCircleOutline;
   } else {
     stateOfCaseGerman.value = "Fall ungelöst";
@@ -284,6 +299,7 @@ const routeToChangeCaseView = async () => {
   width: 100%;
   height: 100%;
 }
+
 .swiper-slide {
   text-align: center;
   font-size: 18px;
@@ -293,6 +309,7 @@ const routeToChangeCaseView = async () => {
   justify-content: center;
   align-items: center;
 }
+
 .swiper-slide img {
   display: block;
   width: 100%;
