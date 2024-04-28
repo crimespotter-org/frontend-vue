@@ -455,10 +455,10 @@ export type Database = {
       };
     };
     Enums: {
-      casetype: "murder" | "theft" | "robbery-murder" | "brawl" | "rape";
+      casetype: "murder" | "theft" | "robbery-murder" | "brawl" | "rape"| null;
       link_type: "newspaper" | "podcast" | "book";
       role: "crimefluencer" | "crimespotter" | "admin";
-      status: "open" | "closed";
+      status: "open" | "closed"| null;
     };
     CompositeTypes: {
       [_ in never]: never;

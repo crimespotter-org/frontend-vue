@@ -4,7 +4,7 @@
     <ion-content :scroll-y="true" class="crimeMap">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked" @onMarkerClicked="markerClicked"></my-map>
       <ion-popover :is-open="markerIsOpen" size="cover" @did-dismiss="markerIsOpen = false">
-        <crime-profile :markerData="markerData"></crime-profile>
+        <crime-profile :markerData="markerData" @onDismissModal="modalClicked"></crime-profile>
       </ion-popover>
     </ion-content>
   </ion-page>
@@ -26,6 +26,7 @@ import { mapService } from "@/services/map-service";
 import { FilteredCases, ListOfCases, Coordinate } from "@/types/supabase-global";
 
 const markerIsOpen = ref<boolean>(false);
+let modal: HTMLIonModalElement
 
 // data for the map
 let markerData: FilteredCases = [];
@@ -46,16 +47,13 @@ onMounted(async () => {
 });
 
 const openModal = async (markerData: ListOfCases) => {
-  const modal = await modalController.create({
+  modal = await modalController.create({
     component: CrimeProfile,
     componentProps: {
       markerData,
     },
-    initialBreakpoint: 0.8,
-    breakpoints: [0, 0.8],
-    backdropBreakpoint: 0,
     showBackdrop: false,
-    backdropDismiss: true,
+    backdropDismiss: false,
   });
 
   modal.present();
@@ -63,6 +61,10 @@ const openModal = async (markerData: ListOfCases) => {
 
 const mapClicked = () => {
   console.log("mapClicked");
+};
+
+const modalClicked = () => {
+  console.log("Modal soll sich schließen");
 };
 
 const getMarkerInfo = (marker: { lat: number; long: number }) : ListOfCases => {

@@ -136,7 +136,7 @@ const props = defineProps<{
 const emits = defineEmits<{
   (event: "onMarkerClicked", info: Coordinate): void;
   (event: "onMapClicked"): void;
-  (event: "onMarkerChange", value: ListOfCases): void;
+  (event: "onMarkerChange", value: FilteredCases): void;
 }>();
 
 

@@ -1,9 +1,11 @@
 <template>
-
   <ion-header>
     <ion-toolbar>
+      <ion-buttons slot="start">
+            <ion-button @click="cancelModal()">Cancel</ion-button>
+      </ion-buttons>
       <ion-buttons slot="start" class="ml-4">
-        <ion-badge slot="start" ref="votes[0].upvotes"></ion-badge>
+        <ion-badge slot="start" ref="upvote"></ion-badge>
 
         <ion-button @click="updateVote(1)">
 
@@ -12,8 +14,8 @@
 
         <ion-button @click="updateVote(-1)">
           <ion-icon slot="icon-only" :icon="thumbsDownOutline"></ion-icon>
-        </ion-button>    
-        <ion-badge slot="start" ref="votes[0].downvotes" ></ion-badge>
+        </ion-button>
+        <ion-badge slot="start" ref="downvotes"></ion-badge>
       </ion-buttons>
       <ion-buttons slot="end" v-if="isCrimefluencer">
         <ion-button @click="routeToChangeCaseView">
@@ -22,7 +24,7 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content class="case ion-padding" :fullscreen="true">
+  <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
 
     <div>
       <div class="grid justify-items-center">
@@ -46,13 +48,13 @@
         <p>{{ typeOfCaseGerman }}</p>
       </div>
 
-
-      <Swiper class="custom-delete-white">
-        <SwiperSlide v-for="(pic, index) in picture" :key="index" class="custom-delete-white">
-          <ion-img :src=pic.pictureUri alt="Hier sollte ein Bild sein" class="custom-delete-white"></ion-img>
-        </SwiperSlide>
-      </Swiper>
-
+      <ion-card>
+        <swiper :navigation="true" :modules="navigation" class="mySwiper" >
+          <swiper-slide v-for="(pic, index) in picture" :key="index" class="custom-delete-white">
+            <ion-img :src=pic.pictureUri alt="Hier sollte ein Bild sein" class="custom-delete-white"></ion-img>
+          </swiper-slide>
+        </swiper>
+      </ion-card>
 
       <ion-accordion-group class="mt-6">
 
@@ -93,122 +95,82 @@
 
   </ion-content>
 
-
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { ListOfCases } from "@/types/supabase-global";
-import { IonContent, IonHeader, IonTitle, modalController, IonButton, IonToolbar, IonButtons, IonIcon, IonAccordion, IonAccordionGroup, IonItem, IonLabel, IonToast } from "@ionic/vue";
-import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, newspaper } from 'ionicons/icons';
+import { IonContent, IonHeader, IonTitle, modalController, IonButton, IonToolbar, IonButtons, IonIcon, IonAccordion, IonAccordionGroup, IonItem, IonLabel, IonToast, IonCard, IonImg, IonBadge} from "@ionic/vue";
+import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
 import router from '../router';
 import { caseService } from '@/services/case-service';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Case, Status, Casetype, ImageData, Link, LinkType, FilteredCases, Role, CaseVote } from "@/types/supabase-global";
+import { Case, Status, Casetype, ImageData, Link, FilteredCases, Role, CaseVote } from "@/types/supabase-global";
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 
 
 //import { SwiperCore, Virtual } from "swiper";
 import "swiper/swiper-bundle.css";
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
 
 
 //Emma
-const dataLoaded = ref<boolean>(false);
 const pictureLoaded = ref<boolean>(false);
-const showComponent = ref<boolean>(false);
-const modal = ref();
 const isToastOpen = ref(false);
-
-const ionInputTitle = ref();
-const ionInputSummary = ref();
-const ionInputCrimeDate = ref();
-const ionInputCrimeTime = ref();
-const linkInputUrl = ref();
-const segment = ref('info');
-
-let linkListUpdate = ref();
-let picture = ref<ImageData[]>([]);
+const picture = ref<ImageData[]>([]);
 const linkList = ref<Link[]>([]);
 let detailCase: Case;
-
-let SelectedDateTime: string;
-let CaseType: Casetype;
-let CaseStatus: Status;
-let CrimeTime: string;
-let CrimeDate: string;
 let CaseId: string;
-let Latitude: number;
-let Longitude: number;
-let PlaceName: string;
 let ToastMessage: string;
-let linkTyp: LinkType = "newspaper";
 
 //Nina
-const navigation = [Navigation];
-const isOpen = ref(false);
-const pictureUriList: string[] = [];
 
-let iconName = ref("");
-let stateOfCaseGerman = ref("");
+const iconName = ref("");
+const stateOfCaseGerman = ref("");
 let stateOfCase: Status;
 let formattedDate: string;
-let upVotes: any[] | null;
 let typeOfCase: Casetype;
-let typeOfCaseGerman = ref("");
-let typeOfLink: LinkType;
-let typeOfLinkGerman = ref("");
-let changeNotSuccesful = ref(false);
-let changemessage = ref("");
+const typeOfCaseGerman = ref("");
 const isAdmin = ref(false);
 const isCrimefluencer = ref(false);
-let votes = ref<CaseVote>([]);
-
+const votes = ref<CaseVote>([]);
+const navigation = [Navigation];
+const upvote = ref<number>();
+const downvote = ref<number>();
 
 
 
 onMounted(async () => {
   CaseId = props.markerData[0].id;
-
   const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
   await Promise.all(caseImages!.map(async (file) => {
     const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-    let imageData: ImageData = {
+    const imageData: ImageData = {
       pictureUri: pictureUri,
       imageName: file.name
     };
     picture.value.push(imageData);
   }));
 
-
   votes.value = await caseService.getVotes(CaseId);
+  upvote.value = votes.value[0].upvotes;
+  downvote.value = votes.value[0].downvotes;
+  console.log(upvote);
+  console.log(downvote);
 
   detailCase = await caseService.getCase(CaseId);
   detailCase.forEach(function (item) {
-    let link: Link = {
+    const link: Link = {
       linkId: item.link_id,
       type: item.link_type,
       linkUrl: item.url
     };
     linkList.value.push(link);
   });
-
-
   pictureLoaded.value = true;
-
-
-
-
 });
-
-const getSlideData = (event: any) => {
-  console.log(event);
-
-  console.log(Swiper.activeIndex);
-
-  isOpen.value = true;
-
-}
 
 // PROPS
 const props = defineProps<{
@@ -216,10 +178,12 @@ const props = defineProps<{
 }>();
 
 const emits = defineEmits<{
-  (event: "onDismiss"): void;
+  (event: "onDismissModal"): void;
 }>();
-const getPicture = () => {
 
+const cancelModal = () => {
+  console.log("Dismiss");
+  emits('onDismissModal');
 };
 
 setStatusAndIcon();
@@ -245,36 +209,33 @@ const setOpen = (state: boolean) => {
   isToastOpen.value = state;
 };
 
-
-
-
 async function setStatusAndIcon() {
   stateOfCase = props.markerData[0].status;
 
   if (stateOfCase == "closed") {
-    stateOfCaseGerman = "Fall geschlossen";
-    iconName = checkmarkCircleOutline;
+    stateOfCaseGerman .value= "Fall geschlossen";
+    iconName.value = checkmarkCircleOutline;
   } else {
-    stateOfCaseGerman = "Fall ungelöst";
-    iconName = alertCircleOutline;
+    stateOfCaseGerman.value = "Fall ungelöst";
+    iconName.value = alertCircleOutline;
   }
-};
+}
 
 async function setCaseType() {
   typeOfCase = props.markerData[0].case_type;
 
   if (typeOfCase == "murder") {
-    typeOfCaseGerman = "Mord";
+    typeOfCaseGerman.value = "Mord";
   } else if (typeOfCase == "theft") {
-    typeOfCaseGerman = "Diebstahl";
+    typeOfCaseGerman.value = "Diebstahl";
   } else if (typeOfCase == "robbery-murder") {
-    typeOfCaseGerman = "Raub mit Mord";
+    typeOfCaseGerman.value = "Raub mit Mord";
   } else if (typeOfCase == "brawl") {
-    typeOfCaseGerman = "Schlägerei";
+    typeOfCaseGerman.value = "Schlägerei";
   } else if (typeOfCase == "rape") {
-    typeOfCaseGerman = "Vergewaltigung";
+    typeOfCaseGerman.value = "Vergewaltigung";
   }
-};
+}
 
 
 function modifyDate() {
@@ -289,10 +250,6 @@ function modifyDate() {
 
   formattedDate += ' Uhr';
 }
-
-async function closeModal() {
-  await modalController.dismiss();
-};
 
 
 async function getCurrentUserRoleFromService() {
@@ -321,6 +278,26 @@ const routeToChangeCaseView = async () => {
   background-color: rgba(255, 255, 255, 0);
   /* Hintergrundfarbe transparent setzen */
   --box-shadow: none;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+.swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+  /* Center slide text vertically */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .custom-delete-white {
