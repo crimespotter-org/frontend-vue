@@ -228,10 +228,9 @@ const ionInputCrimeDate = ref();
 const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
-
-let linkListUpdate = ref();
-let picture: ImageData[] = [];
 const linkList = ref<Link[]>([]);
+
+let picture: ImageData[] = [];
 let detailCase: Case;
 let SelectedDateTime: string;
 let CaseType: Casetype;
@@ -448,10 +447,6 @@ const setOpen = (state: boolean) => {
 
 ion-button {
     --background: #990000;
-}
-
-.select-fill-solid {
-    --background: white;
 }
 
 ion-content{

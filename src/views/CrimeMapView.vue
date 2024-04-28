@@ -22,9 +22,8 @@ import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
 import CrimeProfile from "../components/CrimeProfile.vue";
 import HeaderComponent from '../components/Header.vue';
-import { Capacitor } from "@capacitor/core";
 import { mapService } from "@/services/map-service";
-import { ListOfCases, FilteredCases } from "@/types/supabase-global";
+import { FilteredCases, ListOfCases, Coordinate } from "@/types/supabase-global";
 
 const markerIsOpen = ref<boolean>(false);
 
@@ -74,7 +73,8 @@ const getMarkerInfo = (marker: { lat: number; long: number }) : ListOfCases => {
   );
 };
 
-const markerClicked = (event: {latitude: number, longitude: number, mapId: string, markerId: string, snippet: string, title: string}) => {
+const markerClicked = (event: Coordinate) => {
+    console.log(event);
     const markerToPass = getMarkerInfo({lat: event.latitude, long: event.longitude});
     if(markerToPass.length == 0){
       return;
@@ -82,7 +82,7 @@ const markerClicked = (event: {latitude: number, longitude: number, mapId: strin
     openModal(markerToPass);
 }
 
-const receiveMarkerData = (event: ListOfCases) : void =>{
+const receiveMarkerData = (event: FilteredCases) : void =>{
   markerData = event;
 }
 

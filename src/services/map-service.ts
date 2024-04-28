@@ -8,6 +8,7 @@ import {
 } from "@/types/supabase-global";
 import { Geolocation } from "@capacitor/geolocation";
 
+
 class MapService {
 
   async getAllCases(): Promise<ListOfCases> {
@@ -35,7 +36,7 @@ class MapService {
     currentlong: number,
     distance: number,
     case_status: Status,
-    crime_types: Casetype,
+    crime_types: Casetype[] | null,
   ): Promise<FilteredCases> {
     distance = distance * 1000;
     const end_date = null;

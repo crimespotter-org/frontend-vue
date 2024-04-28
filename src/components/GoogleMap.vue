@@ -20,8 +20,8 @@
         </ion-col>
       </ion-row>
     </ion-grid>
-    <capacitor-google-map ref="mapRef" style="display: inline-block; width: 100vw; height: 86vh">
-    </capacitor-google-map>
+    <div class="map" ref="mapDivRef">
+    </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header class="crimeMap">
         <ion-toolbar>
@@ -61,9 +61,8 @@
           <ion-row>
             <ion-col size="12">
               <ion-item>
-                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType"
+                <ion-select aria-label="Fallstatus" placeholder="Fallart" :value="SelectedCrimeType" :multiple="true"
                   @ionChange="handleCaseTypeChange">
-                  <ion-select-option value="">Alles</ion-select-option>
                   <ion-select-option value="murder">Mord</ion-select-option>
                   <ion-select-option value="theft">Diebstahl</ion-select-option>
                   <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
@@ -80,10 +79,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, nextTick, ref, onUnmounted } from "vue";
-import { GoogleMap } from "@capacitor/google-maps";
+import { onMounted, nextTick, ref, onBeforeMount } from "vue";
 import { mapService } from "@/services/map-service";
-import { Casetype, Coordinate, ListOfCases, Status } from "@/types/supabase-global";
+import { Casetype, Coordinate, ListOfCases, Status, FilteredCases } from "@/types/supabase-global";
 import { filterOutline, add } from "ionicons/icons";
 import {
   IonItem,
@@ -115,101 +113,95 @@ const confirm = () => {
   filterEvent();
 }
 
-const mapRef = ref<HTMLElement>();
-const markerIds = ref<string[] | undefined>();
-const googleApiKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
-let newMap: GoogleMap;
 const currentLocation = ref<Coordinate>();
 let listOfCases: ListOfCases = [];
 let SelectedRange = "100";
-let SelectedCrimeStatus: Status;
-let SelectedCrimeType: Casetype[] = [];
+let SelectedCrimeStatus: Status | null;
+let SelectedCrimeType: Casetype[] | null = [];
 const markerDataLoaded = ref<boolean>(false);
+const googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let eventListener: any;
 
+//google map object
+const map = ref<google.maps.Map>();
+const mapDivRef = ref();
+let currentMarkers: google.maps.Marker[] = [];
+
+
 const props = defineProps<{
-  markerData: ListOfCases;
+  markerData: FilteredCases;
 }>();
 
 // EVENTS
 const emits = defineEmits<{
-  (event: "onMarkerClicked", info: any): void;
+  (event: "onMarkerClicked", info: Coordinate): void;
   (event: "onMapClicked"): void;
   (event: "onMarkerChange", value: ListOfCases): void;
 }>();
 
-onMounted(async () => {
-  console.log("mounted ", mapRef.value);
+
+
+onBeforeMount(() => {
+  const googleMapScript = document.createElement("SCRIPT");
+  googleMapScript.setAttribute(
+    "src",
+    `https://maps.googleapis.com/maps/api/js?key=${googleAPIKey}&libraries=geometry,places,marker&callback=initMap`
+  );
+  googleMapScript.setAttribute("defer", "");
+  googleMapScript.setAttribute("async", "");
+  document.head.appendChild(googleMapScript);
+});
+
+window.initMap = async () => {
   listOfCases = props.markerData;
-  console.log(listOfCases);
+  currentLocation.value = await mapService.currentLocation();
+  console.log(currentLocation);
+  map.value = new window.google.maps.Map(mapDivRef.value, {
+    zoom: 16,
+    disableDefaultUI: false,
+    center: { lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude }
+  });
+  Sleep(5000);
+  loadMapMarkers();
+}
+
+onMounted(async () => {
+  currentLocation.value = await mapService.currentLocation();
   await nextTick();
-  await createMap();
+  Sleep(5000);
+  createSearchbar();
   markerDataLoaded.value = true;
 });
 
-// remove markers on unmount
-onUnmounted(async () => {
-  console.log("onunmounted");
-  newMap.removeMarkers(markerIds?.value as string[]);
-  await google.maps.event.removeListener(eventListener);
-});
+const loadMapMarkers = () => {
+  deleteMarkers();
+  listOfCases.forEach(markerInfo => {
+    const mapMarker = new window.google.maps.Marker({
+      position: new window.google.maps.LatLng(markerInfo.lat, markerInfo.long),
+      map: map.value,
+      title: markerInfo.title
+    });
 
-const addSomeMarkers = async (newMap: GoogleMap) => {
-  markerIds?.value && newMap.removeMarkers(markerIds?.value as string[]);
-  const image = "/public/home-sharp.svg";
+    let coordinate: Coordinate = {
+      latitude: markerInfo.lat,
+      longitude: markerInfo.long
+    };
 
-  // each point from supabase
-  const markers = listOfCases.map((item) => {
-    return {
-      coordinate: { lat: item.lat, lng: item.long },
-      title: item.title,
-      iconUrl: ""
-    }
-  });
+    mapMarker.addListener('click', () => {
+      emits('onMarkerClicked', coordinate);
+    })
 
-  //Location from User
-  markers.push({
-    coordinate: { lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude },
-    title: "Mein Standort",
-    iconUrl: image
-  });
+    currentMarkers.push(mapMarker);
+  })
 
-  markerIds.value = await newMap.addMarkers(markers);
 };
 
-async function createMap() {
-  if (!mapRef.value) return;
+function deleteMarkers() {
+  currentMarkers.forEach(m => { m.setMap(null) });
+  currentMarkers = [];
+}
 
-  currentLocation.value = await mapService.currentLocation();
-
-  // render map using capacitor plugin
-  newMap = await GoogleMap.create({
-    id: "map-id",
-    element: mapRef.value,
-    apiKey: googleApiKey, //use apikey here
-    config: {
-      center: {
-        lat: currentLocation.value!.latitude,
-        lng: currentLocation.value!.longitude,
-      },
-      zoom: 15,
-    },
-  });
-
-  // add markers to map
-  addSomeMarkers(newMap);
-
-  // Set Event Listeners...
-  // Handle marker click, send event back to parent
-  newMap.setOnMarkerClickListener((event) => {
-    emits("onMarkerClicked", event);
-  });
-
-  // Handle map click, send event back to parent
-  newMap.setOnMapClickListener(() => {
-    emits("onMapClicked");
-  });
-
+function createSearchbar() {
   const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[0];
   const center = { lat: 50.064192, lng: -130.605469 };
   const defaultBounds = {
@@ -234,12 +226,6 @@ async function createMap() {
     const latitude = location?.lat();
     const longitude = location?.lng();
     // Move the map programmatically
-    newMap.setCamera({
-      coordinate: {
-        lat: latitude!,
-        lng: longitude!
-      }
-    });
   });
 };
 
@@ -249,8 +235,10 @@ const getAddress = (place: any) => {
 
 const filterEvent = async () => {
   const range = Number(SelectedRange);
+  console.log(SelectedCrimeType);
+  console.log(SelectedCrimeStatus);
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
-  await addSomeMarkers(newMap);
+  loadMapMarkers();
   emits('onMarkerChange', listOfCases);
 };
 
@@ -269,8 +257,8 @@ const handleStatusChange = async (event: { detail: { value: string } }) => {
 
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   SelectedCrimeType = [];
-  if (event.detail.value === "") {
-    SelectedCrimeType.push(null);
+  if (event.detail.value.length === 0) {
+    SelectedCrimeType  = null;
   } else {
     const caseType = event.detail.value as Casetype;
     SelectedCrimeType.push(caseType);
@@ -278,4 +266,15 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   console.log(SelectedCrimeType);
 }
 
+function Sleep(milliseconds: number) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
 </script>
+
+<style lang="css" scoped>
+.map {
+  width: 100%;
+  height: 100%;
+}
+</style>
