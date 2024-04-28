@@ -99,6 +99,7 @@ import {
   IonToolbar,
   IonPage
 } from "@ionic/vue";
+import { caseService } from "@/services/case-service";
 
 const modal = ref();
 
@@ -143,7 +144,7 @@ onBeforeMount(() => {
   const googleMapScript = document.createElement("SCRIPT");
   googleMapScript.setAttribute(
     "src",
-    `https://maps.googleapis.com/maps/api/js?key=${googleAPIKey}&libraries=geometry,places,marker&callback=initMap`
+    `https://maps.googleapis.com/maps/api/js?key=${googleAPIKey}&libraries=geometry,places,marker,visualization&callback=initMap`
   );
   googleMapScript.setAttribute("defer", "");
   googleMapScript.setAttribute("async", "");
@@ -164,6 +165,8 @@ window.initMap = async () => {
 }
 
 onMounted(async () => {
+  const vote = await caseService.getVotes("713af3b1-16cf-4a44-893d-5280f1fbfbd9");
+  console.log(vote);
   currentLocation.value = await mapService.currentLocation();
   await nextTick();
   Sleep(5000);
@@ -173,6 +176,15 @@ onMounted(async () => {
 
 const loadMapMarkers = () => {
   deleteMarkers();
+
+  const locationMarker = new google.maps.Marker({
+    position: { lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude },
+    label: "Home",
+    map: map.value,
+    title: "Mein Standort"
+  });
+  currentMarkers.push(locationMarker);
+
   listOfCases.forEach(markerInfo => {
     const mapMarker = new window.google.maps.Marker({
       position: new window.google.maps.LatLng(markerInfo.lat, markerInfo.long),
@@ -221,11 +233,21 @@ function createSearchbar() {
   eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function () {
     const place = autocomplete.getPlace();
     const location = place['geometry']!['location'];
-    const latitude = location?.lat();
-    const longitude = location?.lng();
-    // Move the map programmatically
   });
 };
+
+const setHeatMap = () =>{
+  const heatMapData:google.maps.LatLng[]  = [];
+  listOfCases.forEach(markerInfo => {
+    const latLong =   new google.maps.LatLng(markerInfo.lat, markerInfo.long);
+    heatMapData.push(latLong);
+  });
+
+  const heatmap = new google.maps.visualization.HeatmapLayer({
+  data: heatMapData
+  });
+  heatmap.setMap(map.value!);
+}
 
 const getAddress = (place: any) => {
   console.log('Address Object', place);

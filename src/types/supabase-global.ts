@@ -386,6 +386,16 @@ export type Database = {
           username: string
         }[]
       }
+      get_case_votes_by_id:
+        | {
+            Args: {
+              p_case_id: string
+            }
+            Returns: {
+              upvotes: number
+              downvotes: number
+            }[]
+          }
       get_enum_values_angular: {
         Args: {
           enum_typename: string
@@ -427,24 +437,23 @@ export type Database = {
           distance_to_location: number
         }[]
       }
-      update_case:
-          {
-            Args: {
-              title: string
-              summary: string
-              status: Database["public"]["Enums"]["status"]
-              lat: number
-              long: number
-              place_name: string
-              zip_code: number
-              case_type: Database["public"]["Enums"]["casetype"]
-              crime_date_time: string
-              case_id: string
-              created_by: string
-              p_links: Json
-            }
-            Returns: undefined
-          }
+      update_case: {
+        Args: {
+          title: string
+          summary: string
+          status: Database["public"]["Enums"]["status"]
+          lat: number
+          long: number
+          place_name: string
+          zip_code: number
+          case_type: Database["public"]["Enums"]["casetype"]
+          crime_date_time: string
+          case_id: string
+          created_by: string
+          p_links: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       casetype: "murder" | "theft" | "robbery-murder" | "brawl" | "rape" | null
@@ -540,7 +549,6 @@ export type Enums<
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
 
-
 export type Comment = Database['public']['Tables']['comments']['Row']
 export type FurtherLink = Database['public']['Tables']['furtherlinks']['Row']
 export type Media = Database['public']['Tables']['media']['Row']
@@ -554,6 +562,7 @@ export type Casetype = Database['public']['Enums']['casetype']
 export type LinkType = Database['public']['Enums']['link_type']
 export type Role = Database['public']['Enums']['role']
 export type Status = Database['public']['Enums']['status']
+export type CaseVote = Database['public']['Functions']['get_case_votes_by_id']['Returns']
 
 export interface Coordinate{
   latitude: number;
