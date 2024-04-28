@@ -1,20 +1,22 @@
 <template>
   <ion-page class="crimeMap">
     <ion-fab slot="fixed" vertical="bottom" horizontal="start">
-      <ion-fab-button color="secondary">
-        <ion-icon :icon="add"></ion-icon>
-      </ion-fab-button>
+      <router-link to="/create-case">
+        <ion-fab-button color="secondary">
+          <ion-icon :icon="add"></ion-icon>
+        </ion-fab-button>
+      </router-link>
     </ion-fab>
     <ion-grid>
       <ion-row>
-        <ion-col size="2">
-          <ion-button id="open-modal" expand="block" color="secondary">
-            <ion-icon :icon="filterOutline"></ion-icon>
-          </ion-button>
-        </ion-col>
-        <ion-col size="10">
+        <ion-col>
+          <div class="flex gap-x-4">
+            <ion-button id="open-modal" expand="block" color="secondary">
+              <ion-icon :icon="filterOutline"></ion-icon>
+            </ion-button>
           <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress">
           </ion-searchbar>
+          </div>
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -97,7 +99,8 @@ import {
   IonContent,
   IonHeader,
   IonToolbar,
-  IonPage
+  IonPage,
+  IonButtons
 } from "@ionic/vue";
 import { caseService } from "@/services/case-service";
 
@@ -135,7 +138,7 @@ const props = defineProps<{
 const emits = defineEmits<{
   (event: "onMarkerClicked", info: Coordinate): void;
   (event: "onMapClicked"): void;
-  (event: "onMarkerChange", value: ListOfCases): void;
+  (event: "onMarkerChange", value: FilteredCases): void;
 }>();
 
 
@@ -278,7 +281,7 @@ const handleStatusChange = async (event: { detail: { value: string } }) => {
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   SelectedCrimeType = [];
   if (event.detail.value.length === 0) {
-    SelectedCrimeType  = null;
+    SelectedCrimeType = null;
   } else {
     const caseType = event.detail.value as Casetype;
     SelectedCrimeType.push(caseType);

@@ -9,10 +9,6 @@
             <div class="m-4">
                 <ion-list>
                     <ion-item>
-                        <ion-label position="floating">Name</ion-label>
-                        <ion-input v-model="name"></ion-input>
-                    </ion-item>
-                    <ion-item>
                         <ion-label position="floating">E-Mail-Adresse</ion-label>
                         <ion-input type="email" v-model="email"></ion-input>
                     </ion-item>
@@ -21,7 +17,9 @@
                         <ion-input type="password" v-model="password"></ion-input>
                     </ion-item>
                 </ion-list>
-                <ion-button expand="full" @click="createAccount">Account erstellen</ion-button>
+                <ion-button id="open-loading" expand="full" @click="createAccount">Account erstellen</ion-button>
+                <ion-loading trigger="open-loading" :duration="3000"
+                    message="Account wird angelegt. Sie werden gleich weitergeleitet."> </ion-loading>
             </div>
         </ion-content>
     </ion-page>
@@ -42,38 +40,57 @@ import {
     IonInput,
     IonButton,
     IonSelect,
-    IonSelectOption
+    IonSelectOption,
+    IonLoading,
+    IonList
 } from "@ionic/vue";
 import { ref } from "vue";
 import { supabase } from "@/services/supabase-service";
-import router from '../router'
+import router from '../router';
+import { Role } from "@/types/supabase-global";
 
 //variable email and password
 let email = ref("");
 let password = ref("");
-let name = ref("");
+let role_crimespotter: Role;
 
 
 async function createAccount() {
+    role_crimespotter = "crimespotter";
 
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
-        options: {
-            data: {
-                first_name: name.value
-             
-            }
-        }
     });
 
-   
-
     if (!error) {
-        console.log("Create Account");
-        router.push('/crime-map');
+
+        const { data, error: loginError } = await supabase.auth.signInWithPassword({
+            email: email.value,
+            password: password.value
+        });
+
+        if (!loginError) {
+            const localUser = await supabase.auth.getSession();
+            console.log(localUser.data.session?.user.id);
+
+            const { data: upsertData, error: upsertError } = await supabase
+                .from('user_profiles')
+                .upsert({ id: localUser.data.session?.user.id, username: email.value, role: role_crimespotter })
+                .select()
+
+            if (!upsertError) {
+                router.push('/home');
+            }
+            else {
+                console.log("Upsert Error" + upsertError);
+            }
+        }
     } else {
-        console.log(error)
+        console.log("Auth Error" + error);
     }
-}
+
+};
+
+
 </script>

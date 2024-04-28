@@ -1,9 +1,9 @@
 import { Case, Casetype, Status, Link, CaseVote } from "@/types/supabase-global";
 import { supabase } from "./supabase-service";
-import { FileObject } from '@supabase/storage-js'
+import { FileObject } from "@supabase/storage-js";
+import { currentUserInformation } from "@/services/currentUserInformation-service";
 
 class CaseService {
-
   async updateCase(
     case_id: string,
     case_type: Casetype,
@@ -18,32 +18,31 @@ class CaseService {
     zip_code: number | null,
     linkList: Link[]
   ): Promise<boolean> {
-
     console.log(linkList);
 
-    const p_links = linkList.map(link => ({
+    const p_links = linkList.map((link) => ({
       url: link.linkUrl,
-      link_type: link.type
-  }));
+      link_type: link.type,
+    }));
 
-    const { data, error } = await supabase.rpc('update_case', {
-      case_id, 
-      case_type, 
-      created_by, 
-      crime_date_time, 
-      lat, 
-      long, 
-      place_name, 
-      status, 
-      summary, 
-      title, 
+    const { data, error } = await supabase.rpc("update_case", {
+      case_id,
+      case_type,
+      created_by,
+      crime_date_time,
+      lat,
+      long,
+      place_name,
+      status,
+      summary,
+      title,
       zip_code,
-      p_links
-    })
-    if (error){
+      p_links,
+    });
+    if (error) {
       console.error(error);
       return false;
-    } 
+    }
     return true;
   }
 
@@ -62,7 +61,7 @@ class CaseService {
     return cases;
   }
 
-  async getCaseImagesFromStorage(caseId: string): Promise<FileObject[]|null> {
+  async getCaseImagesFromStorage(caseId: string): Promise<FileObject[] | null> {
     const { data: caseImage, error } = await supabase.storage
       .from("media")
       .list(`case-${caseId}`, {
@@ -76,40 +75,58 @@ class CaseService {
     return caseImage;
   }
 
-  async deleteCaseImageFromStorage(imageName: string, caseId: string) : Promise<boolean> {
-    const { data, error } = await supabase
-      .storage
+  async deleteCaseImageFromStorage(
+    imageName: string,
+    caseId: string
+  ): Promise<boolean> {
+    const { data, error } = await supabase.storage
       .from("media")
       .remove([`case-${caseId}/${imageName}`]);
-      if(error){
-        console.error("Fehler beim löschen des Bildes", error.message);
-        return false;
-      }
-      return true;
+    if (error) {
+      console.error("Fehler beim löschen des Bildes", error.message);
+      return false;
+    }
+    return true;
   }
-
-  async getVotes(p_case_id: string): Promise<CaseVote>{
-    const { data: vote, error } = await supabase.rpc('get_case_votes_by_id', {
-      p_case_id
-    });
-    if (error){
-      console.error(error);
-      return[];
-    } 
-    console.log(vote);
-    return vote;
-  }
-
-  async getPublicUrl(imageName: string, caseId: string) : Promise<string>{
+  
+  async getPublicUrl(imageName: string, caseId: string): Promise<string> {
     const { data, error } = await supabase.storage
       .from("media")
       .createSignedUrl(`case-${caseId}/${imageName}`, 60);
 
-      if(error){
-        console.error("Fehler beim Abrufen der Bilder:", error.message);
-      }
+    if (error) {
+      console.error("Fehler beim Abrufen der Bilder:", error.message);
+    }
 
-      return data!.signedUrl;
+    return data!.signedUrl;
+  }
+
+  async updateVote(caseIdforvote: string, vote: number): Promise<boolean> {
+    const localUser = await currentUserInformation.getCurrentUser();
+    const { data, error } = await supabase
+      .from("votes")
+      .update({ vote: vote })
+      .eq("case_id", caseIdforvote)
+      .eq("user_id", localUser.data.session?.user.id);
+    if (!error) {
+      console.log("Voted" + vote);
+      return true;
+    } else {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async getVotes(p_case_id: string): Promise<CaseVote> {
+    const { data: vote, error } = await supabase.rpc("get_case_votes_by_id", {
+      p_case_id,
+    });
+    if (error) {
+      console.error(error);
+      return [];
+    }
+    console.log(vote);
+    return vote;
   }
 }
 

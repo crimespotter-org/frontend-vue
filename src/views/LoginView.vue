@@ -19,8 +19,11 @@
             </div>
 
             <div class="buttonContainer">
-                <router-link to="/create-Account"> <ion-button>Account erstellen</ion-button>  </router-link>              
+                <router-link to="/create-Account"> <ion-button>Account erstellen</ion-button> </router-link>
             </div>
+            <ion-toast :is-open="changeNotSuccesful" @didDismiss="setOpenChangeSuccessful(false)"
+                message="{{ changemessage }}" :duration="5000"></ion-toast>
+
         </ion-content>
     </ion-page>
 </template>
@@ -48,6 +51,8 @@ import router from '../router'
 //variable email and password
 let email = ref("");
 let password = ref("");
+let changeNotSuccesful = ref(false);
+let changemessage = ref("");
 
 
 //Login
@@ -60,7 +65,10 @@ async function login() {
     if (!error) {
         router.push('/crime-map');
     } else {
-        console.log("Dasn sit err" + error)
+        console.log(error);
+        changemessage.value = "Die Anmeldung war nicht erfolgreich: " + error;
+        changeNotSuccesful.value = true;
+        
     }
 
 
@@ -70,24 +78,26 @@ async function login() {
 
 //Shows details from current user
 async function seeCurrentUser() {
-    
-        const localUser = await supabase.auth.getSession();
 
-        console.log(localUser);
+    const localUser = await supabase.auth.getSession();
+
+    console.log(localUser);
 
 }
 
 //Logout  function
 async function logout() {
-    
-        const { error } = await supabase.auth.signOut();
-        console.log("Logged out");
+
+    const { error } = await supabase.auth.signOut();
+    console.log("Logged out");
 
     if (error) {
-        console.log(error)
+        console.log(error)        
     }
 }
 
-
+const setOpenChangeSuccessful = (state: boolean) => {
+    changeNotSuccesful.value = state;
+};
 
 </script>

@@ -1,71 +1,78 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
-import HomePage from '../views/HomePage.vue';
-import Login from '../views/LoginView.vue';
-import CaseProfileView from '../views/CaseProfileView.vue';
-import CreateAccount from '../views/CreateAccountView.vue';
-import Unauthorized from '@/views/UnauthorizedView.vue';
-import { supabase } from '@/services/supabase-service';
-import CrimeMapView from '@/views/CrimeMapView.vue';
-import ChangeCaseView from '@/views/ChangeCaseView.vue';
+import { createRouter, createWebHistory } from "@ionic/vue-router";
+import { RouteRecordRaw } from "vue-router";
+import Login from "../views/LoginView.vue";
+import CreateAccount from "../views/CreateAccountView.vue";
+import Unauthorized from "../views/UnauthorizedView.vue";
+import ChangeUserRole from "../views/ChangeUserRoleView.vue";
+import Menu from "../views/MenuView.vue";
+import CrimeMap from "../views/CrimeMapView.vue";
+import ChangeCase from "../views/ChangeCaseView.vue";
+import AddCase from "../views/AddCaseView.vue";
+import { currentUserInformation } from "@/services/currentUserInformation-service";
 
 let localUser;
-
-
+let localUserRole;
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
-    redirect: '/login',
+    path: "/",
+    redirect: "/crime-map",
   },
   {
-    path: '/login',
-    name: 'Login',
-    component: Login
+    path: "/login",
+    name: "Login",
+    component: Login,
   },
   {
-    path: '/create-Account',
-    name: 'CreateAccount',
-    component: CreateAccount
+    path: "/create-Account",
+    name: "CreateAccount",
+    component: CreateAccount,
   },
   {
-    path: '/unauthorized',
-    name: 'Unauthorized',
-    component: Unauthorized
+    path: "/unauthorized",
+    name: "Unauthorized",
+    component: Unauthorized,
   },
   {
-    path: '/home',
-    name: 'Home',
-    component: HomePage,
-    meta: { requiresAuthentication: true}
+    path: "/change-user-role",
+    name: "ChangeUserRole",
+    component: ChangeUserRole,
+    meta: { requiresAdminRole: true },
   },
   {
-    path: '/case-profile',
-    name: 'CaseProfileView',
-    component: CaseProfileView,
-    meta: { requiresAuthentication: true}
+    path: "/change-case/:caseId",
+    name: "ChangeCase",
+    component: ChangeCase,
+    props: true,
+    meta: { requiresCrimeFluencerRole: true },
   },
   {
-    path: '/crime-map',
-    name: 'CrimeMapView',
-    component: CrimeMapView
+    path: "/create-case",
+    name: "AddCase",
+    component: AddCase,
+    meta: { requiresCrimeFluencerRole: true },
   },
   {
-    path: '/change-case/:caseId',
-    name: 'ChangeCaseView',
-    component: ChangeCaseView,
-    props: true
+    path: "/menu",
+    name: "Menu",
+    component: Menu,
+    meta: { requiresAuthentication: true },
   },
-]
+  {
+    path: "/crime-map",
+    name: "CrimeMap",
+    component: CrimeMap,
+    meta: { requiresAuthentication: true },
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-//get user information
 async function getUser(next) {
-  localUser = await supabase.auth.getSession();
+  localUser = await currentUserInformation.getCurrentUser();
   if (localUser.data.session == null) {
     next("/unauthorized");
   } else {
@@ -73,18 +80,37 @@ async function getUser(next) {
   }
 }
 
+async function getInformationAboutAdminRole(next) {
+  localUserRole = await currentUserInformation.getCurrentUserRole();
+  if (localUserRole == "admin") {
+    next();
+  } else {
+    next("/unauthorized");
+  }
+}
+
+async function getInformationAboutCrimeFluencerRole(next) {
+  localUserRole = await currentUserInformation.getCurrentUserRole();
+  if (localUserRole == "crimefluencer") {
+    next();
+  } else if (localUserRole == "admin") {
+    next();
+  } else {
+    next("/unauthorized");
+  }
+}
+
 //authentication is required
 router.beforeEach((to, from, next) => {
-  if(to.meta.requiresAuthentication) {
-    getUser(next)
-    console.log("Authentication required"); 
+  if (to.meta.requiresAuthentication) {
+    getUser(next);
+  } else if (to.meta.requiresAdminRole) {
+    getInformationAboutAdminRole(next);
+  } else if (to.meta.requiresCrimeFluencerRole) {
+    getInformationAboutCrimeFluencerRole(next);
   } else {
     next();
   }
+});
 
-})
-
-
-
-
-export default router
+export default router;
