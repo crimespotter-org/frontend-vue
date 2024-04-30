@@ -214,6 +214,7 @@ import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutl
 import { useRoute } from "vue-router";
 import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
+import { currentUserInformation } from "@/services/currentUserInformation-service";
 
 const ionRouter = useIonRouter();
 const dataLoaded = ref<boolean>(false);
@@ -243,6 +244,7 @@ let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
 let linkTyp: LinkType = "newspaper";
+let localUserId: string = "";
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -259,7 +261,9 @@ const confirm = () => {
 onMounted(async () => {
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = detailCase[0].crime_date_time
+    SelectedDateTime = detailCase[0].crime_date_time;
+
+    localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 
     CrimeDate = convertDateString(detailCase[0].crime_date_time);
     CaseType = detailCase[0].case_type;
@@ -320,7 +324,7 @@ const updateCase = async () => {
     const successful = await caseService.updateCase(
         CaseId,
         CaseType,
-        "02cb674f-ff36-4e62-aeb7-dfcdf58e0eae",
+        localUserId,
         SelectedDateTime,
         Latitude,
         Longitude,
@@ -362,7 +366,7 @@ const deletePicture = async (picture: ImageData) => {
     const successful = await caseService.deleteCaseImageFromStorage(picture.imageName, CaseId);
 
     if (successful) {
-        ToastMessage = "Bild erfolgreich angelegt";
+        ToastMessage = "Bild erfolgreich gelöscht";
         setOpen(true);
     } else {
         ToastMessage = "Etwas lief schief probier es später nochmal!"

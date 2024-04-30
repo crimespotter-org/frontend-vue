@@ -25,13 +25,13 @@
 
                 <!-- title -->
                 <ion-item class="customTransparent">
-                    <ion-input v-model="caseData.title" label="Titel" label-placement="floating"
+                    <ion-input ref="ionInputTitle" label="Titel" label-placement="floating"
                         :auto-grow="true"></ion-input>
                 </ion-item>
 
                 <!-- summary -->
                 <ion-item class="customTransparent">
-                    <ion-textarea v-model="caseData.summary" label="Zusammenfassung" label-placement="floating"
+                    <ion-textarea ref="ionInputSummary"  label="Zusammenfassung" label-placement="floating"
                         :auto-grow="true"></ion-textarea>
                 </ion-item>
 
@@ -39,14 +39,14 @@
                 <ion-item class="customTransparent">
                     <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
                         @ion-focus="setLocation" show-clear-button="always" :clear-icon="trashOutline"
-                        value="Tatort"></ion-searchbar>
+                        placeholder="Tatort" :value="PlaceName"></ion-searchbar>
 
                 </ion-item>
 
                 <!-- state -->
                 <ion-item class="customTransparent">
                     <ion-select aria-label="Fallstatus" label="Fallstatus" label-placement="floating"
-                        v-model="caseData.status">
+                        :value="CaseStatus" @ionChange="handleStatusChange">
                         <ion-select-option value="closed">Gelöst</ion-select-option>
                         <ion-select-option value="open">Ungelöst</ion-select-option>
                     </ion-select>
@@ -55,7 +55,7 @@
                 <!-- type -->
                 <ion-item class="customTransparent">
                     <ion-select label="Straftat" label-placement="floating" aria-label="Straftat"
-                        v-model="caseData.type">
+                        :value="CaseType" @ionChange="handleCaseTypeChange">
                         <ion-select-option value="murder">Mord</ion-select-option>
                         <ion-select-option value="theft">Diebstahl</ion-select-option>
                         <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
@@ -80,6 +80,16 @@
                                     :value="CrimeTime"></ion-input>
                             </ion-col>
                         </ion-row>
+                        <ion-row>
+                        <ion-col size="3">
+                            <ion-button @click="createCase">Erstellen</ion-button>
+                        </ion-col>
+                        <ion-col size="5">
+                        </ion-col>
+                        <ion-col size="4">
+                            <ion-button @click="navigateBack">Zurück</ion-button>
+                        </ion-col>
+                    </ion-row>
                     </ion-grid>
                 </ion-item>
             </ion-card>
@@ -124,8 +134,44 @@
 
 
             <!-- segment three links -->
-            <ion-card v-show="segment === 'links'">
-                <p>Drei Links</p>
+            <ion-card v-show="segment === 'links'" class="customTransparent">
+                <ion-card-content class="customTransparent">
+                    Updaten über den Update Button auf der Info Seite!
+                    <ion-list class="customTransparent">
+                        <ion-item v-for="(link, index) in linkList" :key="index" class="customTransparent">
+                            <ion-grid class="customTransparent">
+                                <ion-row class="customTransparent">
+                                    <ion-col class="customTransparent">
+                                        <ion-select :value="link.type" @ionChange="changeLinkType(link, $event)" class="customTransparent">
+                                            <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
+                                            <ion-select-option value="podcast">🎧Podcast</ion-select-option>
+                                            <ion-select-option value="book">📖Buch</ion-select-option>
+                                        </ion-select>
+                                    </ion-col>
+                                    <ion-col class="customTransparent">
+                                        <a :href=link.linkUrl>{{ link.linkUrl }}</a>
+                                    </ion-col>
+                                    <ion-col class="customTransparent">
+                                        <ion-button @click="deleteLink(link)">
+                                            <ion-icon :icon="trashOutline"></ion-icon>
+                                        </ion-button>
+                                    </ion-col>
+                                </ion-row>
+                            </ion-grid>
+                        </ion-item>
+                    </ion-list>
+                    <ion-item class="customTransparent">
+                        <ion-select :value="linkTyp" class="customTransparent">
+                            <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
+                            <ion-select-option value="podcast">🎧Podcast</ion-select-option>
+                            <ion-select-option value="book">📖Buch</ion-select-option>
+                        </ion-select>
+                        <ion-input ref="linkInputUrl" placeholder="Url"></ion-input>
+                        <ion-button @click="includeLink">
+                            <ion-icon :icon="arrowUpOutline"></ion-icon>
+                        </ion-button>
+                    </ion-item>
+                </ion-card-content>
             </ion-card>
 
 
@@ -188,14 +234,11 @@ import {
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
 import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
-import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline, micOutline, newspaperOutline, bookOutline } from "ionicons/icons";
+import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline} from "ionicons/icons";
+import { caseService } from '@/services/case-service';
+import { currentUserInformation } from "@/services/currentUserInformation-service";
 
-
-//Emma
 const ionRouter = useIonRouter();
-const dataLoaded = ref<boolean>(false);
-const pictureLoaded = ref<boolean>(false);
-const showComponent = ref<boolean>(false);
 const modal = ref();
 const isToastOpen = ref(false);
 
@@ -206,10 +249,8 @@ const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
 
-let linkListUpdate = ref();
 let picture: ImageData[] = [];
 const linkList = ref<Link[]>([]);
-let detailCase: Case;
 let SelectedDateTime: string;
 let CaseType: Casetype;
 let CaseStatus: Status;
@@ -221,17 +262,11 @@ let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
 let linkTyp: LinkType = "newspaper";
+let localUserId: string = "";
 
-//Nina
-let caseData = {
-    title: '',
-    summary: '',
-    location: '',
-    status: '',
-    type: '',
-    dateTime: '',
-    // Weitere Felder hier hinzufügen
-};
+onMounted(async() => {
+    localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
+})
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -279,19 +314,38 @@ const setLocation = () => {
     });
 };
 
-const deletePicture = async (picture: ImageData) => {
-    console.log(picture);
-    console.log(CaseId);
-    console.log(picture.imageName);
-    const successful = await caseService.deleteCaseImageFromStorage(picture.imageName, CaseId);
+const deleteLink = (link: Link) => {
+    console.log(link);
+    linkList.value = linkList.value.filter(function(item) {
+    return item !== link;
+    });
+};
 
-    if (successful) {
-        ToastMessage = "Bild erfolgreich angelegt";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
+const includeLink = () => {
+    let link: Link = {
+        linkId: "",
+        type: linkTyp,
+        linkUrl: linkInputUrl.value.$el.value
+    };
+    linkList.value.push(link);
+    linkInputUrl.value.$el.value = "";
+};
+
+const changeLinkType = (link: Link, type: {detail: {value: LinkType}}) => {
+
+    linkList.value = linkList.value.filter(function(item) {
+    return item !== link;
+    });
+
+    let newLink: Link = {
+        linkId: "",
+        type: type.detail.value,
+        linkUrl: link.linkUrl
+    };
+    linkList.value.push(newLink);
+};
+
+const deletePicture = async (picture: ImageData) => {
 };
 
 const getPicture = () => {
@@ -300,6 +354,43 @@ const getPicture = () => {
 
 const takePicture = () => {
 
+};
+
+const handleStatusChange = async (event: { detail: { value: string } }) => {
+    CaseStatus = event.detail.value as Status;
+};
+
+const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
+    CaseType = event.detail.value as Casetype;
+};
+
+const createCase = async () => {
+    const successful = await caseService.createCase(
+        CaseType,
+        localUserId,
+        SelectedDateTime,
+        Latitude,
+        Longitude,
+        PlaceName,
+        CaseStatus,
+        ionInputSummary.value.$el.value,
+        ionInputTitle.value.$el.value,
+        null,
+        linkList.value
+    );
+
+    if (successful) {
+        ToastMessage = "Case erfolgreich erstellt!";
+        setOpen(true);
+    } else {
+        ToastMessage = "Etwas lief schief probier es später nochmal!"
+        setOpen(true);
+    }
+
+};
+
+const navigateBack = () => {
+    ionRouter.push("/crime-map");
 };
 
 const setOpen = (state: boolean) => {

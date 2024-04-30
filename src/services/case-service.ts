@@ -18,7 +18,6 @@ class CaseService {
     zip_code: number | null,
     linkList: Link[]
   ): Promise<boolean> {
-    console.log(linkList);
 
     const p_links = linkList.map((link) => ({
       url: link.linkUrl,
@@ -43,6 +42,43 @@ class CaseService {
       console.error(error);
       return false;
     }
+    return true;
+  }
+
+  async createCase(
+    p_case_type: Casetype,
+    p_created_by: string,
+    p_crime_date_time: string,
+    p_latitude: number,
+    p_longitude: number,
+    p_place_name: string,
+    p_status: Status,
+    p_summary: string,
+    p_title: string,
+    p_zip_code: number | null,
+    linkList: Link[]): Promise<boolean>{
+      const p_links = linkList.map((link) => ({
+        url: link.linkUrl,
+        link_type: link.type,
+      }));
+
+    const { data, error } = await supabase.rpc('create_crime_case_angular', {
+    p_case_type, 
+    p_created_by, 
+    p_crime_date_time, 
+    p_latitude, 
+    p_links, 
+    p_longitude, 
+    p_place_name, 
+    p_status, 
+    p_summary, 
+    p_title, 
+    p_zip_code
+  })
+    if (error){
+      console.error(error);
+      return false;
+    } 
     return true;
   }
 
