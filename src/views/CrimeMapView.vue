@@ -4,7 +4,7 @@
     <ion-content :scroll-y="true" class="crimeMap">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked"
         @onMarkerClicked="markerClicked"></my-map>
-      <ion-modal ref="modalRef" :can-dismiss="canDismiss">
+      <ion-modal ref="modalRef" :can-dismiss="canDismiss" color="primary">
         <crime-profile :markerData="markerToPass" :modal="modalRef"/>
       </ion-modal>
     </ion-content>

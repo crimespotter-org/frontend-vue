@@ -1,9 +1,9 @@
 <template>
     <ion-page v-if="dataLoaded">
         <HeaderComponent />
-        <ion-content class="ion-padding">
-            <ion-toolbar>
-                <ion-segment v-model="segment">
+        <ion-content class="ion-padding case">
+            <ion-toolbar class="customTransparent">
+                <ion-segment v-model="segment" color="primary">
                     <ion-segment-button value="info">
                         <ion-label>Info</ion-label>
                     </ion-segment-button>
@@ -15,116 +15,114 @@
                     </ion-segment-button>
                 </ion-segment>
             </ion-toolbar>
-            <ion-card v-show="segment === 'info'">
-                <ion-grid>
-                    <ion-row>
-                        <ion-col>
-                            <ion-card>
+            <ion-card v-show="segment === 'info'" class="customTransparent">
+                <ion-item class="customTransparent">
+                    <ion-title :auto-grow="true">
+                        Fall bearbeiten
+                    </ion-title>
+                </ion-item>
+                <ion-item class="customTransparent">
+                    <ion-textarea ref="ionInputTitle" label="Titel: " :value="detailCase[0].title"
+                        :auto-grow="true"></ion-textarea>
+                </ion-item>
 
-                            </ion-card>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row class="input-row">
-                        <ion-col size="12">
-                            <ion-textarea ref="ionInputTitle" label="Title: "
-                                :value="detailCase[0].title"></ion-textarea>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row class="input-row">
-                        <ion-col size="12">
-                            <ion-textarea ref="ionInputSummary" label="Inhalt:" :value="detailCase[0].summary"
-                                rows="16"></ion-textarea>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row class="input-row">
-                        <ion-col size="6">
-                            <ion-item>
-                                <ion-select aria-label="Fallstatus" label="Fallstatus" label-placement="floating"
-                                    fill="solid" :value="CaseStatus" @ionChange="handleStatusChange">
-                                    <ion-select-option value="closed">Gelöst</ion-select-option>
-                                    <ion-select-option value="open">Ungelöst</ion-select-option>
-                                </ion-select>
-                            </ion-item>
-                        </ion-col>
-                        <ion-col size="6">
-                            <ion-item>
-                                <ion-select label="Straftat" label-placement="floating" fill="solid"
-                                    aria-label="Straftat" :value="CaseType" @ionChange="handleCaseTypeChange">
-                                    <ion-select-option value="murder">Mord</ion-select-option>
-                                    <ion-select-option value="theft">Diebstahl</ion-select-option>
-                                    <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
-                                    <ion-select-option value="brawl">Schlägerei</ion-select-option>
-                                    <ion-select-option value="rape">Vergewaltigung</ion-select-option>
-                                </ion-select>
-                            </ion-item>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row class="input-row">
-                        <ion-col size="12">
-                            <div v-if="showComponent">
-                                <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress"
-                                    @ion-focus="setLocation" :value="PlaceName">
-                                </ion-searchbar>
-                            </div>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row>
-                        <ion-col size="3">
-                            <ion-fab>
+                <ion-item class="customTransparent">
+                    <ion-textarea ref="ionInputSummary" label="Inhalt:" :value="detailCase[0].summary"
+                        rows="16"></ion-textarea>
+                </ion-item>
+
+                <ion-item class="customTransparent">
+                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
+                        @ion-change="getAddress" @ion-focus="setLocation" :value="PlaceName">
+                    </ion-searchbar>
+                </ion-item>
+
+                <ion-item class="customTransparent">
+                    <ion-select aria-label="Fallstatus" label="Fallstatus" label-placement="floating" fill="solid"
+                        :value="CaseStatus" @ionChange="handleStatusChange">
+                        <ion-select-option value="closed">Gelöst</ion-select-option>
+                        <ion-select-option value="open">Ungelöst</ion-select-option>
+                    </ion-select>
+                </ion-item>
+
+                <ion-item class="customTransparent">
+                    <ion-select label="Straftat" label-placement="floating" fill="solid" aria-label="Straftat"
+                        :value="CaseType" @ionChange="handleCaseTypeChange">
+                        <ion-select-option value="murder">Mord</ion-select-option>
+                        <ion-select-option value="theft">Diebstahl</ion-select-option>
+                        <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
+                        <ion-select-option value="brawl">Schlägerei</ion-select-option>
+                        <ion-select-option value="rape">Vergewaltigung</ion-select-option>
+                    </ion-select>
+                </ion-item>
+
+
+                <ion-item class="customTransparent">
+                    <ion-grid>
+                        <ion-row>
+                            <ion-col size="3" class="my-auto mx-2">
                                 <ion-fab-button @click="onCalenderClickEvent" color="secondary">
                                     <ion-icon :icon="calendarOutline"></ion-icon>
                                 </ion-fab-button>
-                            </ion-fab>
-                        </ion-col>
-                        <ion-col>
-                            <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
-                                :value="CrimeDate"></ion-input>
-                            <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
-                                :value="CrimeTime"></ion-input>
-                        </ion-col>
-                    </ion-row>
-                    <ion-row>
-                        <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
-                            @didDismiss="setOpen(false)"></ion-toast>
-                    </ion-row>
-                    <ion-row>
-                        <ion-col size="3">
-                            <ion-button @click="updateCase">Update</ion-button>
-                        </ion-col>
-                        <ion-col size="5">
-                        </ion-col>
-                        <ion-col size="4">
-                            <ion-button @click="navigateBack">Zurück</ion-button>
-                        </ion-col>
-                    </ion-row>
-                </ion-grid>
+                            </ion-col>
+                            <ion-col>
+                                <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
+                                    :value="CrimeDate"></ion-input>
+                                <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
+                                    :value="CrimeTime"></ion-input>
+                            </ion-col>
+                        </ion-row>
+                        <ion-row>
+                            <ion-col size="3">
+                                <ion-button @click="updateCase">Updaten</ion-button>
+                            </ion-col>
+                            <ion-col size="5">
+                            </ion-col>
+                            <ion-col size="4">
+                                <ion-button @click="navigateBack">Zurück</ion-button>
+                            </ion-col>
+                        </ion-row>
+                    </ion-grid>
+                </ion-item>
             </ion-card>
-            <ion-card v-if="pictureLoaded" v-show="segment === 'picture'">
-                <ion-card-content>
+            <ion-card v-if="pictureLoaded" v-show="segment === 'picture'" class="customTransparent">
+                <ion-card-content class="customTransparent">
                     <ion-list>
-                        <ion-item v-for="(pic, index) of picture" :key="index">
-                            <ion-thumbnail slot="start">
-                                <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
-                            </ion-thumbnail>
-                            <ion-label>{{ pic.imageName }}</ion-label>
-                            <ion-button @click="deletePicture(pic)">
-                                <ion-icon :icon="trashOutline"></ion-icon>
-                            </ion-button>
+                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
+                            <ion-grid>
+                                <ion-row>
+                                    <ion-col>
+                                        <ion-thumbnail slot="start">
+                                            <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
+                                        </ion-thumbnail>
+                                        <ion-label>{{ pic.imageName }}</ion-label>
+                                    </ion-col>
+                                </ion-row>
+                                <ion-row>
+                                    <ion-col>
+                                        <ion-button @click="deletePicture(pic)">
+                                            <ion-icon :icon="trashOutline"></ion-icon>
+                                        </ion-button>
+                                    </ion-col>
+                                </ion-row>
+                            </ion-grid>
                         </ion-item>
                     </ion-list>
+                    <div class="flex justify-center customTransparent">
+                        <ion-button @click="takePicture">
+                            <ion-icon :icon="cameraOutline"></ion-icon>
+                        </ion-button>
+                        <ion-button @click="getPicture">
+                            <ion-icon :icon="imageOutline"></ion-icon>
+                        </ion-button>
+                    </div>
                 </ion-card-content>
-                <ion-button @click="takePicture">
-                    <ion-icon :icon="cameraOutline"></ion-icon>
-                </ion-button>
-                <ion-button @click="getPicture">
-                    <ion-icon :icon="imageOutline"></ion-icon>
-                </ion-button>
             </ion-card>
-            <ion-card v-show="segment === 'links'">
-                <ion-card-content>
-                    Updaten über den Update Button auf der Info Seite!
+            <ion-card v-show="segment === 'links'" class="customTransparent">
+                <ion-card-content class="customTransparent">
+                    <p> Updaten über den Update Button auf der Info Seite! </p>
                     <ion-list>
-                        <ion-item v-for="(link, index) in linkList" :key="index">
+                        <ion-item v-for="(link, index) in linkList" :key="index" class="customTransparent">
                             <ion-grid>
                                 <ion-row>
                                     <ion-col>
@@ -146,7 +144,7 @@
                             </ion-grid>
                         </ion-item>
                     </ion-list>
-                    <ion-item>
+                    <ion-item class="customTransparent">
                         <ion-select :value="linkTyp">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
@@ -159,6 +157,7 @@
                     </ion-item>
                 </ion-card-content>
             </ion-card>
+
             <ion-modal ref="modal" :initial-breakpoint="0.75">
                 <ion-header>
                     <ion-toolbar>
@@ -170,6 +169,9 @@
                     <ion-datetime display-format="YYYY-MM-DDTHH:mm:ssTZD" v-model="SelectedDateTime"></ion-datetime>
                 </ion-content>
             </ion-modal>
+
+            <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
+                @didDismiss="setOpen(false)"></ion-toast>
         </ion-content>
     </ion-page>
 </template>
@@ -207,6 +209,7 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
+    IonTitle
 
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
@@ -388,8 +391,8 @@ const navigateBack = () => {
 
 const deleteLink = (link: Link) => {
     console.log(link);
-    linkList.value = linkList.value.filter(function(item) {
-    return item !== link;
+    linkList.value = linkList.value.filter(function (item) {
+        return item !== link;
     });
 };
 
@@ -403,15 +406,15 @@ const includeLink = () => {
     linkInputUrl.value.$el.value = "";
 };
 
-const changeLinkType = (link: Link, type: {detail: {value: LinkType}}) => {
+const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
     let linkId = ""
 
-    if(link.linkId !== ""){
+    if (link.linkId !== "") {
         linkId = link.linkId;
     }
 
-    linkList.value = linkList.value.filter(function(item) {
-    return item !== link;
+    linkList.value = linkList.value.filter(function (item) {
+        return item !== link;
     });
 
     let newLink: Link = {
@@ -453,7 +456,7 @@ ion-button {
     --background: #990000;
 }
 
-ion-content{
-    --background: transparent:  !important;
+ion-content {
+    --background: transparent: !important;
 }
 </style>

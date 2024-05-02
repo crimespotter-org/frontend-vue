@@ -1,8 +1,14 @@
 <template>
-  <ion-header >
-    <ion-toolbar>
+  <ion-header color="primary">
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-button @click="dismiss()">
+          <ion-icon slot="icon-only" :icon="arrowBackOutline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
       <ion-buttons slot="start" class="ml-4">
-        <ion-badge slot="start"  ref="upvote.value">{{ upvote?.toString() }}</ion-badge>
+
+        <ion-badge color="secondary" slot="start"  ref="upvote.value">{{ upvote?.toString() }}</ion-badge>
 
         <ion-button @click="updateVote(1)">
 
@@ -12,13 +18,12 @@
         <ion-button @click="updateVote(-1)">
           <ion-icon slot="icon-only" :icon="thumbsDownOutline"></ion-icon>
         </ion-button>
-        <ion-badge slot="start" ref="downvotes.value">{{ downvote?.toString() }}</ion-badge>
+        <ion-badge color="secondary" slot="start" ref="downvotes.value">{{ downvote?.toString() }}</ion-badge>
       </ion-buttons>
       <ion-buttons slot="end" v-if="isCrimefluencer">
         <ion-button @click="routeToChangeCaseView">
           <ion-icon slot="icon-only" :icon="createOutline"></ion-icon>
         </ion-button>
-        <ion-button @click="dismiss()">Cancel</ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -118,7 +123,7 @@ import {
 } from "@ionic/vue";
 
 
-import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
+import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline } from 'ionicons/icons';
 import router from '../router';
 import { caseService } from '@/services/case-service';
 import { Navigation } from 'swiper/modules';

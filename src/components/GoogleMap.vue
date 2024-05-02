@@ -7,26 +7,21 @@
         </ion-fab-button>
       </router-link>
     </ion-fab>
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <div class="flex gap-x-4">
-            <ion-button id="open-modal" expand="block" color="secondary">
-              <ion-icon :icon="filterOutline"></ion-icon>
-            </ion-button>
-          <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress">
-          </ion-searchbar>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <ion-toolbar color="primary" class="flex flex-row justify-between">
+      <div class="flex justify-between">
+        <ion-button id="open-modal" color="secondary" slot="start" class="custom-button">
+          <ion-icon :icon="filterOutline"></ion-icon>
+        </ion-button>
+        <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress"></ion-searchbar>
+      </div>
+    </ion-toolbar>
     <div class="map" ref="mapDivRef">
     </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
-      <ion-header class="crimeMap">
-        <ion-toolbar>
-          <ion-button @click="cancel()" slot="start">Zurück</ion-button>
-          <ion-button @click="confirm()" slot="end">Anwenden</ion-button>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-button @click="cancel()" slot="start" color="secondary">Zurück</ion-button>
+          <ion-button @click="confirm()" slot="end" color="secondary">Anwenden</ion-button>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
@@ -116,7 +111,7 @@ const confirm = () => {
 }
 
 const currentLocation = ref<Coordinate>();
-let listOfCases: ListOfCases = [];
+let listOfCases: FilteredCases = [];
 let SelectedRange = "100";
 let SelectedCrimeStatus: Status | null;
 let SelectedCrimeType: Casetype[] | null = [];
@@ -239,15 +234,15 @@ function createSearchbar() {
   });
 };
 
-const setHeatMap = () =>{
-  const heatMapData:google.maps.LatLng[]  = [];
+const setHeatMap = () => {
+  const heatMapData: google.maps.LatLng[] = [];
   listOfCases.forEach(markerInfo => {
-    const latLong =   new google.maps.LatLng(markerInfo.lat, markerInfo.long);
+    const latLong = new google.maps.LatLng(markerInfo.lat, markerInfo.long);
     heatMapData.push(latLong);
   });
 
   const heatmap = new google.maps.visualization.HeatmapLayer({
-  data: heatMapData
+    data: heatMapData
   });
   heatmap.setMap(map.value!);
 }
@@ -300,4 +295,21 @@ function Sleep(milliseconds: number) {
   width: 100%;
   height: 100%;
 }
+
+ion-header {
+  --background: #2f2f2f: ;
+}
+
+.toolbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.custom-button {
+  width: 50px; /* Hier kannst du die Breite des Buttons nach Bedarf anpassen */
+  height: 50px; /* Hier kannst du die Höhe des Buttons nach Bedarf anpassen */
+}
+
 </style>

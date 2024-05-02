@@ -1,14 +1,9 @@
 <template>
     <ion-page>
         <HeaderComponent />
-
         <ion-content class="ion-padding case">
-            <ion-title>
-                Fall hinzufügen
-            </ion-title>
-
             <ion-toolbar class="customTransparent">
-                <ion-segment v-model="segment">
+                <ion-segment v-model="segment" color="primary">
                     <ion-segment-button value="info">
                         <ion-label>Info</ion-label>
                     </ion-segment-button>
@@ -22,7 +17,11 @@
             </ion-toolbar>
             <!-- Segment one information -->
             <ion-card v-show="segment === 'info'" class="customTransparent">
-
+                <ion-item class="customTransparent">
+                    <ion-title :auto-grow="true">
+                        Fall hinzufügen
+                    </ion-title>
+                </ion-item>
                 <!-- title -->
                 <ion-item class="customTransparent">
                     <ion-input ref="ionInputTitle" label="Titel" label-placement="floating"
@@ -38,8 +37,7 @@
                 <!-- Location -->
                 <ion-item class="customTransparent">
                     <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
-                        @ion-focus="setLocation" show-clear-button="always" :clear-icon="trashOutline"
-                        placeholder="Tatort" :value="PlaceName"></ion-searchbar>
+                        @ion-focus="setLocation" placeholder="Tatort" :value="PlaceName"></ion-searchbar>
 
                 </ion-item>
 
@@ -229,6 +227,7 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
+    IonTitle
 
 } from '@ionic/vue';
 import { ref, onMounted } from "vue";
