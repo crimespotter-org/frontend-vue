@@ -89,31 +89,20 @@
                 <ion-card-content class="customTransparent">
                     <ion-list>
                         <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
-                            <ion-grid>
-                                <ion-row>
-                                    <ion-col>
-                                        <ion-thumbnail slot="start">
-                                            <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
-                                        </ion-thumbnail>
-                                        <ion-label>{{ pic.imageName }}</ion-label>
-                                    </ion-col>
-                                </ion-row>
-                                <ion-row>
-                                    <ion-col>
-                                        <ion-button @click="deletePicture(pic)">
-                                            <ion-icon :icon="trashOutline"></ion-icon>
-                                        </ion-button>
-                                    </ion-col>
-                                </ion-row>
-                            </ion-grid>
+
+                            <ion-thumbnail slot="start">
+                                <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
+                            </ion-thumbnail>
+                            <ion-label>{{ pic.imageName }}</ion-label>
+
+                            <ion-button @click="deletePicture(pic)">
+                                <ion-icon :icon="trashOutline"></ion-icon>
+                            </ion-button>
                         </ion-item>
                     </ion-list>
                     <div class="flex justify-center customTransparent">
-                        <ion-button @click="takePicture">
+                        <ion-button @click="takePhoto">
                             <ion-icon :icon="cameraOutline"></ion-icon>
-                        </ion-button>
-                        <ion-button @click="getPicture">
-                            <ion-icon :icon="imageOutline"></ion-icon>
                         </ion-button>
                     </div>
                 </ion-card-content>
@@ -218,6 +207,7 @@ import { useRoute } from "vue-router";
 import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
 import { currentUserInformation } from "@/services/currentUserInformation-service";
+import { cameraService } from '../services/camera-service';
 
 const ionRouter = useIonRouter();
 const dataLoaded = ref<boolean>(false);
@@ -233,8 +223,9 @@ const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
 const linkList = ref<Link[]>([]);
+const selectedFile = ref(null);
 
-let picture: ImageData[] = [];
+let picture = ref<ImageData[]>([]);
 let detailCase: Case;
 let SelectedDateTime: string;
 let CaseType: Casetype;
@@ -275,15 +266,7 @@ onMounted(async () => {
     Longitude = detailCase[0].long;
     PlaceName = detailCase[0].place_name;
 
-    const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
-    await Promise.all(caseImages!.map(async (file) => {
-        const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-        let imageData: ImageData = {
-            pictureUri: pictureUri,
-            imageName: file.name
-        };
-        picture.push(imageData);
-    }));
+    getPictures();
 
     detailCase.forEach(function (item) {
         let link: Link = {
@@ -304,6 +287,18 @@ onMounted(async () => {
 
 
 });
+
+const getPictures = async () => {
+    const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
+    await Promise.all(caseImages!.map(async (file) => {
+        const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
+        let imageData: ImageData = {
+            pictureUri: pictureUri,
+            imageName: file.name
+        };
+        picture.value.push(imageData);
+    }));
+}
 
 const setLocation = () => {
 
@@ -362,11 +357,8 @@ function convertDateString(inputDate: string): string {
     return `${day}.${month}.${year}`;
 }
 
-const deletePicture = async (picture: ImageData) => {
-    console.log(picture);
-    console.log(CaseId);
-    console.log(picture.imageName);
-    const successful = await caseService.deleteCaseImageFromStorage(picture.imageName, CaseId);
+const deletePicture = async (deletePicture: ImageData) => {
+    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
 
     if (successful) {
         ToastMessage = "Bild erfolgreich gelöscht";
@@ -375,15 +367,25 @@ const deletePicture = async (picture: ImageData) => {
         ToastMessage = "Etwas lief schief probier es später nochmal!"
         setOpen(true);
     }
+
+    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
+    
 };
 
-const getPicture = () => {
+const takePhoto = async () => {
+    const file = await cameraService.takePhoto();
+    const successful = await cameraService.uploadPhoto(file, CaseId);
+    if (successful) {
+        ToastMessage = "Bild erfolgreich hochgeladen";
+        setOpen(true);
+    } else {
+        ToastMessage = "Etwas lief schief probier es später nochmal!"
+        setOpen(true);
+    }
+    picture.value = [];
+    getPictures();
+}
 
-};
-
-const takePicture = () => {
-
-};
 
 const navigateBack = () => {
     ionRouter.push("/crime-map");

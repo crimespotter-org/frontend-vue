@@ -30,7 +30,7 @@
 
                 <!-- summary -->
                 <ion-item class="customTransparent">
-                    <ion-textarea ref="ionInputSummary"  label="Zusammenfassung" label-placement="floating"
+                    <ion-textarea ref="ionInputSummary" label="Zusammenfassung" label-placement="floating"
                         :auto-grow="true"></ion-textarea>
                 </ion-item>
 
@@ -52,8 +52,8 @@
 
                 <!-- type -->
                 <ion-item class="customTransparent">
-                    <ion-select label="Straftat" label-placement="floating" aria-label="Straftat"
-                        :value="CaseType" @ionChange="handleCaseTypeChange">
+                    <ion-select label="Straftat" label-placement="floating" aria-label="Straftat" :value="CaseType"
+                        @ionChange="handleCaseTypeChange">
                         <ion-select-option value="murder">Mord</ion-select-option>
                         <ion-select-option value="theft">Diebstahl</ion-select-option>
                         <ion-select-option value="robbery-murder">Raub mit Mord</ion-select-option>
@@ -79,15 +79,15 @@
                             </ion-col>
                         </ion-row>
                         <ion-row>
-                        <ion-col size="3">
-                            <ion-button @click="createCase">Erstellen</ion-button>
-                        </ion-col>
-                        <ion-col size="5">
-                        </ion-col>
-                        <ion-col size="4">
-                            <ion-button @click="navigateBack">Zurück</ion-button>
-                        </ion-col>
-                    </ion-row>
+                            <ion-col size="3">
+                                <ion-button @click="createCase">Erstellen</ion-button>
+                            </ion-col>
+                            <ion-col size="5">
+                            </ion-col>
+                            <ion-col size="4">
+                                <ion-button @click="navigateBack">Zurück</ion-button>
+                            </ion-col>
+                        </ion-row>
                     </ion-grid>
                 </ion-item>
             </ion-card>
@@ -97,32 +97,23 @@
             <ion-card v-show="segment === 'picture'" class="customTransparent">
                 <ion-card-content>
 
-                    <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
-                        <ion-grid>
-                            <ion-row>
-                                <ion-col size="3">
-                                    <ion-thumbnail slot="start">
-                                        <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
-                                    </ion-thumbnail>
-                                </ion-col>
-                                <ion-col>
-                                    <ion-label>{{ pic.imageName }}</ion-label>
-                                </ion-col>
-                                <ion-col>
-                                    <ion-button @click="deletePicture(pic)">
-                                        <ion-icon :icon="trashOutline"></ion-icon>
-                                    </ion-button>
-                                </ion-col>
-                            </ion-row>
-                        </ion-grid>
-                    </ion-item>
+                    <ion-list>
+                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
+
+                            <ion-thumbnail slot="start">
+                                <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
+                            </ion-thumbnail>
+                            <ion-label>{{ pic.imageName }}</ion-label>
+
+                            <ion-button @click="deletePicture(pic)">
+                                <ion-icon :icon="trashOutline"></ion-icon>
+                            </ion-button>
+                        </ion-item>
+                    </ion-list>
 
                     <div class="flex justify-center customTransparent">
-                        <ion-button @click="takePicture">
+                        <ion-button @click="takePhoto">
                             <ion-icon :icon="cameraOutline"></ion-icon>
-                        </ion-button>
-                        <ion-button @click="getPicture">
-                            <ion-icon :icon="imageOutline"></ion-icon>
                         </ion-button>
                     </div>
                 </ion-card-content>
@@ -140,7 +131,8 @@
                             <ion-grid class="customTransparent">
                                 <ion-row class="customTransparent">
                                     <ion-col class="customTransparent">
-                                        <ion-select :value="link.type" @ionChange="changeLinkType(link, $event)" class="customTransparent">
+                                        <ion-select :value="link.type" @ionChange="changeLinkType(link, $event)"
+                                            class="customTransparent">
                                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                                             <ion-select-option value="book">📖Buch</ion-select-option>
@@ -232,10 +224,11 @@ import {
 } from '@ionic/vue';
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
-import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
-import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline} from "ionicons/icons";
+import { Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
+import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
 import { caseService } from '@/services/case-service';
 import { currentUserInformation } from "@/services/currentUserInformation-service";
+import { cameraService } from '@/services/camera-service';
 
 const ionRouter = useIonRouter();
 const modal = ref();
@@ -248,7 +241,7 @@ const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
 
-let picture: ImageData[] = [];
+let picture = ref<ImageData[]>([]);
 const linkList = ref<Link[]>([]);
 let SelectedDateTime: string;
 let CaseType: Casetype;
@@ -263,7 +256,7 @@ let ToastMessage: string;
 let linkTyp: LinkType = "newspaper";
 let localUserId: string = "";
 
-onMounted(async() => {
+onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 })
 
@@ -315,8 +308,8 @@ const setLocation = () => {
 
 const deleteLink = (link: Link) => {
     console.log(link);
-    linkList.value = linkList.value.filter(function(item) {
-    return item !== link;
+    linkList.value = linkList.value.filter(function (item) {
+        return item !== link;
     });
 };
 
@@ -330,10 +323,10 @@ const includeLink = () => {
     linkInputUrl.value.$el.value = "";
 };
 
-const changeLinkType = (link: Link, type: {detail: {value: LinkType}}) => {
+const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
 
-    linkList.value = linkList.value.filter(function(item) {
-    return item !== link;
+    linkList.value = linkList.value.filter(function (item) {
+        return item !== link;
     });
 
     let newLink: Link = {
@@ -344,16 +337,45 @@ const changeLinkType = (link: Link, type: {detail: {value: LinkType}}) => {
     linkList.value.push(newLink);
 };
 
-const deletePicture = async (picture: ImageData) => {
+const deletePicture = async (deletePicture: ImageData) => {
+    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
+
+    if (successful) {
+        ToastMessage = "Bild erfolgreich gelöscht";
+        setOpen(true);
+    } else {
+        ToastMessage = "Etwas lief schief probier es später nochmal!"
+        setOpen(true);
+    }
+
+    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
 };
 
-const getPicture = () => {
+const getPictures = async () => {
+    const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
+    await Promise.all(caseImages!.map(async (file) => {
+        const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
+        let imageData: ImageData = {
+            pictureUri: pictureUri,
+            imageName: file.name
+        };
+        picture.value.push(imageData);
+    }));
+}
 
-};
-
-const takePicture = () => {
-
-};
+const takePhoto = async () => {
+    const file = await cameraService.takePhoto();
+    const successful = await cameraService.uploadPhoto(file, CaseId);
+    if (successful) {
+        ToastMessage = "Bild erfolgreich hochgeladen";
+        setOpen(true);
+    } else {
+        ToastMessage = "Etwas lief schief probier es später nochmal!"
+        setOpen(true);
+    }
+    picture.value = [];
+    getPictures();
+}
 
 const handleStatusChange = async (event: { detail: { value: string } }) => {
     CaseStatus = event.detail.value as Status;
@@ -385,6 +407,7 @@ const createCase = async () => {
         ToastMessage = "Etwas lief schief probier es später nochmal!"
         setOpen(true);
     }
+    navigateBack();
 
 };
 

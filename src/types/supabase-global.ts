@@ -582,3 +582,8 @@ export interface Link {
   type: LinkType;
   linkUrl: string;
 }
+
+export interface UserPhoto {
+  filepath: string;
+  webviewPath?: string;
+}

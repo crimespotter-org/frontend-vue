@@ -12,7 +12,7 @@
         <ion-button id="open-modal" color="secondary" slot="start" class="custom-button">
           <ion-icon :icon="filterOutline"></ion-icon>
         </ion-button>
-        <ion-searchbar color="tertiary" autocomplete="on" @ion-change="getAddress"></ion-searchbar>
+        <ion-searchbar color="tertiary" autocomplete="on"></ion-searchbar>
       </div>
     </ion-toolbar>
     <div class="map" ref="mapDivRef">
@@ -67,6 +67,11 @@
               </ion-item>
             </ion-col>
           </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-toggle color="secondary" @ion-change="toggled" :checked="toggle">Heatmap</ion-toggle>
+            </ion-col>
+          </ion-row>
         </ion-grid>
       </ion-content>
     </ion-modal>
@@ -76,7 +81,7 @@
 <script setup lang="ts">
 import { onMounted, nextTick, ref, onBeforeMount } from "vue";
 import { mapService } from "@/services/map-service";
-import { Casetype, Coordinate, ListOfCases, Status, FilteredCases } from "@/types/supabase-global";
+import { Casetype, Coordinate, Status, FilteredCases } from "@/types/supabase-global";
 import { filterOutline, add } from "ionicons/icons";
 import {
   IonItem,
@@ -95,7 +100,7 @@ import {
   IonHeader,
   IonToolbar,
   IonPage,
-  IonButtons
+  IonToggle
 } from "@ionic/vue";
 import { caseService } from "@/services/case-service";
 
@@ -114,10 +119,14 @@ const currentLocation = ref<Coordinate>();
 let listOfCases: FilteredCases = [];
 let SelectedRange = "100";
 let SelectedCrimeStatus: Status | null;
-let SelectedCrimeType: Casetype[] | null = [];
+let SelectedCrimeType: Casetype[] | null;
 const markerDataLoaded = ref<boolean>(false);
 const googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let eventListener: any;
+let Latitude: number;
+let Longitude: number;
+let heatmap: google.maps.visualization.HeatmapLayer;
+const toggle = ref<boolean>(false);
 
 //google map object
 const map = ref<google.maps.Map>();
@@ -135,8 +144,6 @@ const emits = defineEmits<{
   (event: "onMapClicked"): void;
   (event: "onMarkerChange", value: FilteredCases): void;
 }>();
-
-
 
 onBeforeMount(() => {
   const googleMapScript = document.createElement("SCRIPT");
@@ -231,25 +238,27 @@ function createSearchbar() {
   eventListener = google.maps.event.addListener(autocomplete, 'place_changed', function () {
     const place = autocomplete.getPlace();
     const location = place['geometry']!['location'];
+    Latitude = location!.lat();
+    Longitude = location!.lng();
+    const latlong = new google.maps.LatLng(Latitude, Longitude);
+    map.value!.setCenter(latlong);
   });
 };
 
 const setHeatMap = () => {
-  const heatMapData: google.maps.LatLng[] = [];
+  let heatMapData: google.maps.LatLng[] = [];
   listOfCases.forEach(markerInfo => {
     const latLong = new google.maps.LatLng(markerInfo.lat, markerInfo.long);
     heatMapData.push(latLong);
   });
 
-  const heatmap = new google.maps.visualization.HeatmapLayer({
+  heatmap = new google.maps.visualization.HeatmapLayer({
     data: heatMapData
   });
-  heatmap.setMap(map.value!);
-}
 
-const getAddress = (place: any) => {
-  console.log('Address Object', place);
-};
+    heatmap.setMap(map.value!);
+
+}
 
 const filterEvent = async () => {
   const range = Number(SelectedRange);
@@ -282,6 +291,22 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
     SelectedCrimeType.push(caseType);
   }
   console.log(SelectedCrimeType);
+}
+
+const toggled = () =>{
+  if(toggle.value){
+    toggle.value = false;
+    deleteHeatMap();
+  }else{
+    toggle.value = true;
+    setHeatMap();
+  }
+}
+
+const deleteHeatMap = () =>{
+  console.log("remove Heatmap");
+  heatmap.setData([]);
+  heatmap.setMap(null);
 }
 
 function Sleep(milliseconds: number) {
