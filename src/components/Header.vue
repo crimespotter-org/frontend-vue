@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-import { IonHeader, IonToolbar, IonTitle, IonAvatar, IonButton, IonIcon, IonButtons } from '@ionic/vue';
+import { IonHeader, IonToolbar, IonAvatar, IonButton, IonIcon } from '@ionic/vue';
 import { logOutOutline, menuOutline } from 'ionicons/icons';
 import { supabase } from "@/services/supabase-service";
 import router from '../router'
