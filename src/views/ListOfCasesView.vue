@@ -61,6 +61,14 @@ let caseToPass: FilteredCases = [];
 onMounted(async () => {
     const currentLocation = await mapService.currentLocation();
     cases.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 1000000, null, null);
+    
+    cases.value = cases.value.sort((a, b) => {
+
+    const dateA = new Date(a.created_at);
+    const dateB = new Date(b.created_at);
+
+    return dateB.getTime() - dateA.getTime();
+});
 })
 
 const canDismiss = async () => {
