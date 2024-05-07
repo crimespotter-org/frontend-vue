@@ -3,7 +3,7 @@
         <HeaderComponent />
         <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
             <p>Klicke auf einen Fall um mehr zu sehen!</p>
-            <ion-list>
+            <ion-list class="case" lines="full">
                 <ion-item v-for="(c, index) in cases" :key="index" class="case customTransparent" @click="caseClicked(c)">
                     <ion-grid class="customTransparent">
                         <ion-row>
@@ -61,7 +61,7 @@ let caseToPass: FilteredCases = [];
 onMounted(async () => {
     const currentLocation = await mapService.currentLocation();
     cases.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 1000000, null, null);
-    
+
     cases.value = cases.value.sort((a, b) => {
 
     const dateA = new Date(a.created_at);
@@ -134,7 +134,6 @@ function modifyDate(dateTime: string): string {
     });
 
     formattedDate += ' Uhr';
-    console.log(formattedDate);
     return formattedDate
 }
 
