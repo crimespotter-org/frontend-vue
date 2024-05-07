@@ -94,11 +94,11 @@
 
 
             <!-- segment two pictures -->
-            <ion-card v-show="segment === 'picture'" class="customTransparent">
-                <ion-card-content class="customTransparent">
+            <ion-card v-show="segment === 'picture'" class="customTransparent case">
+                <ion-card-content class="customTransparent case">
 
-                    <ion-list class="customTransparent">
-                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
+                    <ion-list class="customTransparent case">
+                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent case">
 
                             <ion-thumbnail slot="start">
                                 <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
@@ -111,7 +111,7 @@
                         </ion-item>
                     </ion-list>
 
-                    <div class="flex justify-center customTransparent">
+                    <div class="flex justify-center customTransparent case">
                         <ion-button @click="takePhoto">
                             <ion-icon :icon="cameraOutline"></ion-icon>
                         </ion-button>
@@ -123,25 +123,24 @@
 
 
             <!-- segment three links -->
-            <ion-card v-show="segment === 'links'" class="customTransparent">
-                <ion-card-content class="customTransparent">
+            <ion-card v-show="segment === 'links'" class="customTransparent case">
+                <ion-card-content class="customTransparent case">
                     Updaten über den Update Button auf der Info Seite!
-                    <ion-list class="customTransparent">
-                        <ion-item v-for="(link, index) in linkList" :key="index" class="customTransparent">
-                            <ion-grid class="customTransparent">
-                                <ion-row class="customTransparent">
-                                    <ion-col class="customTransparent">
-                                        <ion-select :value="link.type" @ionChange="changeLinkType(link, $event)"
-                                            class="customTransparent">
+                    <ion-list class="customTransparent case">
+                        <ion-item v-for="(link, index) in linkList" :key="index" class="customTransparent case">
+                            <ion-grid class="customTransparent case">
+                                <ion-row>
+                                    <ion-col>
+                                        <ion-select :value="link.type" @ionChange="changeLinkType(link, $event)">
                                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                                             <ion-select-option value="book">📖Buch</ion-select-option>
                                         </ion-select>
                                     </ion-col>
-                                    <ion-col class="customTransparent">
+                                    <ion-col>
                                         <a :href=link.linkUrl>{{ link.linkUrl }}</a>
                                     </ion-col>
-                                    <ion-col class="customTransparent">
+                                    <ion-col>
                                         <ion-button @click="deleteLink(link)">
                                             <ion-icon :icon="trashOutline"></ion-icon>
                                         </ion-button>
@@ -150,7 +149,7 @@
                             </ion-grid>
                         </ion-item>
                     </ion-list>
-                    <ion-item class="customTransparent">
+                    <ion-item class="customTransparent case">
                         <ion-select :value="linkTyp" class="customTransparent">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>

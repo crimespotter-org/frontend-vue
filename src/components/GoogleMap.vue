@@ -118,8 +118,8 @@ const confirm = () => {
 const currentLocation = ref<Coordinate>();
 let listOfCases: FilteredCases = [];
 let SelectedRange = "100";
-let SelectedCrimeStatus: Status | null;
-let SelectedCrimeType: Casetype[] | null;
+let SelectedCrimeStatus: Status | null = null;
+let SelectedCrimeType: Casetype[] | null = null;
 const markerDataLoaded = ref<boolean>(false);
 const googleAPIKey = "AIzaSyCJbAjIZqv32gJ4BeiuomscFObUAUGe-AM";
 let eventListener: any;
