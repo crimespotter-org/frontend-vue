@@ -35,10 +35,10 @@ class MapService {
     currentlat: number,
     currentlong: number,
     distance: number,
-    case_status: Status,
+    case_status: Status | null,
     crime_types: Casetype[] | null,
   ): Promise<FilteredCases> {
-    distance = distance * 1000;
+    distance = distance! * 1000;
     const end_date = null;
     const start_date = null;
     const { data: cases, error } = await supabase.rpc('get_filtered_cases_angular', {

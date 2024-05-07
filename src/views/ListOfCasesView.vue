@@ -2,9 +2,10 @@
     <ion-page>
         <HeaderComponent />
         <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
+            <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen"></ion-searchbar>
             <p>Klicke auf einen Fall um mehr zu sehen!</p>
             <ion-list class="case" lines="full">
-                <ion-item v-for="(c, index) in cases" :key="index" class="case customTransparent" @click="caseClicked(c)">
+                <ion-item v-for="(c, index) in results" :key="index" class="case customTransparent" @click="caseClicked(c)">
                     <ion-grid class="customTransparent">
                         <ion-row>
                             <IonTitle>{{ c.title }}</IonTitle>
@@ -45,7 +46,8 @@ import {
     IonTitle,
     IonGrid,
     IonRow,
-    IonModal
+    IonModal,
+    IonSearchbar
 } from '@ionic/vue';
 import CrimeProfile from "../components/CrimeProfile.vue";
 import { onMounted, ref } from 'vue';
@@ -54,15 +56,16 @@ import { mapService } from '../services/map-service';
 import { FilteredCases, Status, Casetype } from '../types/supabase-global';
 import { alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
 
-const cases = ref<FilteredCases>([]);
+let cases:FilteredCases = [];
 const modalRef = ref();
 let caseToPass: FilteredCases = [];
+const results = ref(cases);
 
 onMounted(async () => {
     const currentLocation = await mapService.currentLocation();
-    cases.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 1000000, null, null);
+    cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100000000, null, null);
 
-    cases.value = cases.value.sort((a, b) => {
+    results.value = cases.sort((a, b) => {
 
     const dateA = new Date(a.created_at);
     const dateB = new Date(b.created_at);
@@ -77,7 +80,7 @@ const canDismiss = async () => {
 
 const caseClicked = (event: { id: string }) => {
     console.log(event.id);
-    caseToPass = cases.value.filter(
+    caseToPass = cases.filter(
         (m) =>
             m.id === event.id
     );
@@ -135,6 +138,12 @@ function modifyDate(dateTime: string): string {
 
     formattedDate += ' Uhr';
     return formattedDate
+}
+
+const handleInput = (event: any) =>{
+    console.log(event);
+    const query = event.target.value.toLowerCase();
+    results.value = cases.filter((d) => d.title.toLowerCase().indexOf(query) > -1);
 }
 
 </script>
