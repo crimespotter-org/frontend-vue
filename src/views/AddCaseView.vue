@@ -95,9 +95,9 @@
 
             <!-- segment two pictures -->
             <ion-card v-show="segment === 'picture'" class="customTransparent">
-                <ion-card-content>
+                <ion-card-content class="customTransparent">
 
-                    <ion-list>
+                    <ion-list class="customTransparent">
                         <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
 
                             <ion-thumbnail slot="start">

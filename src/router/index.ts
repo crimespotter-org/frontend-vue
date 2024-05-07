@@ -9,6 +9,7 @@ import CrimeMap from "../views/CrimeMapView.vue";
 import ChangeCase from "../views/ChangeCaseView.vue";
 import AddCase from "../views/AddCaseView.vue";
 import { currentUserInformation } from "@/services/currentUserInformation-service";
+import ListOfCasesView from "@/views/ListOfCasesView.vue";
 
 let localUser;
 let localUserRole;
@@ -62,6 +63,12 @@ const routes: Array<RouteRecordRaw> = [
     path: "/crime-map",
     name: "CrimeMap",
     component: CrimeMap,
+    meta: { requiresAuthentication: true },
+  },
+  {
+    path: "/case-list",
+    name: "ListOfCasesView",
+    component: ListOfCasesView,
     meta: { requiresAuthentication: true },
   },
 ];
