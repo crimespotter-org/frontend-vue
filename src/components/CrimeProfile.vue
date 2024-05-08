@@ -24,6 +24,15 @@
         <ion-button @click="routeToChangeCaseView">
           <ion-icon slot="icon-only" :icon="createOutline"></ion-icon>
         </ion-button>
+        <ion-button id="present-alert">
+          <ion-icon slot="icon-only" :icon="trashOutline"></ion-icon>
+        </ion-button>
+        <ion-alert
+        trigger="present-alert"
+        header="Willst du den Fall wirklich löschen?"
+        :buttons="alertButtons"
+        @didDismiss="alertResult($event)">
+      </ion-alert>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -90,12 +99,9 @@
         </ion-accordion>
 
       </ion-accordion-group>
-
-
     </div>
     <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
       @didDismiss="setOpen(false)"></ion-toast>
-
   </ion-content>
 
 </template>
@@ -107,7 +113,6 @@ import {
   IonHeader,
   IonTitle,
   modalController,
-  IonButton,
   IonToolbar,
   IonButtons,
   IonIcon,
@@ -119,20 +124,19 @@ import {
   IonCard,
   IonImg,
   IonBadge,
-  IonList
+  IonList,
+  IonAlert,
+  IonButton
 } from "@ionic/vue";
 
 
-import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline } from 'ionicons/icons';
+import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
 import router from '../router';
 import { caseService } from '@/services/case-service';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Case, Status, Casetype, ImageData, Link, FilteredCases, Role, CaseVote } from "@/types/supabase-global";
 import { currentUserInformation } from '@/services/currentUserInformation-service';
-
-
-//import { SwiperCore, Virtual } from "swiper";
 import "swiper/swiper-bundle.css";
 // Import Swiper styles
 import 'swiper/css';
@@ -163,7 +167,29 @@ const navigation = [Navigation];
 const upvote = ref<number>();
 const downvote = ref<number>();
 
+const alertButtons = [
+    {
+      text: 'Zurück',
+      role: 'cancel',
+      handler: () => {
+        console.log('Alert canceled');
+      },
+    },
+    {
+      text: 'Löschen',
+      role: 'delete',
+      handler: () => {
+        console.log('Alert confirmed');
+      },
+    },
+  ];
 
+const alertResult = (ev: CustomEvent) => {
+  if(`${ev.detail.role}` == "delete")
+  {
+    deleteCase();
+  }
+};
 
 onMounted(async () => {
   CaseId = props.markerData[0].id;
@@ -199,6 +225,11 @@ onMounted(async () => {
 const props = defineProps<{
   markerData: FilteredCases;
   modal: any;
+}>();
+
+// EVENTS
+const emits = defineEmits<{
+  (event: "deleteMarker", value: FilteredCases): void;
 }>();
 
 const dismiss = () => {
@@ -291,6 +322,12 @@ const routeToChangeCaseView = async () => {
   await modalController.dismiss();
   router.push(`/change-case/${props.markerData[0].id}`);
 };
+
+const deleteCase = async() => {
+  await caseService.deleteCase(CaseId);
+  emits('deleteMarker', props.markerData);
+  props.modal.$el.dismiss();
+}
 </script>
 
 <style scoped>

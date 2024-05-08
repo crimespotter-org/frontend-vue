@@ -5,7 +5,7 @@
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked"
         @onMarkerClicked="markerClicked"></my-map>
       <ion-modal ref="modalRef" :can-dismiss="canDismiss" color="primary">
-        <crime-profile :markerData="markerToPass" :modal="modalRef"/>
+        <crime-profile :markerData="markerToPass" :modal="modalRef" @deleteMarker="deleteMarkerFromMap"/>
       </ion-modal>
     </ion-content>
   </ion-page>
@@ -28,7 +28,7 @@ import { FilteredCases, Coordinate } from "@/types/supabase-global";
 const modalRef = ref();
 
 // data for the map
-let markerData: FilteredCases = [];
+const markerData = ref<FilteredCases>([]);
 const markerDataLoaded = ref<boolean>(false);
 
 let markerToPass: FilteredCases = [];
@@ -41,13 +41,13 @@ const canDismiss = async () => {
 onIonViewDidEnter(async () => {
   markerDataLoaded.value = false;
   const currentLocation = await mapService.currentLocation();
-  markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
+  markerData.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
   markerDataLoaded.value = true;
 });
 
 onMounted(async () => {
   const currentLocation = await mapService.currentLocation();
-  markerData = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
+  markerData.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
   markerDataLoaded.value = true;
   console.log(markerData);
 });
@@ -56,8 +56,15 @@ const mapClicked = () => {
   console.log("mapClicked");
 };
 
+const deleteMarkerFromMap = async() => {
+  markerDataLoaded.value = false;
+  const currentLocation = await mapService.currentLocation();
+  markerData.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
+  markerDataLoaded.value = true;
+}
+
 const getMarkerInfo = (marker: { lat: number; long: number }): FilteredCases => {
-  return markerData.filter(
+  return markerData.value.filter(
     (m) =>
       m.long === marker.long &&
       m.lat === marker.lat
@@ -74,7 +81,7 @@ const markerClicked = (event: Coordinate) => {
 }
 
 const receiveMarkerData = (event: FilteredCases): void => {
-  markerData = event;
+  markerData.value = event;
 }
 
 </script>

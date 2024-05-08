@@ -88,6 +88,15 @@ class CaseService {
     return true;
   }
 
+  async deleteCase(case_id: string){
+    const { data, error } = await supabase
+    .rpc('delete_case_by_id', {
+    case_id
+  })
+    if (error) console.error(error)
+    else console.log(data)
+  }
+
   async getCase(case_id_param: string): Promise<Case> {
     const { data: cases, error } = await supabase.rpc(
       "get_case_details_angular",
