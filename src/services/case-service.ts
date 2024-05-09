@@ -152,21 +152,37 @@ class CaseService {
     return data!.signedUrl;
   }
 
-  async updateVote(caseIdforvote: string, vote: number): Promise<boolean> {
-    const localUser = await currentUserInformation.getCurrentUser();
-    const { data, error } = await supabase
-      .from("votes")
-      .update({ vote: vote })
-      .eq("case_id", caseIdforvote)
-      .eq("user_id", localUser.data.session?.user.id);
-    if (!error) {
-      console.log("Voted" + vote);
-      return true;
-    } else {
-      console.log(error);
-      return false;
+  async updateVote(caseId: string, userId: string, vote: number): Promise<boolean> {
+      const {data, error} = await supabase
+        .from('votes')
+        .select('*')
+        .match({case_id: caseId, user_id: userId})
+        .single();
+  
+      if (data) {
+        const {error: updateError} = await supabase
+          .from('votes')
+          .update({vote})
+          .match({id: data.id});
+          if(updateError){
+            console.error(updateError);
+            return false;
+          }
+          return true;
+      } else {
+        const {error: insertError} = await supabase
+          .from('votes')
+          .insert([
+            {case_id: caseId, user_id: userId, vote}
+          ]);
+        if (insertError) {
+          console.error(insertError);
+          return false
+        }
+        return true;
+      }
     }
-  }
+  
 
   async getVotes(p_case_id: string): Promise<CaseVote> {
     const { data: vote, error } = await supabase.rpc("get_case_votes_by_id", {

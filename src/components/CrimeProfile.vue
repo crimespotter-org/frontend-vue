@@ -151,6 +151,7 @@ const linkList = ref<Link[]>([]);
 let detailCase: Case;
 let CaseId: string;
 let ToastMessage: string;
+let UserId: string;
 
 //Nina
 
@@ -193,6 +194,7 @@ const alertResult = (ev: CustomEvent) => {
 
 onMounted(async () => {
   CaseId = props.markerData[0].id;
+  UserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
   const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
   await Promise.all(caseImages!.map(async (file) => {
     const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
@@ -242,7 +244,7 @@ setCaseType();
 getCurrentUserRoleFromService();
 
 async function updateVote(vote: number) {
-  const voteSuccesful = await caseService.updateVote(props.markerData[0].id, vote);
+  const voteSuccesful = await caseService.updateVote(props.markerData[0].id, UserId, vote);
   votes.value = await caseService.getVotes(CaseId);
   upvote.value = votes.value[0].upvotes;
   downvote.value = votes.value[0].downvotes;
