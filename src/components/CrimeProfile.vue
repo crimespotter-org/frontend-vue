@@ -8,7 +8,7 @@
       </ion-buttons>
       <ion-buttons slot="start" class="ml-4">
 
-        <ion-badge color="secondary" slot="start"  ref="upvote.value">{{ upvote?.toString() }}</ion-badge>
+        <ion-badge color="secondary" slot="start" ref="upvote.value">{{ upvote?.toString() }}</ion-badge>
 
         <ion-button @click="updateVote(1)">
 
@@ -27,20 +27,26 @@
         <ion-button id="present-alert">
           <ion-icon slot="icon-only" :icon="trashOutline"></ion-icon>
         </ion-button>
-        <ion-alert
-        trigger="present-alert"
-        header="Willst du den Fall wirklich löschen?"
-        :buttons="alertButtons"
-        @didDismiss="alertResult($event)">
-      </ion-alert>
+        <ion-alert trigger="present-alert" header="Willst du den Fall wirklich löschen?" :buttons="alertButtons"
+          @didDismiss="alertResult($event)">
+        </ion-alert>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
   <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
-
-    <div>
+    <ion-toolbar class="customTransparent">
+      <ion-segment v-model="segment" color="primary">
+        <ion-segment-button value="info">
+          <ion-label>Info</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="chat">
+          <ion-label>Chat</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+    <div v-show="segment === 'info'">
       <div class="grid justify-items-center">
-        <ion-title size="large" class="font-bold" color="dark">{{props.markerData[0].title }}</ion-title>
+        <ion-title size="large" class="font-bold" color="dark">{{ props.markerData[0].title }}</ion-title>
       </div>
 
       <div class="flex gap-x-4">
@@ -100,6 +106,22 @@
 
       </ion-accordion-group>
     </div>
+    <div v-show="segment === 'chat'" >
+      <ion-card class="custom-transparent case">
+        <ion-list class="custom-transparent case">
+          <ion-item class="custom-transparent case" v-for="(comment, index) in messages" :key="index">
+            <ion-label>{{ comment.username }}</ion-label>
+            <ion-text>{{comment.text}}</ion-text>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+      <div class="input-button-wrapper">
+  <ion-input ref="newMessage" placeholder="Nachricht eingeben"></ion-input>
+  <ion-button @click="insertMessage" fill="clear">
+    <ion-icon slot="icon-only" :icon="arrowForwardOutline"></ion-icon>
+  </ion-button>
+</div>
+    </div>
     <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
       @didDismiss="setOpen(false)"></ion-toast>
   </ion-content>
@@ -126,16 +148,19 @@ import {
   IonBadge,
   IonList,
   IonAlert,
-  IonButton
+  IonButton,
+  IonText,
+  IonInput,
+  IonSegment,
+  IonSegmentButton
 } from "@ionic/vue";
-
-
-import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
+import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline, trashOutline, arrowForwardOutline } from 'ionicons/icons';
 import router from '../router';
 import { caseService } from '@/services/case-service';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Case, Status, Casetype, ImageData, Link, FilteredCases, Role, CaseVote } from "@/types/supabase-global";
+import { Case, Status, Casetype, ImageData, Link, FilteredCases, Role, CaseVote, Comment } from "@/types/supabase-global";
+import { supabase } from "../services/supabase-service";
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 import "swiper/swiper-bundle.css";
 // Import Swiper styles
@@ -152,6 +177,9 @@ let detailCase: Case;
 let CaseId: string;
 let ToastMessage: string;
 let UserId: string;
+const segment = ref('info');
+const messages = ref<Comment>([]);
+const newMessage = ref("");
 
 //Nina
 
@@ -169,25 +197,24 @@ const upvote = ref<number>();
 const downvote = ref<number>();
 
 const alertButtons = [
-    {
-      text: 'Zurück',
-      role: 'cancel',
-      handler: () => {
-        console.log('Alert canceled');
-      },
+  {
+    text: 'Zurück',
+    role: 'cancel',
+    handler: () => {
+      console.log('Alert canceled');
     },
-    {
-      text: 'Löschen',
-      role: 'delete',
-      handler: () => {
-        console.log('Alert confirmed');
-      },
+  },
+  {
+    text: 'Löschen',
+    role: 'delete',
+    handler: () => {
+      console.log('Alert confirmed');
     },
-  ];
+  },
+];
 
 const alertResult = (ev: CustomEvent) => {
-  if(`${ev.detail.role}` == "delete")
-  {
+  if (`${ev.detail.role}` == "delete") {
     deleteCase();
   }
 };
@@ -220,6 +247,9 @@ onMounted(async () => {
     };
     linkList.value.push(link);
   });
+
+  messages.value = await caseService.getComments(CaseId);
+  await listenToChanges(CaseId);
   pictureLoaded.value = true;
 });
 
@@ -274,6 +304,15 @@ async function setStatusAndIcon() {
   }
 }
 
+const insertMessage = async() =>{
+  const succesful = await caseService.insertComment(CaseId, newMessage.value.$el.value, UserId);
+  newMessage.value = ""
+  if (!succesful) {
+    ToastMessage = "Irgendwas lief schlief probiere es erneut!";
+    setOpen(true);
+  } 
+}
+
 async function setCaseType() {
   typeOfCase = props.markerData[0].case_type;
 
@@ -325,10 +364,33 @@ const routeToChangeCaseView = async () => {
   router.push(`/change-case/${props.markerData[0].id}`);
 };
 
-const deleteCase = async() => {
+const deleteCase = async () => {
   await caseService.deleteCase(CaseId);
   emits('deleteMarker', props.markerData);
   props.modal.$el.dismiss();
+}
+
+const listenToChanges = async(caseId: string) => {
+
+  const handleInserts = async (payload: any) => {
+    console.log("Change received!", payload);
+    const newComment = payload.new;
+    const username = await currentUserInformation.getUserName(UserId);
+    console.log(username);
+    newComment.username = username;
+    messages.value.push(newComment);
+    newMessage.value = "";
+  };
+
+  // Listen to inserts
+  supabase
+    .channel(`comments:case_id=eq.${caseId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "comments" },
+      handleInserts
+    )
+    .subscribe();
 }
 </script>
 
@@ -366,5 +428,15 @@ const deleteCase = async() => {
   /* Padding entfernen */
   margin: 0;
   background-color: rgba(0, 0, 0, 0);
+}
+
+.input-button-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.input-button-wrapper ion-input {
+  flex: 1; /* Füllt den verfügbaren Platz aus */
+  margin-right: 8px; /* Ändere dies entsprechend deinem Design */
 }
 </style>

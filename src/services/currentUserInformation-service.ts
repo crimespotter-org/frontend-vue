@@ -3,9 +3,9 @@ import { Role } from "@/types/supabase-global";
 
 class CurrentUserInformation {
   async getCurrentUserRole(): Promise<Role> {
-    let localUser = this.getCurrentUser();
+    const localUser = this.getCurrentUser();
     //console.log("User: " + (await localUser).data.session?.user.email);
-    let localUserID = (await localUser).data.session?.user.id;
+    const localUserID = (await localUser).data.session?.user.id;
 
     const { data: user_profile, error } = await supabase
       .from("user_profiles")
@@ -22,8 +22,18 @@ class CurrentUserInformation {
   }
 
   async getCurrentUser() {
-    let LocalUser = await supabase.auth.getSession();
+    const LocalUser = await supabase.auth.getSession();
     return LocalUser;
+  }
+
+  async getUserName(userId: string) {
+    const {data: user} = await supabase
+      .from('user_profiles')
+      .select('username')
+      .eq('id', userId)
+      .single();
+
+    return user ? user.username : '';
   }
 }
 

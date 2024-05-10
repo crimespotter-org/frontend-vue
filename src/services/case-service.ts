@@ -3,11 +3,11 @@ import {
   Casetype,
   Status,
   Link,
-  CaseVote
+  CaseVote,
+  Comment,
 } from "@/types/supabase-global";
 import { supabase } from "./supabase-service";
 import { FileObject } from "@supabase/storage-js";
-import { currentUserInformation } from "@/services/currentUserInformation-service";
 
 class CaseService {
   async updateCase(
@@ -88,13 +88,12 @@ class CaseService {
     return true;
   }
 
-  async deleteCase(case_id: string){
-    const { data, error } = await supabase
-    .rpc('delete_case_by_id', {
-    case_id
-  })
-    if (error) console.error(error)
-    else console.log(data)
+  async deleteCase(case_id: string) {
+    const { data, error } = await supabase.rpc("delete_case_by_id", {
+      case_id,
+    });
+    if (error) console.error(error);
+    else console.log(data);
   }
 
   async getCase(case_id_param: string): Promise<Case> {
@@ -152,37 +151,38 @@ class CaseService {
     return data!.signedUrl;
   }
 
-  async updateVote(caseId: string, userId: string, vote: number): Promise<boolean> {
-      const {data, error} = await supabase
-        .from('votes')
-        .select('*')
-        .match({case_id: caseId, user_id: userId})
-        .single();
-  
-      if (data) {
-        const {error: updateError} = await supabase
-          .from('votes')
-          .update({vote})
-          .match({id: data.id});
-          if(updateError){
-            console.error(updateError);
-            return false;
-          }
-          return true;
-      } else {
-        const {error: insertError} = await supabase
-          .from('votes')
-          .insert([
-            {case_id: caseId, user_id: userId, vote}
-          ]);
-        if (insertError) {
-          console.error(insertError);
-          return false
-        }
-        return true;
+  async updateVote(
+    caseId: string,
+    userId: string,
+    vote: number
+  ): Promise<boolean> {
+    const { data, error } = await supabase
+      .from("votes")
+      .select("*")
+      .match({ case_id: caseId, user_id: userId })
+      .single();
+
+    if (data) {
+      const { error: updateError } = await supabase
+        .from("votes")
+        .update({ vote })
+        .match({ id: data.id });
+      if (updateError) {
+        console.error(updateError);
+        return false;
       }
+      return true;
+    } else {
+      const { error: insertError } = await supabase
+        .from("votes")
+        .insert([{ case_id: caseId, user_id: userId, vote }]);
+      if (insertError) {
+        console.error(insertError);
+        return false;
+      }
+      return true;
     }
-  
+  }
 
   async getVotes(p_case_id: string): Promise<CaseVote> {
     const { data: vote, error } = await supabase.rpc("get_case_votes_by_id", {
@@ -194,6 +194,27 @@ class CaseService {
     }
     console.log(vote);
     return vote;
+  }
+
+  async getComments(p_case_id: string): Promise<Comment> {
+    const { data: comment, error } = await supabase.rpc("get_comments", {
+      p_case_id,
+    });
+    if (error) console.error(error);
+    return comment;
+  }
+
+  async insertComment(p_case_id: string, p_text: string, p_user_id: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc("insert_comment", {
+      p_case_id,
+      p_text,
+      p_user_id,
+    });
+    if (error){
+      console.error(error);
+      return false;
+    } 
+    return true;
   }
 }
 

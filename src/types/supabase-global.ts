@@ -495,6 +495,22 @@ export type Database = {
           distance_to_location: number
         }[]
       }
+      get_username_with_id: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          username: string
+        }[]
+      }
+      insert_comment: {
+        Args: {
+          p_case_id: string
+          p_user_id: string
+          p_text: string
+        }
+        Returns: undefined
+      }
       update_case: {
         Args: {
           title: string
@@ -608,7 +624,8 @@ export type Enums<
     : never
 
 
-export type Comment = Database["public"]["Tables"]["comments"]["Row"];
+
+
 export type FurtherLink = Database["public"]["Tables"]["furtherlinks"]["Row"];
 export type Media = Database["public"]["Tables"]["media"]["Row"];
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
@@ -626,6 +643,7 @@ export type Role = Database["public"]["Enums"]["role"];
 export type Status = Database["public"]["Enums"]["status"];
 export type CaseVote =
   Database["public"]["Functions"]["get_case_votes_by_id"]["Returns"];
+export type Comment = Database["public"]["Functions"]["get_comments"]["Returns"];
 
 export interface Coordinate {
   latitude: number;
