@@ -19,7 +19,7 @@
     </div>
     <ion-modal ref="modal" trigger="open-modal" class="crimeMap" :initial-breakpoint="0.50">
       <ion-header>
-        <ion-toolbar color="primary">
+        <ion-toolbar color="primary" class="px-4">
           <ion-button @click="cancel()" slot="start" color="secondary">Zurück</ion-button>
           <ion-button @click="confirm()" slot="end" color="secondary">Anwenden</ion-button>
         </ion-toolbar>
@@ -68,7 +68,7 @@
             </ion-col>
           </ion-row>
           <ion-row>
-            <ion-col>
+            <ion-col class="ml-4 mt-2">
               <ion-toggle color="secondary" @ion-change="toggled" :checked="toggle">Heatmap</ion-toggle>
             </ion-col>
           </ion-row>
@@ -256,7 +256,7 @@ const setHeatMap = () => {
     data: heatMapData
   });
 
-    heatmap.setMap(map.value!);
+  heatmap.setMap(map.value!);
 
 }
 
@@ -293,17 +293,17 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
   console.log(SelectedCrimeType);
 }
 
-const toggled = () =>{
-  if(toggle.value){
+const toggled = () => {
+  if (toggle.value) {
     toggle.value = false;
     deleteHeatMap();
-  }else{
+  } else {
     toggle.value = true;
     setHeatMap();
   }
 }
 
-const deleteHeatMap = () =>{
+const deleteHeatMap = () => {
   console.log("remove Heatmap");
   heatmap.setData([]);
   heatmap.setMap(null);
@@ -322,7 +322,7 @@ function Sleep(milliseconds: number) {
 }
 
 ion-header {
-  --background: #2f2f2f: ;
+  --background: #2f2f2f:;
 }
 
 .toolbar-content {
@@ -333,8 +333,9 @@ ion-header {
 }
 
 .custom-button {
-  width: 50px; /* Hier kannst du die Breite des Buttons nach Bedarf anpassen */
-  height: 50px; /* Hier kannst du die Höhe des Buttons nach Bedarf anpassen */
+  width: 50px;
+  /* Hier kannst du die Breite des Buttons nach Bedarf anpassen */
+  height: 50px;
+  /* Hier kannst du die Höhe des Buttons nach Bedarf anpassen */
 }
-
 </style>
