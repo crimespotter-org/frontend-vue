@@ -22,6 +22,7 @@
                         :icon="peopleOutline" class="pr-4"></ion-icon>Benutzerrollen
                     ändern</ion-item></router-link>
         </ion-content>
+        <FooterComponent />
     </ion-page>
 </template>
 
@@ -29,6 +30,7 @@
 import { IonPage, IonTitle, IonContent, IonItem } from '@ionic/vue';
 import { Role } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
+import FooterComponent from '../components/Footer.vue';
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 import { ref } from "vue";
 import { addOutline, folderOpenOutline, peopleOutline, mapOutline } from "ionicons/icons";

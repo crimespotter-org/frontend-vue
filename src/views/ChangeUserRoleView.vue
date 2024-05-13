@@ -1,9 +1,9 @@
 <template>
   <ion-page>
     <HeaderComponent />
-    <ion-content class="ion-padding">
+    <ion-content class="ion-padding case">
       <ion-title size="large">Benutzerrollen ändern</ion-title>
-      <ion-item>
+      <ion-item class="customTransparent">
 
         <ion-select v-model="selectedUser" aria-label="Benutzer auswählen" label="Benutzer auswählen"
           interface="action-sheet">
@@ -12,14 +12,14 @@
         </ion-select>
       </ion-item>
 
-      <ion-item>
+      <ion-item class="customTransparent">
         <ion-select v-model="selectedRole" aria-label="Neue Rolle auswählen" label="Neue Rolle auswählen"
           interface="action-sheet">
           <ion-select-option v-for="role in allRoles" :key="role" :value="role">{{ role }}</ion-select-option>
         </ion-select>
       </ion-item>
 
-      <ion-button @click="changeUserRole()" class="ion-margin-top">Rolle ändern</ion-button>
+      <ion-button @click="changeUserRole()" class="m-4">Rolle ändern</ion-button>
       <ion-toast :is-open="changeSuccesful" @didDismiss="setOpenChangeSuccessful(false)"
         message="Benutzerrolle geändert." :duration="5000"></ion-toast>
       <ion-toast :is-open="changedOwnRole" @didDismiss="setOpenOwnRole(false)"
