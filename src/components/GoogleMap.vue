@@ -7,7 +7,7 @@
         </ion-fab-button>
       </router-link>
     </ion-fab>
-    <ion-toolbar color="primary" class="flex flex-row justify-between">
+    <ion-toolbar color="primary" class="flex flex-row justify-between px-4 py-2">
       <div class="flex justify-between">
         <ion-button id="open-modal" color="secondary" slot="start" class="custom-button">
           <ion-icon :icon="filterOutline"></ion-icon>
