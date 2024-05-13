@@ -27,7 +27,7 @@
         <ion-button id="present-alert">
           <ion-icon slot="icon-only" :icon="trashOutline"></ion-icon>
         </ion-button>
-        <ion-alert trigger="present-alert" header="Willst du den Fall wirklich löschen?" :buttons="alertButtons"
+        <ion-alert trigger="present-alert" header="Möchtest du den Fall wirklich löschen?" :buttons="alertButtons"
           @didDismiss="alertResult($event)">
         </ion-alert>
       </ion-buttons>
@@ -45,10 +45,9 @@
       </ion-segment>
     </ion-toolbar>
     <div v-show="segment === 'info'">
-      <div class="grid justify-items-center">
-        <ion-title size="large" class="font-bold" color="dark">{{ props.markerData[0].title }}</ion-title>
+      <div class="grid justify-items-center text-wrap my-4">
+        <h1 class="font-bold text-lg">{{ props.markerData[0].title }}</h1>
       </div>
-
       <div class="flex gap-x-4">
         <ion-icon :icon="locationOutline"></ion-icon>
         <p>{{ props.markerData[0].place_name }}</p>
@@ -106,21 +105,28 @@
 
       </ion-accordion-group>
     </div>
-    <div v-show="segment === 'chat'" >
-      <ion-card class="custom-transparent case">
-        <ion-list class="custom-transparent case">
-          <ion-item class="custom-transparent case" v-for="(comment, index) in messages" :key="index">
-            <ion-label>{{ comment.username }}</ion-label>
-            <ion-text>{{comment.text}}</ion-text>
-          </ion-item>
-        </ion-list>
+    <div v-show="segment === 'chat'">
+
+      <ion-card class="customTransparent flex px-4 mb-4 border border-gray-400 bg-slay-200 rounded text-black">
+
+        <ion-input ref="newMessage" placeholder="Neuen Kommentar eingeben"></ion-input>
+        <ion-button @click="insertMessage" fill="clear">
+          <ion-icon slot="icon-only" :icon="arrowForwardOutline"></ion-icon>
+        </ion-button>
+
+      </ion-card>
+
+      <ion-card class="customTransparent ">
+
+        <ion-item class="customTransparent" v-for="(comment, index) in messages.reverse()" :key="index">
+          <ion-label>{{ comment.username }}</ion-label>
+          <ion-text>{{ comment.text }}</ion-text>
+        </ion-item>
+
       </ion-card>
       <div class="input-button-wrapper">
-  <ion-input ref="newMessage" placeholder="Nachricht eingeben"></ion-input>
-  <ion-button @click="insertMessage" fill="clear">
-    <ion-icon slot="icon-only" :icon="arrowForwardOutline"></ion-icon>
-  </ion-button>
-</div>
+
+      </div>
     </div>
     <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
       @didDismiss="setOpen(false)"></ion-toast>
@@ -304,13 +310,13 @@ async function setStatusAndIcon() {
   }
 }
 
-const insertMessage = async() =>{
+const insertMessage = async () => {
   const succesful = await caseService.insertComment(CaseId, newMessage.value.$el.value, UserId);
   newMessage.value = ""
   if (!succesful) {
     ToastMessage = "Irgendwas lief schlief probiere es erneut!";
     setOpen(true);
-  } 
+  }
 }
 
 async function setCaseType() {
@@ -370,7 +376,7 @@ const deleteCase = async () => {
   props.modal.$el.dismiss();
 }
 
-const listenToChanges = async(caseId: string) => {
+const listenToChanges = async (caseId: string) => {
 
   const handleInserts = async (payload: any) => {
     console.log("Change received!", payload);
@@ -436,7 +442,9 @@ const listenToChanges = async(caseId: string) => {
 }
 
 .input-button-wrapper ion-input {
-  flex: 1; /* Füllt den verfügbaren Platz aus */
-  margin-right: 8px; /* Ändere dies entsprechend deinem Design */
+  flex: 1;
+  /* Füllt den verfügbaren Platz aus */
+  margin-right: 8px;
+  /* Ändere dies entsprechend deinem Design */
 }
 </style>
