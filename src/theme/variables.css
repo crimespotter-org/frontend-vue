@@ -248,6 +248,11 @@ http://ionicframework.com/docs/theming/ */
   text-align: justify;
 }
 
+.footer {
+  background: url(../../public/footer.jpg) no-repeat 100% 100%; /* Hintergrundbild setzen */
+  background-size: cover; /* Hintergrundbild skalieren, um den gesamten Bereich zu bedecken */
+}
+
 .customTransparent {
   --background: transparent: !important;
 }

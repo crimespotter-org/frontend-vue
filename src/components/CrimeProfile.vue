@@ -131,6 +131,7 @@
     <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
       @didDismiss="setOpen(false)"></ion-toast>
   </ion-content>
+  <FooterComponent />
 
 </template>
 
@@ -172,6 +173,7 @@ import "swiper/swiper-bundle.css";
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
+import FooterComponent from '../components/Footer.vue';
 
 
 //Emma
