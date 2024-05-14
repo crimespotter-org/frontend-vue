@@ -257,6 +257,12 @@ http://ionicframework.com/docs/theming/ */
   --background: transparent: !important;
 }
 
+.custom-transparent {
+  background-color: rgba(255, 255, 255, 0);
+  /* Hintergrundfarbe transparent setzen */
+  --box-shadow: none;
+}
+
 .customTransparentAndShadowNone {
   --background: transparent;
   --box-shadow: none;

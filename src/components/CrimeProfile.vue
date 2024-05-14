@@ -118,7 +118,7 @@
 
       <ion-card class="customTransparent ">
 
-        <ion-item class="customTransparent" v-for="(comment, index) in messages.reverse()" :key="index">
+        <ion-item class="customTransparent" v-for="(comment, index) in messages" :key="index">
           <ion-label>{{ comment.username }}</ion-label>
           <ion-text>{{ comment.text }}</ion-text>
         </ion-item>
@@ -187,7 +187,7 @@ let ToastMessage: string;
 let UserId: string;
 const segment = ref('info');
 const messages = ref<Comment>([]);
-const newMessage = ref("");
+const newMessage = ref();
 
 //Nina
 
@@ -314,7 +314,6 @@ async function setStatusAndIcon() {
 
 const insertMessage = async () => {
   const succesful = await caseService.insertComment(CaseId, newMessage.value.$el.value, UserId);
-  newMessage.value = ""
   if (!succesful) {
     ToastMessage = "Irgendwas lief schlief probiere es erneut!";
     setOpen(true);
@@ -387,7 +386,6 @@ const listenToChanges = async (caseId: string) => {
     console.log(username);
     newComment.username = username;
     messages.value.push(newComment);
-    newMessage.value = "";
   };
 
   // Listen to inserts
@@ -403,11 +401,7 @@ const listenToChanges = async (caseId: string) => {
 </script>
 
 <style scoped>
-.custom-transparent {
-  background-color: rgba(255, 255, 255, 0);
-  /* Hintergrundfarbe transparent setzen */
-  --box-shadow: none;
-}
+
 
 .swiper {
   width: 100%;

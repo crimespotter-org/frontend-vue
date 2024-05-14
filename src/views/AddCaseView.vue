@@ -94,11 +94,11 @@
 
 
             <!-- segment two pictures -->
-            <ion-card v-show="segment === 'picture'" class="customTransparent case">
-                <ion-card-content class="customTransparent case">
+            <ion-card v-show="segment === 'picture'" class="customTransparent">
+                <ion-card-content class="customTransparent">
 
-                    <ion-list class="customTransparent case">
-                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent case">
+                    <ion-list class="custom-transparent">
+                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
 
                             <ion-thumbnail slot="start">
                                 <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
@@ -111,7 +111,7 @@
                         </ion-item>
                     </ion-list>
 
-                    <div class="flex justify-center customTransparent case">
+                    <div class="flex justify-center customTransparent">
                         <ion-button @click="takePhoto">
                             <ion-icon :icon="cameraOutline"></ion-icon>
                         </ion-button>
@@ -123,12 +123,12 @@
 
 
             <!-- segment three links -->
-            <ion-card v-show="segment === 'links'" class="customTransparent case">
-                <ion-card-content class="customTransparent case">
+            <ion-card v-show="segment === 'links'" class="customTransparent">
+                <ion-card-content class="customTransparent">
                     Updaten über den Update Button auf der Info Seite!
-                    <ion-list class="customTransparent case">
-                        <ion-item v-for="(link, index) in linkList" :key="index" class="customTransparent case">
-                            <ion-grid class="customTransparent case">
+                    <ion-list class="custom-transparent">
+                        <ion-item v-for="(link, index) in linkList" :key="index" class="customTransparent">
+                            <ion-grid class="customTransparent">
                                 <ion-row>
                                     <ion-col>
                                         <ion-select :value="link.type" @ionChange="changeLinkType(link, $event)">
@@ -149,7 +149,7 @@
                             </ion-grid>
                         </ion-item>
                     </ion-list>
-                    <ion-item class="customTransparent case">
+                    <ion-item class="customTransparent">
                         <ion-select :value="linkTyp" class="customTransparent">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
