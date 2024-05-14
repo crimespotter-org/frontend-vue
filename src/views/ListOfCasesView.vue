@@ -63,7 +63,7 @@ const results = ref(cases);
 
 onMounted(async () => {
     const currentLocation = await mapService.currentLocation();
-    cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100000000, null, null);
+    cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 10000, null, null);
 
     results.value = cases.sort((a, b) => {
 

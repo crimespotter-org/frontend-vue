@@ -179,7 +179,7 @@ let ToastMessage: string;
 let UserId: string;
 const segment = ref('info');
 const messages = ref<Comment>([]);
-const newMessage = ref("");
+const newMessage = ref();
 
 //Nina
 
@@ -306,7 +306,6 @@ async function setStatusAndIcon() {
 
 const insertMessage = async() =>{
   const succesful = await caseService.insertComment(CaseId, newMessage.value.$el.value, UserId);
-  newMessage.value = ""
   if (!succesful) {
     ToastMessage = "Irgendwas lief schlief probiere es erneut!";
     setOpen(true);
@@ -379,7 +378,6 @@ const listenToChanges = async(caseId: string) => {
     console.log(username);
     newComment.username = username;
     messages.value.push(newComment);
-    newMessage.value = "";
   };
 
   // Listen to inserts
