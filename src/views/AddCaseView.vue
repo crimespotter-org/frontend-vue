@@ -24,14 +24,14 @@
                 </ion-item>
                 <!-- title -->
                 <ion-item class="customTransparent">
-                    <ion-input ref="ionInputTitle" label="Titel" label-placement="floating"
+                    <ion-input v-model="title" ref="ionInputTitle" label="Titel" label-placement="floating"
                         :auto-grow="true"></ion-input>
                 </ion-item>
 
                 <!-- summary -->
                 <ion-item class="customTransparent">
                     <ion-textarea ref="ionInputSummary" label="Zusammenfassung" label-placement="floating"
-                        :auto-grow="true"></ion-textarea>
+                        :auto-grow="true" v-model="summary"></ion-textarea>
                 </ion-item>
 
                 <!-- Location -->
@@ -255,6 +255,8 @@ let ToastMessage: string;
 let linkTyp: LinkType = "newspaper";
 let localUserId: string = "";
 let pictureToSave: File[] = [];
+let title: string;
+let summary: string;
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -389,15 +391,21 @@ const createCase = async () => {
 };
 
 const navigateBack = () => {
+    CaseType = null;
+    PlaceName = "";
+    CaseStatus = null;
+    ionInputSummary.value.$el.value = null;
+    ionInputTitle.value = null;
+    linkList.value = []; 
+    title = '';
+    summary = '';
+
+    console.log(ionInputSummary.value.$el.value);
     ionRouter.push("/crime-map");
 };
 
 const setOpen = (state: boolean) => {
     isToastOpen.value = state;
-};
-
-const getAddress = (place: any) => {
-    console.log('Address Object', place);
 };
 </script>
 
