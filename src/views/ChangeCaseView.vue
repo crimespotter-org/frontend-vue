@@ -283,6 +283,7 @@ onMounted(async () => {
     showComponent.value = true;
     showComponent.value = false;
     showComponent.value = true;
+    delay(5000);
     setLocation();
 
 
@@ -305,6 +306,8 @@ const setLocation = () => {
     const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
     console.log(elem);
     elem.autocomplete = 'on';
+    elem.setAttribute('autocomplete','on');
+    console.log(elem);
 
     const autocomplete = new google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
@@ -447,6 +450,10 @@ const getAddress = (place: any) => {
 const setOpen = (state: boolean) => {
     isToastOpen.value = state;
 };
+
+function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+}
 </script>
 
 <style scoped>

@@ -62,13 +62,13 @@ class CaseService {
     p_title: string,
     p_zip_code: number | null,
     linkList: Link[]
-  ): Promise<boolean> {
+  ): Promise<string> {
     const p_links = linkList.map((link) => ({
       url: link.linkUrl,
       link_type: link.type,
     }));
 
-    const { data, error } = await supabase.rpc("create_crime_case_angular", {
+    const { data: caseId, error } = await supabase.rpc("create_crime_case_angular", {
       p_case_type,
       p_created_by,
       p_crime_date_time,
@@ -83,9 +83,10 @@ class CaseService {
     });
     if (error) {
       console.error(error);
-      return false;
+      return "";
     }
-    return true;
+    console.log(caseId);
+    return caseId;
   }
 
   async deleteCase(case_id: string) {

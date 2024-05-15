@@ -224,7 +224,7 @@ import {
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
 import { Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
-import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
+import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
 import { caseService } from '@/services/case-service';
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 import { cameraService } from '@/services/camera-service';
@@ -254,6 +254,7 @@ let PlaceName: string;
 let ToastMessage: string;
 let linkTyp: LinkType = "newspaper";
 let localUserId: string = "";
+let pictureToSave: File[] = [];
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -337,43 +338,24 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
 };
 
 const deletePicture = async (deletePicture: ImageData) => {
-    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
-
-    if (successful) {
-        ToastMessage = "Bild erfolgreich gelöscht";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-
     picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
 };
 
-const getPictures = async () => {
-    const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
-    await Promise.all(caseImages!.map(async (file) => {
-        const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-        let imageData: ImageData = {
-            pictureUri: pictureUri,
+const takePhoto = async () => {
+    const getPhoto = await cameraService.takePhoto();
+    const blob = await fetch(getPhoto.webPath!).then(async (r) => {
+      return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+    });
+    const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
+      type: blob.type,
+    });
+
+    let imageData: ImageData = {
+            pictureUri: getPhoto.webPath!,
             imageName: file.name
         };
-        picture.value.push(imageData);
-    }));
-}
-
-const takePhoto = async () => {
-    const file = await cameraService.takePhoto();
-    const successful = await cameraService.uploadPhoto(file, CaseId);
-    if (successful) {
-        ToastMessage = "Bild erfolgreich hochgeladen";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-    picture.value = [];
-    getPictures();
+    picture.value.push(imageData);
+    pictureToSave.push(file);
 }
 
 const handleStatusChange = async (event: { detail: { value: string } }) => {
@@ -385,7 +367,7 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
 };
 
 const createCase = async () => {
-    const successful = await caseService.createCase(
+    const caseId = await caseService.createCase(
         CaseType,
         localUserId,
         SelectedDateTime,
@@ -399,13 +381,9 @@ const createCase = async () => {
         linkList.value
     );
 
-    if (successful) {
-        ToastMessage = "Case erfolgreich erstellt!";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
+    pictureToSave.forEach(async (file) =>{
+        await cameraService.uploadPhoto(file, caseId);
+    })
     navigateBack();
 
 };
