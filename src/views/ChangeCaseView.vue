@@ -166,7 +166,7 @@
 
 <script setup lang="ts">
 
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted } from "vue";
 import {
     IonHeader,
     IonToolbar,
@@ -219,9 +219,8 @@ const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
 const linkList = ref<Link[]>([]);
-const selectedFile = ref(null);
 
-let picture = ref<ImageData[]>([]);
+const picture = ref<ImageData[]>([]);
 let detailCase: Case;
 let SelectedDateTime: string;
 let CaseType: Casetype;
@@ -233,9 +232,9 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTypRef = ref<LinkType>('newspaper');
+const linkTypRef = ref<LinkType>('newspaper');
 let localUserId: string = "";
-let pictureToSave: File[] = [];
+const pictureToSave: File[] = [];
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -267,7 +266,7 @@ onMounted(async () => {
 
     detailCase.forEach(function (item) {
         console.log(item.link_id + "Link");
-        let link: Link = {
+        const link: Link = {
             linkId: item.link_id,
             type: item.link_type,
             linkUrl: item.url
@@ -291,7 +290,7 @@ const getPictures = async () => {
     const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
     await Promise.all(caseImages!.map(async (file) => {
         const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-        let imageData: ImageData = {
+        const imageData: ImageData = {
             pictureUri: pictureUri,
             imageName: file.name
         };
@@ -382,7 +381,7 @@ const takePhoto = async () => {
         type: blob.type,
     });
 
-    let imageData: ImageData = {
+    const imageData: ImageData = {
         pictureUri: getPhoto.webPath!,
         imageName: file.name
     };
@@ -406,7 +405,7 @@ const includeLink = () => {
 
     console.log(linkTypRef.value.$el.value);
 
-    let link: Link = {
+    const link: Link = {
         linkId: "",
         type: linkTypRef.value.$el.value,
         linkUrl: linkInputUrl.value.$el.value
@@ -427,7 +426,7 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
 
     console.log(type.detail.value);
 
-    let newLink: Link = {
+    const newLink: Link = {
         linkId: linkId,
         type: type.detail.value,
         linkUrl: link.linkUrl
@@ -446,10 +445,6 @@ const handleStatusChange = async (event: { detail: { value: string } }) => {
 
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
     CaseType = event.detail.value as Casetype;
-};
-
-const getAddress = (place: any) => {
-    console.log('Address Object', place);
 };
 
 const setOpen = (state: boolean) => {

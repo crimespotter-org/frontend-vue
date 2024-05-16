@@ -198,14 +198,12 @@ import {
     IonInput,
     IonTextarea,
     IonDatetime,
-    IonFab,
     IonFabButton,
     IonIcon,
     IonModal,
     IonSelect,
     IonSelectOption,
     IonItem,
-    IonSearchbar,
     IonImg,
     IonCard,
     useIonRouter,
@@ -240,21 +238,20 @@ const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
 
-let picture = ref<ImageData[]>([]);
+const picture = ref<ImageData[]>([]);
 const linkList = ref<Link[]>([]);
 let SelectedDateTime: string;
 let CaseType: Casetype;
 let CaseStatus: Status;
 let CrimeTime: string;
 let CrimeDate: string;
-let CaseId: string;
 let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTypRef = ref('newspaper');
+const linkTypRef = ref('newspaper');
 let localUserId: string = "";
-let pictureToSave: File[] = [];
+const pictureToSave: File[] = [];
 let title: string;
 let summary: string;
 let autocomplete: google.maps.places.Autocomplete | null = null;
@@ -330,7 +327,7 @@ const deleteLink = (link: Link) => {
 };
 
 const includeLink = () => {
-    let link: Link = {
+    const link: Link = {
         linkId: "",
         type: linkTypRef.value as LinkType,
         linkUrl: linkInputUrl.value.$el.value
@@ -344,7 +341,7 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
         return item !== link;
     });
 
-    let newLink: Link = {
+    const newLink: Link = {
         linkId: "",
         type: type.detail.value,
         linkUrl: link.linkUrl
@@ -365,7 +362,7 @@ const takePhoto = async () => {
       type: blob.type,
     });
 
-    let imageData: ImageData = {
+    const imageData: ImageData = {
             pictureUri: getPhoto.webPath!,
             imageName: file.name
         };
