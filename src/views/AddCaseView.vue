@@ -36,7 +36,7 @@
 
                 <!-- Location -->
                 <ion-item class="customTransparent">
-                    <input @focus="setLocation" id="search2" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein.">
+                    <input @focus="setLocation" id="search2" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
                 <!-- state -->
@@ -254,21 +254,6 @@ let localUserId: string = "";
 const pictureToSave: File[] = [];
 let title: string;
 let summary: string;
-let autocomplete: google.maps.places.Autocomplete | null = null;
-
-onIonViewDidEnter(async () => {
-  autocomplete = null;
-  setLocation();
-});
-
-onIonViewDidLeave(() => {
-  autocomplete!.unbindAll()
-  autocomplete = null;
-});
-
-onUnmounted(() => {
-    autocomplete!.unbindAll()
-})
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -396,6 +381,7 @@ const createCase = async () => {
     pictureToSave.forEach(async (file) =>{
         await cameraService.uploadPhoto(file, caseId);
     })
+    console.log(caseId);
     navigateBack();
 
 };

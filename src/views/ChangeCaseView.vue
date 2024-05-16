@@ -32,7 +32,7 @@
                 </ion-item>
 
                 <ion-item class="customTransparent">
-                    <input @focus="setLocation" id="search1" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein.">
+                    <input @focus="setLocation" id="search1" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
                 <ion-item class="customTransparent">
