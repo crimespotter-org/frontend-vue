@@ -36,7 +36,8 @@
 
                 <!-- Location -->
                 <ion-item class="customTransparent">
-                    <input @focus="setLocation" id="search2" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
+                    <input @focus="setLocation" id="search2" type="search" autocomplete="on"
+                        placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
                 <!-- state -->
@@ -148,7 +149,7 @@
                         </ion-item>
                     </ion-list>
                     <ion-item class="customTransparent case">
-                        <ion-select ref="linkTypRef" class="customTransparent">
+                        <ion-select ref="linkTypRef" class="customTransparent" value="newspaper">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
@@ -287,19 +288,19 @@ function convertDateString(inputDate: string): string {
 
 const setLocation = () => {
 
-const elem = document.getElementById("search2") as HTMLInputElement;
-console.log(elem);
+    const elem = document.getElementById("search2") as HTMLInputElement;
+    console.log(elem);
 
-const autocomplete = new window.google.maps.places.Autocomplete(elem);
-const returnFields = ["geometry", "name"];
-autocomplete.setFields(returnFields);
-window.google.maps.event.addListener(autocomplete, 'place_changed', function () {
-    const place = autocomplete.getPlace();
-    const location = place['geometry']!['location'];
-    Latitude = location!.lat();
-    Longitude = location!.lng();
-    PlaceName = place.name!;
-});
+    const autocomplete = new window.google.maps.places.Autocomplete(elem);
+    const returnFields = ["geometry", "name"];
+    autocomplete.setFields(returnFields);
+    window.google.maps.event.addListener(autocomplete, 'place_changed', function () {
+        const place = autocomplete.getPlace();
+        const location = place['geometry']!['location'];
+        Latitude = location!.lat();
+        Longitude = location!.lng();
+        PlaceName = place.name!;
+    });
 };
 
 const deleteLink = (link: Link) => {
@@ -312,7 +313,7 @@ const deleteLink = (link: Link) => {
 const includeLink = () => {
     const link: Link = {
         linkId: "",
-        type: linkTypRef.value as LinkType,
+        type: linkTypRef.value.$el.value,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
@@ -339,16 +340,16 @@ const deletePicture = async (deletePicture: ImageData) => {
 const takePhoto = async () => {
     const getPhoto = await cameraService.takePhoto();
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
-      return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+        return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
     const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
-      type: blob.type,
+        type: blob.type,
     });
 
     const imageData: ImageData = {
-            pictureUri: getPhoto.webPath!,
-            imageName: file.name
-        };
+        pictureUri: getPhoto.webPath!,
+        imageName: file.name
+    };
     picture.value.push(imageData);
     pictureToSave.push(file);
 }
@@ -362,6 +363,9 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
 };
 
 const createCase = async () => {
+
+    console.log(linkList.value);
+
     const caseId = await caseService.createCase(
         CaseType,
         localUserId,
@@ -376,10 +380,13 @@ const createCase = async () => {
         linkList.value
     );
 
-    pictureToSave.forEach(async (file) =>{
+    pictureToSave.forEach(async (file) => {
         await cameraService.uploadPhoto(file, caseId);
+        console.log(file)
     })
     console.log(caseId);
+    console.log()
+
     navigateBack();
 
 };
@@ -390,7 +397,7 @@ const navigateBack = () => {
     CaseStatus = null;
     ionInputSummary.value.$el.value = null;
     ionInputTitle.value = null;
-    linkList.value = []; 
+    linkList.value = [];
     title = '';
     summary = '';
 
