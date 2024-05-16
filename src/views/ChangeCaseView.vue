@@ -32,9 +32,7 @@
                 </ion-item>
 
                 <ion-item class="customTransparent">
-                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
-                        @ion-change="getAddress" @ion-focus="setLocation" :value="PlaceName">
-                    </ion-searchbar>
+                    <input @focus="setLocation" id="search1" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein.">
                 </ion-item>
 
                 <ion-item class="customTransparent">
@@ -181,14 +179,12 @@ import {
     IonInput,
     IonTextarea,
     IonDatetime,
-    IonFab,
     IonFabButton,
     IonIcon,
     IonModal,
     IonSelect,
     IonSelectOption,
     IonItem,
-    IonSearchbar,
     IonImg,
     IonCard,
     useIonRouter,
@@ -286,7 +282,7 @@ onMounted(async () => {
     showComponent.value = false;
     showComponent.value = true;
     delay(5000);
-    setLocation();
+
 
 
 });
@@ -305,16 +301,13 @@ const getPictures = async () => {
 
 const setLocation = () => {
 
-    const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
-    console.log(elem);
-    elem.autocomplete = 'on';
-    elem.setAttribute('autocomplete','on');
+    const elem = document.getElementById("search1") as HTMLInputElement;
     console.log(elem);
 
-    const autocomplete = new google.maps.places.Autocomplete(elem);
+    const autocomplete = new window.google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
     autocomplete.setFields(returnFields);
-    google.maps.event.addListener(autocomplete, 'place_changed', function () {
+    window.google.maps.event.addListener(autocomplete, 'place_changed', function () {
         const place = autocomplete.getPlace();
         const location = place['geometry']!['location'];
         Latitude = location!.lat();

@@ -27,6 +27,7 @@
   "./dot/**/*.vue",
   "./src/**/*.vue",
   "./src/types", 
-  "./types"],
+  "./types",
+  "index.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -36,9 +36,7 @@
 
                 <!-- Location -->
                 <ion-item class="customTransparent">
-                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
-                        @ion-focus="setLocation" placeholder="Tatort" :value="PlaceName"></ion-searchbar>
-
+                    <input @focus="setLocation" id="search2" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein.">
                 </ion-item>
 
                 <!-- state -->
@@ -292,20 +290,19 @@ function convertDateString(inputDate: string): string {
 
 const setLocation = () => {
 
-    const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
-    console.log(elem);
-    elem.autocomplete = 'on';
+const elem = document.getElementById("search2") as HTMLInputElement;
+console.log(elem);
 
-    const autocomplete = new google.maps.places.Autocomplete(elem);
-    const returnFields = ["geometry", "name"];
-    autocomplete.setFields(returnFields);
-    google.maps.event.addListener(autocomplete, 'place_changed', function () {
-        const place = autocomplete.getPlace();
-        const location = place['geometry']!['location'];
-        Latitude = location!.lat();
-        Longitude = location!.lng();
-        PlaceName = place.name!;
-    });
+const autocomplete = new window.google.maps.places.Autocomplete(elem);
+const returnFields = ["geometry", "name"];
+autocomplete.setFields(returnFields);
+window.google.maps.event.addListener(autocomplete, 'place_changed', function () {
+    const place = autocomplete.getPlace();
+    const location = place['geometry']!['location'];
+    Latitude = location!.lat();
+    Longitude = location!.lng();
+    PlaceName = place.name!;
+});
 };
 
 const deleteLink = (link: Link) => {
