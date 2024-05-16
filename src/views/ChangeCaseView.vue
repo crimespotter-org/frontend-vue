@@ -86,6 +86,7 @@
                 </ion-item>
             </ion-card>
             <ion-card v-if="pictureLoaded" v-show="segment === 'picture'" class="customTransparent case">
+                <p> Updaten über den Update Button auf der Info Seite! </p>
                 <ion-card-content class="customTransparent case">
                     <ion-list class="customTransparent case">
                         <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent case">
@@ -239,6 +240,7 @@ let PlaceName: string;
 let ToastMessage: string;
 let linkTyp: LinkType = "newspaper";
 let localUserId: string = "";
+let pictureToSave: File[] = [];
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -345,6 +347,10 @@ const updateCase = async () => {
         setOpen(true);
     }
 
+    pictureToSave.forEach(async (file) =>{
+        await cameraService.uploadPhoto(file, CaseId);
+    })
+
 };
 
 function convertDateString(inputDate: string): string {
@@ -361,32 +367,24 @@ function convertDateString(inputDate: string): string {
 }
 
 const deletePicture = async (deletePicture: ImageData) => {
-    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
-
-    if (successful) {
-        ToastMessage = "Bild erfolgreich gelöscht";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-
-    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
-    
+    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);  
 };
 
 const takePhoto = async () => {
-    const file = await cameraService.takePhoto();
-    const successful = await cameraService.uploadPhoto(file, CaseId);
-    if (successful) {
-        ToastMessage = "Bild erfolgreich hochgeladen";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-    picture.value = [];
-    getPictures();
+    const getPhoto = await cameraService.takePhoto();
+    const blob = await fetch(getPhoto.webPath!).then(async (r) => {
+      return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+    });
+    const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
+      type: blob.type,
+    });
+
+        let imageData: ImageData = {
+            pictureUri: getPhoto.webPath!,
+            imageName: file.name
+        };
+    picture.value.push(imageData);
+    pictureToSave.push(file);
 }
 
 
