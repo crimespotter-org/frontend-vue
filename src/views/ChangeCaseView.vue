@@ -135,7 +135,7 @@
                         </ion-item>
                     </ion-list>
                     <ion-item class="customTransparent case">
-                        <ion-select ref="linkTypRef">
+                        <ion-select ref="linkTypRef" value="newspaper">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
@@ -202,7 +202,7 @@ import {
     IonTitle,
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
-import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline} from "ionicons/icons";
+import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
 import { useRoute } from "vue-router";
 import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
@@ -237,7 +237,7 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTypRef = ref();
+let linkTypRef = ref<LinkType>('newspaper');
 let localUserId: string = "";
 let pictureToSave: File[] = [];
 
@@ -346,7 +346,7 @@ const updateCase = async () => {
         setOpen(true);
     }
 
-    pictureToSave.forEach(async (file) =>{
+    pictureToSave.forEach(async (file) => {
         await cameraService.uploadPhoto(file, CaseId);
     })
 
@@ -366,22 +366,32 @@ function convertDateString(inputDate: string): string {
 }
 
 const deletePicture = async (deletePicture: ImageData) => {
-    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);  
+    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName,CaseId);
+
+    if(successful){
+        picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
+        ToastMessage = "Bild erfolgreich gelöscht";
+        setOpen(true);
+    }else{
+        ToastMessage = "Etwas lief schief probiere es später nochmal!";
+        setOpen(true);
+    }
+
 };
 
 const takePhoto = async () => {
     const getPhoto = await cameraService.takePhoto();
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
-      return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+        return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
     const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
-      type: blob.type,
+        type: blob.type,
     });
 
-        let imageData: ImageData = {
-            pictureUri: getPhoto.webPath!,
-            imageName: file.name
-        };
+    let imageData: ImageData = {
+        pictureUri: getPhoto.webPath!,
+        imageName: file.name
+    };
     picture.value.push(imageData);
     pictureToSave.push(file);
 }
@@ -400,7 +410,7 @@ const deleteLink = (link: Link) => {
 
 const includeLink = () => {
 
-    console.log(linkTypRef.value);
+    console.log(linkTypRef.value.$el.value);
 
     let link: Link = {
         linkId: "",
@@ -408,7 +418,6 @@ const includeLink = () => {
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    linkInput = '';
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
@@ -454,7 +463,7 @@ const setOpen = (state: boolean) => {
 };
 
 function delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 </script>
 

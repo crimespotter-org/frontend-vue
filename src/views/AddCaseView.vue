@@ -150,7 +150,7 @@
                         </ion-item>
                     </ion-list>
                     <ion-item class="customTransparent case">
-                        <ion-select :value="linkTyp" class="customTransparent">
+                        <ion-select ref="linkTypRef" class="customTransparent">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
@@ -254,7 +254,7 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTyp: LinkType = "newspaper";
+let linkTypRef = ref('newspaper');
 let localUserId: string = "";
 let pictureToSave: File[] = [];
 let title: string;
@@ -335,11 +335,10 @@ const deleteLink = (link: Link) => {
 const includeLink = () => {
     let link: Link = {
         linkId: "",
-        type: linkTyp,
+        type: linkTypRef.value as LinkType,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
