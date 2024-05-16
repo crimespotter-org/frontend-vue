@@ -214,12 +214,10 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle,
-onIonViewDidEnter,
-onIonViewDidLeave
+    IonTitle
 
 } from '@ionic/vue';
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
 import { Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
