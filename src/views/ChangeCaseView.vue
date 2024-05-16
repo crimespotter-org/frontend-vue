@@ -32,7 +32,7 @@
                 </ion-item>
 
                 <ion-item class="customTransparent">
-                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
+                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="off"
                         @ion-change="getAddress" @ion-focus="setLocation" :value="PlaceName">
                     </ion-searchbar>
                 </ion-item>
@@ -134,14 +134,14 @@
                         </ion-item>
                     </ion-list>
                     <ion-item class="customTransparent case">
-                        <ion-select :value="linkTyp">
+                        <ion-select ref="linkTypRef">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
                         </ion-select>
                         <ion-input ref="linkInputUrl" placeholder="Url"></ion-input>
                         <ion-button @click="includeLink">
-                            <ion-icon :icon="arrowUpOutline"></ion-icon>
+                            <ion-icon slot="icon-only" :icon="arrowUpOutline"></ion-icon>
                         </ion-button>
                     </ion-item>
                 </ion-card-content>
@@ -167,7 +167,7 @@
 
 <script setup lang="ts">
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import {
     IonHeader,
     IonToolbar,
@@ -198,11 +198,13 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle
+    IonTitle,
+onIonViewDidEnter,
+onIonViewDidLeave
 
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
-import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline, micOutline, newspaperOutline, bookOutline } from "ionicons/icons";
+import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline} from "ionicons/icons";
 import { useRoute } from "vue-router";
 import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
@@ -237,8 +239,9 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTyp: LinkType = "newspaper";
+let linkTypRef = ref();
 let localUserId: string = "";
+let autocomplete: google.maps.places.Autocomplete | null = null;
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -251,6 +254,20 @@ const confirm = () => {
     ionInputCrimeTime.value.$el.value = CrimeTime;
     modal.value.$el.dismiss(null, 'cancel');
 }
+
+onIonViewDidEnter(async () => {
+  autocomplete = null;
+  setLocation();
+});
+
+onIonViewDidLeave(() => {
+  autocomplete!.unbindAll()
+  autocomplete = null;
+});
+
+onUnmounted(() => {
+    autocomplete!.unbindAll()
+})
 
 onMounted(async () => {
     CaseId = route.params['caseId'].toString();
@@ -269,6 +286,7 @@ onMounted(async () => {
     getPictures();
 
     detailCase.forEach(function (item) {
+        console.log(item.link_id + "Link");
         let link: Link = {
             linkId: item.link_id,
             type: item.link_type,
@@ -305,15 +323,14 @@ const setLocation = () => {
 
     const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
     console.log(elem);
-    elem.autocomplete = 'on';
-    elem.setAttribute('autocomplete','on');
+    elem.autocomplete = 'off';
     console.log(elem);
 
-    const autocomplete = new google.maps.places.Autocomplete(elem);
+    autocomplete = new google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
     autocomplete.setFields(returnFields);
     google.maps.event.addListener(autocomplete, 'place_changed', function () {
-        const place = autocomplete.getPlace();
+        const place = autocomplete!.getPlace();
         const location = place['geometry']!['location'];
         Latitude = location!.lat();
         Longitude = location!.lng();
@@ -344,6 +361,18 @@ const updateCase = async () => {
         ToastMessage = "Etwas lief schief probier es später nochmal!"
         setOpen(true);
     }
+
+    linkList.value = [];
+    detailCase = await caseService.getCase(CaseId);
+    detailCase.forEach(function (item) {
+        console.log(item.link_id + "Link");
+        let link: Link = {
+            linkId: item.link_id,
+            type: item.link_type,
+            linkUrl: item.url
+        };
+        linkList.value.push(link);
+    });
 
 };
 
@@ -402,13 +431,16 @@ const deleteLink = (link: Link) => {
 };
 
 const includeLink = () => {
+
+    console.log(linkTypRef.value);
+
     let link: Link = {
         linkId: "",
-        type: linkTyp,
+        type: linkTypRef.value.$el.value,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    linkInputUrl.value.$el.value = "";
+    linkInput = '';
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
@@ -421,6 +453,8 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
     linkList.value = linkList.value.filter(function (item) {
         return item !== link;
     });
+
+    console.log(type.detail.value);
 
     let newLink: Link = {
         linkId: linkId,

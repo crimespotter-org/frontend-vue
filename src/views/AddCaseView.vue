@@ -36,7 +36,7 @@
 
                 <!-- Location -->
                 <ion-item class="customTransparent">
-                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
+                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="off"
                         @ion-focus="setLocation" placeholder="Tatort" :value="PlaceName"></ion-searchbar>
 
                 </ion-item>
@@ -218,10 +218,12 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle
+    IonTitle,
+onIonViewDidEnter,
+onIonViewDidLeave
 
 } from '@ionic/vue';
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
 import { Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
@@ -257,6 +259,21 @@ let localUserId: string = "";
 let pictureToSave: File[] = [];
 let title: string;
 let summary: string;
+let autocomplete: google.maps.places.Autocomplete | null = null;
+
+onIonViewDidEnter(async () => {
+  autocomplete = null;
+  setLocation();
+});
+
+onIonViewDidLeave(() => {
+  autocomplete!.unbindAll()
+  autocomplete = null;
+});
+
+onUnmounted(() => {
+    autocomplete!.unbindAll()
+})
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -294,13 +311,13 @@ const setLocation = () => {
 
     const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
     console.log(elem);
-    elem.autocomplete = 'on';
+    elem.autocomplete = 'off';
 
-    const autocomplete = new google.maps.places.Autocomplete(elem);
+    autocomplete = new google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
     autocomplete.setFields(returnFields);
     google.maps.event.addListener(autocomplete, 'place_changed', function () {
-        const place = autocomplete.getPlace();
+        const place = autocomplete!.getPlace();
         const location = place['geometry']!['location'];
         Latitude = location!.lat();
         Longitude = location!.lng();
