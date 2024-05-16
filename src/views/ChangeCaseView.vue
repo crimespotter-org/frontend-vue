@@ -86,6 +86,7 @@
                 </ion-item>
             </ion-card>
             <ion-card v-if="pictureLoaded" v-show="segment === 'picture'" class="customTransparent case">
+                <p> Updaten über den Update Button auf der Info Seite! </p>
                 <ion-card-content class="customTransparent case">
                     <ion-list class="customTransparent case">
                         <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent case">
@@ -199,9 +200,6 @@ import {
     IonCardContent,
     IonThumbnail,
     IonTitle,
-onIonViewDidEnter,
-onIonViewDidLeave
-
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
 import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline} from "ionicons/icons";
@@ -241,7 +239,7 @@ let PlaceName: string;
 let ToastMessage: string;
 let linkTypRef = ref();
 let localUserId: string = "";
-let autocomplete: google.maps.places.Autocomplete | null = null;
+let pictureToSave: File[] = [];
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -254,20 +252,6 @@ const confirm = () => {
     ionInputCrimeTime.value.$el.value = CrimeTime;
     modal.value.$el.dismiss(null, 'cancel');
 }
-
-onIonViewDidEnter(async () => {
-  autocomplete = null;
-  setLocation();
-});
-
-onIonViewDidLeave(() => {
-  autocomplete!.unbindAll()
-  autocomplete = null;
-});
-
-onUnmounted(() => {
-    autocomplete!.unbindAll()
-})
 
 onMounted(async () => {
     CaseId = route.params['caseId'].toString();
@@ -326,7 +310,7 @@ const setLocation = () => {
     elem.autocomplete = 'off';
     console.log(elem);
 
-    autocomplete = new google.maps.places.Autocomplete(elem);
+    const autocomplete = new google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
     autocomplete.setFields(returnFields);
     google.maps.event.addListener(autocomplete, 'place_changed', function () {
@@ -362,17 +346,9 @@ const updateCase = async () => {
         setOpen(true);
     }
 
-    linkList.value = [];
-    detailCase = await caseService.getCase(CaseId);
-    detailCase.forEach(function (item) {
-        console.log(item.link_id + "Link");
-        let link: Link = {
-            linkId: item.link_id,
-            type: item.link_type,
-            linkUrl: item.url
-        };
-        linkList.value.push(link);
-    });
+    pictureToSave.forEach(async (file) =>{
+        await cameraService.uploadPhoto(file, CaseId);
+    })
 
 };
 
@@ -390,32 +366,24 @@ function convertDateString(inputDate: string): string {
 }
 
 const deletePicture = async (deletePicture: ImageData) => {
-    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
-
-    if (successful) {
-        ToastMessage = "Bild erfolgreich gelöscht";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-
-    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
-    
+    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);  
 };
 
 const takePhoto = async () => {
-    const file = await cameraService.takePhoto();
-    const successful = await cameraService.uploadPhoto(file, CaseId);
-    if (successful) {
-        ToastMessage = "Bild erfolgreich hochgeladen";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-    picture.value = [];
-    getPictures();
+    const getPhoto = await cameraService.takePhoto();
+    const blob = await fetch(getPhoto.webPath!).then(async (r) => {
+      return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+    });
+    const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
+      type: blob.type,
+    });
+
+        let imageData: ImageData = {
+            pictureUri: getPhoto.webPath!,
+            imageName: file.name
+        };
+    picture.value.push(imageData);
+    pictureToSave.push(file);
 }
 
 
