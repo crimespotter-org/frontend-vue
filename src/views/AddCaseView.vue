@@ -148,7 +148,7 @@
                         </ion-item>
                     </ion-list>
                     <ion-item class="customTransparent case">
-                        <ion-select :value="linkTyp" class="customTransparent">
+                        <ion-select ref="linkTypRef" class="customTransparent">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
@@ -216,10 +216,12 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle
+    IonTitle,
+onIonViewDidEnter,
+onIonViewDidLeave
 
 } from '@ionic/vue';
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
 import { Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
@@ -250,11 +252,26 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTyp: LinkType = "newspaper";
+let linkTypRef = ref('newspaper');
 let localUserId: string = "";
 let pictureToSave: File[] = [];
 let title: string;
 let summary: string;
+let autocomplete: google.maps.places.Autocomplete | null = null;
+
+onIonViewDidEnter(async () => {
+  autocomplete = null;
+  setLocation();
+});
+
+onIonViewDidLeave(() => {
+  autocomplete!.unbindAll()
+  autocomplete = null;
+});
+
+onUnmounted(() => {
+    autocomplete!.unbindAll()
+})
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -315,11 +332,10 @@ const deleteLink = (link: Link) => {
 const includeLink = () => {
     let link: Link = {
         linkId: "",
-        type: linkTyp,
+        type: linkTypRef.value as LinkType,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {

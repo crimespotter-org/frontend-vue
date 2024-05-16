@@ -133,14 +133,14 @@
                         </ion-item>
                     </ion-list>
                     <ion-item class="customTransparent case">
-                        <ion-select :value="linkTyp">
+                        <ion-select ref="linkTypRef" value="newspaper">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
                         </ion-select>
                         <ion-input ref="linkInputUrl" placeholder="Url"></ion-input>
                         <ion-button @click="includeLink">
-                            <ion-icon :icon="arrowUpOutline"></ion-icon>
+                            <ion-icon slot="icon-only" :icon="arrowUpOutline"></ion-icon>
                         </ion-button>
                     </ion-item>
                 </ion-card-content>
@@ -166,7 +166,7 @@
 
 <script setup lang="ts">
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import {
     IonHeader,
     IonToolbar,
@@ -195,11 +195,10 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle
-
+    IonTitle,
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
-import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline, micOutline, newspaperOutline, bookOutline } from "ionicons/icons";
+import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
 import { useRoute } from "vue-router";
 import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
@@ -234,7 +233,7 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTyp: LinkType = "newspaper";
+let linkTypRef = ref<LinkType>('newspaper');
 let localUserId: string = "";
 let pictureToSave: File[] = [];
 
@@ -267,6 +266,7 @@ onMounted(async () => {
     getPictures();
 
     detailCase.forEach(function (item) {
+        console.log(item.link_id + "Link");
         let link: Link = {
             linkId: item.link_id,
             type: item.link_type,
@@ -340,7 +340,7 @@ const updateCase = async () => {
         setOpen(true);
     }
 
-    pictureToSave.forEach(async (file) =>{
+    pictureToSave.forEach(async (file) => {
         await cameraService.uploadPhoto(file, CaseId);
     })
 
@@ -360,22 +360,32 @@ function convertDateString(inputDate: string): string {
 }
 
 const deletePicture = async (deletePicture: ImageData) => {
-    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);  
+    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName,CaseId);
+
+    if(successful){
+        picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
+        ToastMessage = "Bild erfolgreich gelöscht";
+        setOpen(true);
+    }else{
+        ToastMessage = "Etwas lief schief probiere es später nochmal!";
+        setOpen(true);
+    }
+
 };
 
 const takePhoto = async () => {
     const getPhoto = await cameraService.takePhoto();
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
-      return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+        return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
     const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
-      type: blob.type,
+        type: blob.type,
     });
 
-        let imageData: ImageData = {
-            pictureUri: getPhoto.webPath!,
-            imageName: file.name
-        };
+    let imageData: ImageData = {
+        pictureUri: getPhoto.webPath!,
+        imageName: file.name
+    };
     picture.value.push(imageData);
     pictureToSave.push(file);
 }
@@ -393,13 +403,15 @@ const deleteLink = (link: Link) => {
 };
 
 const includeLink = () => {
+
+    console.log(linkTypRef.value.$el.value);
+
     let link: Link = {
         linkId: "",
-        type: linkTyp,
+        type: linkTypRef.value.$el.value,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
@@ -412,6 +424,8 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
     linkList.value = linkList.value.filter(function (item) {
         return item !== link;
     });
+
+    console.log(type.detail.value);
 
     let newLink: Link = {
         linkId: linkId,
@@ -443,7 +457,7 @@ const setOpen = (state: boolean) => {
 };
 
 function delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 </script>
 
