@@ -32,7 +32,7 @@
                 </ion-item>
 
                 <ion-item class="customTransparent">
-                    <input @focus="setLocation" id="search1" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
+                    <input :value="PlaceName" @focus="setLocation" id="search1" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
                 <ion-item class="customTransparent">
@@ -208,7 +208,6 @@ import { cameraService } from '../services/camera-service';
 const ionRouter = useIonRouter();
 const dataLoaded = ref<boolean>(false);
 const pictureLoaded = ref<boolean>(false);
-const showComponent = ref<boolean>(false);
 const modal = ref();
 const isToastOpen = ref(false);
 const route = useRoute();
@@ -235,6 +234,7 @@ let ToastMessage: string;
 const linkTypRef = ref<LinkType>('newspaper');
 let localUserId: string = "";
 const pictureToSave: File[] = [];
+let number: number = 0;
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -277,13 +277,6 @@ onMounted(async () => {
     pictureLoaded.value = true;
 
     dataLoaded.value = true;
-    showComponent.value = true;
-    showComponent.value = false;
-    showComponent.value = true;
-    delay(5000);
-
-
-
 });
 
 const getPictures = async () => {
@@ -373,11 +366,12 @@ const deletePicture = async (deletePicture: ImageData) => {
 };
 
 const takePhoto = async () => {
+    number++;
     const getPhoto = await cameraService.takePhoto();
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
         return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
-    const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
+    const file = new File([blob], number.toString(), {
         type: blob.type,
     });
 
@@ -450,10 +444,6 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
 const setOpen = (state: boolean) => {
     isToastOpen.value = state;
 };
-
-function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 </script>
 
 <style scoped>

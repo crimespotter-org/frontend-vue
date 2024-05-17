@@ -7,8 +7,8 @@
             <ion-list class="case" lines="full">
                 <ion-item v-for="(c, index) in results" :key="index" class="case customTransparent" @click="caseClicked(c)">
                     <ion-grid class="customTransparent">
-                        <ion-row>
-                            <IonTitle>{{ c.title }}</IonTitle>
+                        <ion-row class="flex gap-x-4">
+                            <p><b>{{ c.title }}</b></p>
                         </ion-row>
                         <ion-row class="flex gap-x-4">
                             <ion-icon :icon="locationOutline"></ion-icon>

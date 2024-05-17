@@ -36,7 +36,7 @@
 
                 <!-- Location -->
                 <ion-item class="customTransparent">
-                    <input @focus="setLocation" id="search2" type="search" autocomplete="on"
+                    <input v-model="PlaceName" @focus="setLocation" id="search2" type="search" autocomplete="on"
                         placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
@@ -253,6 +253,7 @@ let localUserId: string = "";
 const pictureToSave: File[] = [];
 let title: string;
 let summary: string;
+let number = 0;
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -338,17 +339,18 @@ const deletePicture = async (deletePicture: ImageData) => {
 };
 
 const takePhoto = async () => {
+    number++;
     const getPhoto = await cameraService.takePhoto();
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
         return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
-    const file = new File([blob], (await currentUserInformation.getCurrentUser()).data.session!.user.id, {
+    const file = new File([blob], `${number}`, {
         type: blob.type,
     });
 
     const imageData: ImageData = {
         pictureUri: getPhoto.webPath!,
-        imageName: file.name
+        imageName: `${file.name}`
     };
     picture.value.push(imageData);
     pictureToSave.push(file);
@@ -380,9 +382,10 @@ const createCase = async () => {
         linkList.value
     );
 
+    console.log(pictureToSave);
     pictureToSave.forEach(async (file) => {
         await cameraService.uploadPhoto(file, caseId);
-        console.log(file)
+        console.log(file+" Bild");
     })
     console.log(caseId);
     console.log()
@@ -400,6 +403,7 @@ const navigateBack = () => {
     linkList.value = [];
     title = '';
     summary = '';
+    picture.value = [];
 
     console.log(ionInputSummary.value.$el.value);
     ionRouter.push("/crime-map");
