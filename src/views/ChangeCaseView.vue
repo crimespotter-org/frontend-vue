@@ -15,7 +15,7 @@
                     </ion-segment-button>
                 </ion-segment>
             </ion-toolbar>
-            <ion-card v-show="segment === 'info'" class="customTransparent case">
+            <ion-card v-show="segment === 'info'" class="customTransparent">
                 <ion-item class="customTransparent">
                     <ion-title :auto-grow="true">
                         Fall bearbeiten
@@ -85,10 +85,10 @@
                     </ion-grid>
                 </ion-item>
             </ion-card>
-            <ion-card v-if="pictureLoaded" v-show="segment === 'picture'" class="customTransparent case">
-                <ion-card-content class="customTransparent case">
-                    <ion-list class="customTransparent case">
-                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent case">
+            <ion-card v-if="pictureLoaded" v-show="segment === 'picture'" class="customTransparent">
+                <ion-card-content class="customTransparent">
+                    <ion-list class="custom-transparent">
+                        <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
 
                             <ion-thumbnail slot="start">
                                 <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
@@ -100,18 +100,18 @@
                             </ion-button>
                         </ion-item>
                     </ion-list>
-                    <div class="flex justify-center customTransparent case">
+                    <div class="flex justify-center customTransparent">
                         <ion-button @click="takePhoto">
                             <ion-icon :icon="cameraOutline"></ion-icon>
                         </ion-button>
                     </div>
                 </ion-card-content>
             </ion-card>
-            <ion-card v-show="segment === 'links'" class="customTransparent case">
-                <ion-card-content class="customTransparent case">
-                    <p> Updaten über den Update Button auf der Info Seite! </p>
-                    <ion-list>
-                        <ion-item v-for="(link, index) in linkList" :key="index" class="customTransparent case">
+            <ion-card v-show="segment === 'links'" class="customTransparent">
+                <ion-card-content class="customTransparent">
+                    <p class="text-black"> Updaten über den Update Button auf der Info Seite! </p>
+                    <ion-list class="custom-transparent text-black">
+                        <div v-for="(link, index) in linkList" :key="index" >
                             <ion-grid>
                                 <ion-row>
                                     <ion-col>
@@ -131,9 +131,9 @@
                                     </ion-col>
                                 </ion-row>
                             </ion-grid>
-                        </ion-item>
+                        </div>
                     </ion-list>
-                    <ion-item class="customTransparent case">
+                    <ion-item class="customTransparent">
                         <ion-select :value="linkTyp">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>

@@ -21,6 +21,9 @@
                 <ion-loading trigger="open-loading" :duration="3000"
                     message="Account wird angelegt. Sie werden gleich weitergeleitet."> </ion-loading>
             </div>
+
+            <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
+                @didDismiss="setOpen(false)"></ion-toast>
         </ion-content>
     </ion-page>
 </template>
@@ -52,45 +55,28 @@ import { Role } from "@/types/supabase-global";
 //variable email and password
 let email = ref("");
 let password = ref("");
-let role_crimespotter: Role;
-
+const isToastOpen = ref(false);
+let ToastMessage: string;
 
 async function createAccount() {
-    role_crimespotter = "crimespotter";
-
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
     });
 
     if (!error) {
+        router.push('/emailVerification');
 
-        const { data, error: loginError } = await supabase.auth.signInWithPassword({
-            email: email.value,
-            password: password.value
-        });
-
-        if (!loginError) {
-            const localUser = await supabase.auth.getSession();
-            console.log(localUser.data.session?.user.id);
-
-            const { data: upsertData, error: upsertError } = await supabase
-                .from('user_profiles')
-                .upsert({ id: localUser.data.session?.user.id, username: email.value, role: role_crimespotter })
-                .select()
-
-            if (!upsertError) {
-                router.push('/home');
-            }
-            else {
-                console.log("Upsert Error" + upsertError);
-            }
-        }
     } else {
-        console.log("Auth Error" + error);
+        ToastMessage = "Bei der Registrierung ist ein Fehler aufgetreten.";
+        setOpen(true);k
     }
 
 };
 
+
+const setOpen = (state: boolean) => {
+    isToastOpen.value = state;
+};
 
 </script>

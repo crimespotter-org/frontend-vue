@@ -8,6 +8,7 @@ import Menu from "../views/MenuView.vue";
 import CrimeMap from "../views/CrimeMapView.vue";
 import ChangeCase from "../views/ChangeCaseView.vue";
 import AddCase from "../views/AddCaseView.vue";
+import RegisteredEmailVerifikation from "@/views/RegisteredEmailVerifikationView.vue";
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 import ListOfCasesView from "@/views/ListOfCasesView.vue";
 
@@ -33,6 +34,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/unauthorized",
     name: "Unauthorized",
     component: Unauthorized,
+  },
+  {
+    path: "/emailVerification",
+    name: "EmailVerification",
+    component: RegisteredEmailVerifikation,
   },
   {
     path: "/change-user-role",
