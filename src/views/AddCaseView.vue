@@ -24,21 +24,20 @@
                 </ion-item>
                 <!-- title -->
                 <ion-item class="customTransparent">
-                    <ion-input ref="ionInputTitle" label="Titel" label-placement="floating"
+                    <ion-input v-model="title" ref="ionInputTitle" label="Titel" label-placement="floating"
                         :auto-grow="true"></ion-input>
                 </ion-item>
 
                 <!-- summary -->
                 <ion-item class="customTransparent">
                     <ion-textarea ref="ionInputSummary" label="Zusammenfassung" label-placement="floating"
-                        :auto-grow="true"></ion-textarea>
+                        :auto-grow="true" v-model="summary"></ion-textarea>
                 </ion-item>
 
                 <!-- Location -->
                 <ion-item class="customTransparent">
-                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
-                        @ion-focus="setLocation" placeholder="Tatort" :value="PlaceName"></ion-searchbar>
-
+                    <input v-model="PlaceName" @focus="setLocation" id="search2" type="search" autocomplete="on"
+                        placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
                 <!-- state -->
@@ -149,8 +148,8 @@
                             </ion-grid>
                         </ion-item>
                     </ion-list>
-                    <ion-item class="customTransparent">
-                        <ion-select :value="linkTyp" class="customTransparent">
+                    <ion-item class="customTransparent case">
+                        <ion-select ref="linkTypRef" class="customTransparent" value="newspaper">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
@@ -200,14 +199,12 @@ import {
     IonInput,
     IonTextarea,
     IonDatetime,
-    IonFab,
     IonFabButton,
     IonIcon,
     IonModal,
     IonSelect,
     IonSelectOption,
     IonItem,
-    IonSearchbar,
     IonImg,
     IonCard,
     useIonRouter,
@@ -224,7 +221,7 @@ import {
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
 import { Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
-import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
+import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
 import { caseService } from '@/services/case-service';
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 import { cameraService } from '@/services/camera-service';
@@ -240,20 +237,23 @@ const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
 
-let picture = ref<ImageData[]>([]);
+const picture = ref<ImageData[]>([]);
 const linkList = ref<Link[]>([]);
 let SelectedDateTime: string;
 let CaseType: Casetype;
 let CaseStatus: Status;
 let CrimeTime: string;
 let CrimeDate: string;
-let CaseId: string;
 let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTyp: LinkType = "newspaper";
+const linkTypRef = ref('newspaper');
 let localUserId: string = "";
+const pictureToSave: File[] = [];
+let title: string;
+let summary: string;
+let number = 0;
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -289,14 +289,13 @@ function convertDateString(inputDate: string): string {
 
 const setLocation = () => {
 
-    const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
+    const elem = document.getElementById("search2") as HTMLInputElement;
     console.log(elem);
-    elem.autocomplete = 'on';
 
-    const autocomplete = new google.maps.places.Autocomplete(elem);
+    const autocomplete = new window.google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
     autocomplete.setFields(returnFields);
-    google.maps.event.addListener(autocomplete, 'place_changed', function () {
+    window.google.maps.event.addListener(autocomplete, 'place_changed', function () {
         const place = autocomplete.getPlace();
         const location = place['geometry']!['location'];
         Latitude = location!.lat();
@@ -313,13 +312,12 @@ const deleteLink = (link: Link) => {
 };
 
 const includeLink = () => {
-    let link: Link = {
+    const link: Link = {
         linkId: "",
-        type: linkTyp,
+        type: linkTypRef.value.$el.value,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
@@ -328,7 +326,7 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
         return item !== link;
     });
 
-    let newLink: Link = {
+    const newLink: Link = {
         linkId: "",
         type: type.detail.value,
         linkUrl: link.linkUrl
@@ -337,43 +335,25 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
 };
 
 const deletePicture = async (deletePicture: ImageData) => {
-    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
-
-    if (successful) {
-        ToastMessage = "Bild erfolgreich gelöscht";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-
     picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
 };
 
-const getPictures = async () => {
-    const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
-    await Promise.all(caseImages!.map(async (file) => {
-        const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-        let imageData: ImageData = {
-            pictureUri: pictureUri,
-            imageName: file.name
-        };
-        picture.value.push(imageData);
-    }));
-}
-
 const takePhoto = async () => {
-    const file = await cameraService.takePhoto();
-    const successful = await cameraService.uploadPhoto(file, CaseId);
-    if (successful) {
-        ToastMessage = "Bild erfolgreich hochgeladen";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-    picture.value = [];
-    getPictures();
+    number++;
+    const getPhoto = await cameraService.takePhoto();
+    const blob = await fetch(getPhoto.webPath!).then(async (r) => {
+        return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+    });
+    const file = new File([blob], `${number}`, {
+        type: blob.type,
+    });
+
+    const imageData: ImageData = {
+        pictureUri: getPhoto.webPath!,
+        imageName: `${file.name}`
+    };
+    picture.value.push(imageData);
+    pictureToSave.push(file);
 }
 
 const handleStatusChange = async (event: { detail: { value: string } }) => {
@@ -385,7 +365,10 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
 };
 
 const createCase = async () => {
-    const successful = await caseService.createCase(
+
+    console.log(linkList.value);
+
+    const caseId = await caseService.createCase(
         CaseType,
         localUserId,
         SelectedDateTime,
@@ -399,27 +382,35 @@ const createCase = async () => {
         linkList.value
     );
 
-    if (successful) {
-        ToastMessage = "Case erfolgreich erstellt!";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
+    console.log(pictureToSave);
+    pictureToSave.forEach(async (file) => {
+        await cameraService.uploadPhoto(file, caseId);
+        console.log(file+" Bild");
+    })
+    console.log(caseId);
+    console.log()
+
     navigateBack();
 
 };
 
 const navigateBack = () => {
+    CaseType = null;
+    PlaceName = "";
+    CaseStatus = null;
+    ionInputSummary.value.$el.value = null;
+    ionInputTitle.value = null;
+    linkList.value = [];
+    title = '';
+    summary = '';
+    picture.value = [];
+
+    console.log(ionInputSummary.value.$el.value);
     ionRouter.push("/crime-map");
 };
 
 const setOpen = (state: boolean) => {
     isToastOpen.value = state;
-};
-
-const getAddress = (place: any) => {
-    console.log('Address Object', place);
 };
 </script>
 

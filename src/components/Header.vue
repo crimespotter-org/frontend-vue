@@ -5,7 +5,7 @@
         <div class="p-3">
           <ion-avatar>
             <router-link to="/">
-              <ion-img src="../../public/Logo-CrimeSpotter.png" alt="Logo CrimeSpotter"></ion-img>
+              <img src="../assets/Logo-CrimeSpotter.png" alt="Logo CrimeSpotter" width="600" height="600">
             </router-link>
           </ion-avatar>
         </div>

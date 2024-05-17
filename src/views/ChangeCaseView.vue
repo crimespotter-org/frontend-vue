@@ -32,9 +32,7 @@
                 </ion-item>
 
                 <ion-item class="customTransparent">
-                    <ion-searchbar class="customTransparentAndShadowNoneSeearchbar" autocomplete="on"
-                        @ion-change="getAddress" @ion-focus="setLocation" :value="PlaceName">
-                    </ion-searchbar>
+                    <input :value="PlaceName" @focus="setLocation" id="search1" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
                 <ion-item class="customTransparent">
@@ -134,14 +132,14 @@
                         </div>
                     </ion-list>
                     <ion-item class="customTransparent">
-                        <ion-select :value="linkTyp">
+                        <ion-select ref="linkTypRef" value="newspaper">
                             <ion-select-option value="newspaper">📰Zeitung</ion-select-option>
                             <ion-select-option value="podcast">🎧Podcast</ion-select-option>
                             <ion-select-option value="book">📖Buch</ion-select-option>
                         </ion-select>
                         <ion-input ref="linkInputUrl" placeholder="Url"></ion-input>
                         <ion-button @click="includeLink">
-                            <ion-icon :icon="arrowUpOutline"></ion-icon>
+                            <ion-icon slot="icon-only" :icon="arrowUpOutline"></ion-icon>
                         </ion-button>
                     </ion-item>
                 </ion-card-content>
@@ -180,14 +178,12 @@ import {
     IonInput,
     IonTextarea,
     IonDatetime,
-    IonFab,
     IonFabButton,
     IonIcon,
     IonModal,
     IonSelect,
     IonSelectOption,
     IonItem,
-    IonSearchbar,
     IonImg,
     IonCard,
     useIonRouter,
@@ -198,11 +194,10 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle
-
+    IonTitle,
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
-import { calendarOutline, cameraOutline, imageOutline, trashOutline, arrowUpOutline, micOutline, newspaperOutline, bookOutline } from "ionicons/icons";
+import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
 import { useRoute } from "vue-router";
 import { Case, Status, Casetype, ImageData, Link, LinkType } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
@@ -212,7 +207,6 @@ import { cameraService } from '../services/camera-service';
 const ionRouter = useIonRouter();
 const dataLoaded = ref<boolean>(false);
 const pictureLoaded = ref<boolean>(false);
-const showComponent = ref<boolean>(false);
 const modal = ref();
 const isToastOpen = ref(false);
 const route = useRoute();
@@ -223,9 +217,8 @@ const ionInputCrimeTime = ref();
 const linkInputUrl = ref();
 const segment = ref('info');
 const linkList = ref<Link[]>([]);
-const selectedFile = ref(null);
 
-let picture = ref<ImageData[]>([]);
+const picture = ref<ImageData[]>([]);
 let detailCase: Case;
 let SelectedDateTime: string;
 let CaseType: Casetype;
@@ -237,8 +230,10 @@ let Latitude: number;
 let Longitude: number;
 let PlaceName: string;
 let ToastMessage: string;
-let linkTyp: LinkType = "newspaper";
+const linkTypRef = ref<LinkType>('newspaper');
 let localUserId: string = "";
+const pictureToSave: File[] = [];
+let number: number = 0;
 
 const cancel = () => {
     modal.value.$el.dismiss(null, 'cancel');
@@ -269,7 +264,8 @@ onMounted(async () => {
     getPictures();
 
     detailCase.forEach(function (item) {
-        let link: Link = {
+        console.log(item.link_id + "Link");
+        const link: Link = {
             linkId: item.link_id,
             type: item.link_type,
             linkUrl: item.url
@@ -280,19 +276,13 @@ onMounted(async () => {
     pictureLoaded.value = true;
 
     dataLoaded.value = true;
-    showComponent.value = true;
-    showComponent.value = false;
-    showComponent.value = true;
-    setLocation();
-
-
 });
 
 const getPictures = async () => {
     const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
     await Promise.all(caseImages!.map(async (file) => {
         const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-        let imageData: ImageData = {
+        const imageData: ImageData = {
             pictureUri: pictureUri,
             imageName: file.name
         };
@@ -302,14 +292,13 @@ const getPictures = async () => {
 
 const setLocation = () => {
 
-    const elem = <HTMLInputElement>document.getElementsByClassName('searchbar-input')[1];
+    const elem = document.getElementById("search1") as HTMLInputElement;
     console.log(elem);
-    elem.autocomplete = 'on';
 
-    const autocomplete = new google.maps.places.Autocomplete(elem);
+    const autocomplete = new window.google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
     autocomplete.setFields(returnFields);
-    google.maps.event.addListener(autocomplete, 'place_changed', function () {
+    window.google.maps.event.addListener(autocomplete, 'place_changed', function () {
         const place = autocomplete.getPlace();
         const location = place['geometry']!['location'];
         Latitude = location!.lat();
@@ -342,6 +331,10 @@ const updateCase = async () => {
         setOpen(true);
     }
 
+    pictureToSave.forEach(async (file) => {
+        await cameraService.uploadPhoto(file, CaseId);
+    })
+
 };
 
 function convertDateString(inputDate: string): string {
@@ -358,32 +351,35 @@ function convertDateString(inputDate: string): string {
 }
 
 const deletePicture = async (deletePicture: ImageData) => {
-    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
+    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName,CaseId);
 
-    if (successful) {
+    if(successful){
+        picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
         ToastMessage = "Bild erfolgreich gelöscht";
         setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
+    }else{
+        ToastMessage = "Etwas lief schief probiere es später nochmal!";
         setOpen(true);
     }
 
-    picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
-    
 };
 
 const takePhoto = async () => {
-    const file = await cameraService.takePhoto();
-    const successful = await cameraService.uploadPhoto(file, CaseId);
-    if (successful) {
-        ToastMessage = "Bild erfolgreich hochgeladen";
-        setOpen(true);
-    } else {
-        ToastMessage = "Etwas lief schief probier es später nochmal!"
-        setOpen(true);
-    }
-    picture.value = [];
-    getPictures();
+    number++;
+    const getPhoto = await cameraService.takePhoto();
+    const blob = await fetch(getPhoto.webPath!).then(async (r) => {
+        return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
+    });
+    const file = new File([blob], number.toString(), {
+        type: blob.type,
+    });
+
+    const imageData: ImageData = {
+        pictureUri: getPhoto.webPath!,
+        imageName: file.name
+    };
+    picture.value.push(imageData);
+    pictureToSave.push(file);
 }
 
 
@@ -399,13 +395,15 @@ const deleteLink = (link: Link) => {
 };
 
 const includeLink = () => {
-    let link: Link = {
+
+    console.log(linkTypRef.value.$el.value);
+
+    const link: Link = {
         linkId: "",
-        type: linkTyp,
+        type: linkTypRef.value.$el.value,
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
-    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
@@ -419,7 +417,9 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
         return item !== link;
     });
 
-    let newLink: Link = {
+    console.log(type.detail.value);
+
+    const newLink: Link = {
         linkId: linkId,
         type: type.detail.value,
         linkUrl: link.linkUrl
@@ -438,10 +438,6 @@ const handleStatusChange = async (event: { detail: { value: string } }) => {
 
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
     CaseType = event.detail.value as Casetype;
-};
-
-const getAddress = (place: any) => {
-    console.log('Address Object', place);
 };
 
 const setOpen = (state: boolean) => {

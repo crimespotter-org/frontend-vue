@@ -159,7 +159,8 @@ import {
   IonText,
   IonInput,
   IonSegment,
-  IonSegmentButton
+  IonSegmentButton,
+onIonViewDidEnter
 } from "@ionic/vue";
 import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline, trashOutline, arrowForwardOutline } from 'ionicons/icons';
 import router from '../router';
@@ -226,6 +227,32 @@ const alertResult = (ev: CustomEvent) => {
     deleteCase();
   }
 };
+
+onIonViewDidEnter(async () => {
+
+  picture.value = [];
+  detailCase = [];
+  linkList.value = [];
+
+  const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
+  await Promise.all(caseImages!.map(async (file) => {
+    const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
+    const imageData: ImageData = {
+      pictureUri: pictureUri,
+      imageName: file.name
+    };
+    picture.value.push(imageData);
+  }));
+  detailCase = await caseService.getCase(CaseId);
+  detailCase.forEach(function (item) {
+    const link: Link = {
+      linkId: item.link_id,
+      type: item.link_type,
+      linkUrl: item.url
+    };
+    linkList.value.push(link);
+  });
+})
 
 onMounted(async () => {
   CaseId = props.markerData[0].id;

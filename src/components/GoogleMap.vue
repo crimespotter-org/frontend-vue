@@ -161,7 +161,7 @@ window.initMap = async () => {
   currentLocation.value = await mapService.currentLocation();
   console.log(currentLocation);
   map.value = new window.google.maps.Map(mapDivRef.value, {
-    zoom: 16,
+    zoom: 10,
     disableDefaultUI: false,
     center: { lat: currentLocation.value!.latitude, lng: currentLocation.value!.longitude }
   });
@@ -242,6 +242,7 @@ function createSearchbar() {
     Longitude = location!.lng();
     const latlong = new google.maps.LatLng(Latitude, Longitude);
     map.value!.setCenter(latlong);
+    map.value!.setZoom(16);
   });
 };
 
