@@ -68,33 +68,10 @@ async function login() {
         console.log(error);
         changemessage.value = "Die Anmeldung war nicht erfolgreich: " + error;
         changeNotSuccesful.value = true;
-        
-    }
 
-
-
-}
-
-
-//Shows details from current user
-async function seeCurrentUser() {
-
-    const localUser = await supabase.auth.getSession();
-
-    console.log(localUser);
-
-}
-
-//Logout  function
-async function logout() {
-
-    const { error } = await supabase.auth.signOut();
-    console.log("Logged out");
-
-    if (error) {
-        console.log(error)        
     }
 }
+
 
 const setOpenChangeSuccessful = (state: boolean) => {
     changeNotSuccesful.value = state;

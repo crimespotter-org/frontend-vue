@@ -1,8 +1,13 @@
 <template>
     <ion-page>
-        <ion-header>
+        <ion-header class="flex">
             <ion-toolbar color="primary">
-                <ion-title>Account erstellen</ion-title>
+                <div class="flex">
+                    <ion-button @click="backToLogin" class="customTransparentAndShadowNone">
+                        <ion-icon :icon="arrowBack" />
+                    </ion-button>
+                    <ion-title>Account erstellen</ion-title>
+                </div>
             </ion-toolbar>
         </ion-header>
         <ion-content>
@@ -50,7 +55,7 @@ import {
 import { ref } from "vue";
 import { supabase } from "@/services/supabase-service";
 import router from '../router';
-import { Role } from "@/types/supabase-global";
+import { arrowBack } from 'ionicons/icons';
 
 //variable email and password
 let email = ref("");
@@ -69,10 +74,15 @@ async function createAccount() {
 
     } else {
         ToastMessage = "Bei der Registrierung ist ein Fehler aufgetreten.";
-        setOpen(true);k
+        setOpen(true);
     }
 
 };
+
+
+function backToLogin() {
+    router.push('/login');
+}
 
 
 const setOpen = (state: boolean) => {
