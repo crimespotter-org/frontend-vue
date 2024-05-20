@@ -40,7 +40,7 @@
           <ion-label>Info</ion-label>
         </ion-segment-button>
         <ion-segment-button value="chat">
-          <ion-label>Chat</ion-label>
+          <ion-label>Kommentare</ion-label>
         </ion-segment-button>
       </ion-segment>
     </ion-toolbar>

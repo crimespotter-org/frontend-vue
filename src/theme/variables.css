@@ -2,10 +2,10 @@
 http://ionicframework.com/docs/theming/ */
 
 @font-face {
-  font-family: "American Typewriter Regular";
+  font-family: "RobotoMono";
   font-style: normal;
   font-weight: normal;
-  src: url("../assets/fonts/AmericanTypewriter/AmericanTypewriterRegular.ttf");
+  src: url("../assets/fonts/RobotoMono/RobotoMono-Regular.ttf");
 }
 
 /** Ionic CSS Variables **/
@@ -244,7 +244,7 @@ http://ionicframework.com/docs/theming/ */
 .case {
   background: url(../../public/bg-content.jpg) no-repeat 100% 100%; /* Hintergrundbild setzen */
   background-size: cover; /* Hintergrundbild skalieren, um den gesamten Bereich zu bedecken */
-  --ion-font-family: "American Typewriter Regular";
+  --ion-font-family: "RobotoMono";
   text-align: justify;
 }
 
