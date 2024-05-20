@@ -2,7 +2,7 @@
     <ion-page>
         <HeaderComponent />
         <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
-            <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen"></ion-searchbar>
+            <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen" autocapitalize="off"></ion-searchbar>
             <p>Klicke auf einen Fall um mehr zu sehen!</p>
             <ion-list class="case" lines="full">
                 <ion-item v-for="(c, index) in results" :key="index" class="case customTransparent" @click="caseClicked(c)">

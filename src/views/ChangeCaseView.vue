@@ -28,7 +28,7 @@
 
                 <ion-item class="customTransparent">
                     <ion-textarea ref="ionInputSummary" label="Inhalt:" :value="detailCase[0].summary"
-                        rows="16"></ion-textarea>
+                        :rows="16"></ion-textarea>
                 </ion-item>
 
                 <ion-item class="customTransparent">

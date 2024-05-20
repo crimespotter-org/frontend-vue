@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "@ionic/vue-router";
-import { RouteRecordRaw } from "vue-router";
+import { NavigationGuardNext, RouteRecordRaw } from "vue-router";
 import Login from "../views/LoginView.vue";
 import CreateAccount from "../views/CreateAccountView.vue";
 import Unauthorized from "../views/UnauthorizedView.vue";
@@ -84,7 +84,7 @@ const router = createRouter({
   routes,
 });
 
-async function getUser(next) {
+async function getUser(next: NavigationGuardNext) {
   localUser = await currentUserInformation.getCurrentUser();
   if (localUser.data.session == null) {
     next("/unauthorized");
@@ -93,7 +93,7 @@ async function getUser(next) {
   }
 }
 
-async function getInformationAboutAdminRole(next) {
+async function getInformationAboutAdminRole(next: NavigationGuardNext) {
   localUserRole = await currentUserInformation.getCurrentUserRole();
   if (localUserRole == "admin") {
     next();
@@ -102,7 +102,7 @@ async function getInformationAboutAdminRole(next) {
   }
 }
 
-async function getInformationAboutCrimeFluencerRole(next) {
+async function getInformationAboutCrimeFluencerRole(next: NavigationGuardNext) {
   localUserRole = await currentUserInformation.getCurrentUserRole();
   if (localUserRole == "crimefluencer") {
     next();

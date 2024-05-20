@@ -1,6 +1,6 @@
 <template>
   <ion-page class="crimeMap">
-    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
+    <ion-fab slot="fixed" vertical="bottom" horizontal="start" v-if="isCrimefluencer">
       <router-link to="/create-case">
         <ion-fab-button color="secondary">
           <ion-icon :icon="add"></ion-icon>
@@ -12,7 +12,7 @@
         <ion-button id="open-modal" color="secondary" slot="start" class="custom-button">
           <ion-icon :icon="filterOutline"></ion-icon>
         </ion-button>
-        <ion-searchbar color="tertiary" autocomplete="on"></ion-searchbar>
+        <ion-searchbar color="tertiary" autocomplete="on" autocapitalize="off"></ion-searchbar>
       </div>
     </ion-toolbar>
     <div class="map" ref="mapDivRef">
@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { onMounted, nextTick, ref, onBeforeMount } from "vue";
 import { mapService } from "@/services/map-service";
-import { Casetype, Coordinate, Status, FilteredCases } from "@/types/supabase-global";
+import { Casetype, Coordinate, Status, FilteredCases, Role } from "@/types/supabase-global";
 import { filterOutline, add } from "ionicons/icons";
 import {
   IonItem,
@@ -103,6 +103,27 @@ import {
   IonToggle
 } from "@ionic/vue";
 import { caseService } from "@/services/case-service";
+import { currentUserInformation } from '@/services/currentUserInformation-service';
+
+const isAdmin = ref(false);
+const isCrimefluencer = ref(false);
+
+getCurrentUserRoleFromService();
+
+async function getCurrentUserRoleFromService() {
+    const currentUserRole: Role = await currentUserInformation.getCurrentUserRole();
+    checkRole(currentUserRole);
+}
+
+function checkRole(currentUserRole: Role) {
+    if (currentUserRole == "admin") {
+        isAdmin.value = true;
+        isCrimefluencer.value = true;
+    }
+    else if (currentUserRole == "crimefluencer") {
+        isCrimefluencer.value = true;
+    }
+}
 
 const modal = ref();
 
