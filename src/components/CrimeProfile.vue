@@ -344,6 +344,8 @@ const insertMessage = async () => {
   if (!succesful) {
     ToastMessage = "Irgendwas lief schlief probiere es erneut!";
     setOpen(true);
+  } else {
+    newMessage.value.$el.value = "";
   }
 }
 
