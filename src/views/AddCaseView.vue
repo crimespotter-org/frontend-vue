@@ -318,6 +318,7 @@ const includeLink = () => {
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
+    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
