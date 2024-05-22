@@ -215,7 +215,8 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle
+    IonTitle,
+onIonViewDidLeave
 
 } from '@ionic/vue';
 import { ref, onMounted } from "vue";
@@ -254,6 +255,18 @@ const pictureToSave: File[] = [];
 let title: string;
 let summary: string;
 let number = 0;
+
+onIonViewDidLeave(() => {
+    CaseType = null;
+    PlaceName = "";
+    CaseStatus = null;
+    ionInputSummary.value.$el.value = null;
+    ionInputTitle.value = null;
+    linkList.value = [];
+    title = '';
+    summary = '';
+    picture.value = [];
+})
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
@@ -406,7 +419,6 @@ const navigateBack = () => {
     summary = '';
     picture.value = [];
 
-    console.log(ionInputSummary.value.$el.value);
     ionRouter.push("/crime-map");
 };
 

@@ -47,7 +47,8 @@ import {
     IonGrid,
     IonRow,
     IonModal,
-    IonSearchbar
+    IonSearchbar,
+onIonViewDidEnter
 } from '@ionic/vue';
 import CrimeProfile from "../components/CrimeProfile.vue";
 import { onMounted, ref } from 'vue';
@@ -60,6 +61,19 @@ let cases:FilteredCases = [];
 const modalRef = ref();
 let caseToPass: FilteredCases = [];
 const results = ref(cases);
+
+onIonViewDidEnter(async () => {
+    const currentLocation = await mapService.currentLocation();
+    cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 10000, null, null);
+
+    results.value = cases.sort((a, b) => {
+
+    const dateA = new Date(a.created_at);
+    const dateB = new Date(b.created_at);
+
+    return dateB.getTime() - dateA.getTime();
+});
+})
 
 onMounted(async () => {
     const currentLocation = await mapService.currentLocation();
