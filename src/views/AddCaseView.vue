@@ -71,10 +71,14 @@
                                 </ion-fab-button>
                             </ion-col>
                             <ion-col>
-                                <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
-                                    :value="CrimeDate"></ion-input>
-                                <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
-                                    :value="CrimeTime"></ion-input>
+                                <div>
+                                    <ion-label>Tatdatum:</ion-label>
+                                    <ion-input ref="ionInputCrimeDate" :readonly="true" :value="CrimeDate"></ion-input>
+                                </div>
+                                <div>
+                                    <ion-label>Tatzeit:</ion-label>
+                                    <ion-input ref="ionInputCrimeTime" :readonly="true" :value="CrimeTime"></ion-input>
+                                </div>
                             </ion-col>
                         </ion-row>
                         <ion-row>
@@ -385,7 +389,7 @@ const createCase = async () => {
     console.log(pictureToSave);
     pictureToSave.forEach(async (file) => {
         await cameraService.uploadPhoto(file, caseId);
-        console.log(file+" Bild");
+        console.log(file + " Bild");
     })
     console.log(caseId);
     console.log()
