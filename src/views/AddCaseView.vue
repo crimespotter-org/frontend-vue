@@ -106,11 +106,13 @@
                             <ion-thumbnail slot="start">
                                 <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
                             </ion-thumbnail>
-                            <ion-label>{{ pic.imageName }}</ion-label>
+                            <div>
+                                <ion-label>{{ pic.imageName }}</ion-label>
 
-                            <ion-button @click="deletePicture(pic)">
-                                <ion-icon :icon="trashOutline"></ion-icon>
-                            </ion-button>
+                                <ion-button @click="deletePicture(pic)">
+                                    <ion-icon :icon="trashOutline"></ion-icon>
+                                </ion-button>
+                            </div>
                         </ion-item>
                     </ion-list>
 
@@ -322,6 +324,7 @@ const includeLink = () => {
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
+    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
