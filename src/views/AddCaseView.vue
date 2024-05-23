@@ -102,11 +102,13 @@
                             <ion-thumbnail slot="start">
                                 <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
                             </ion-thumbnail>
-                            <ion-label>{{ pic.imageName }}</ion-label>
+                            <div>
+                                <ion-label>{{ pic.imageName }}</ion-label>
 
-                            <ion-button @click="deletePicture(pic)">
-                                <ion-icon :icon="trashOutline"></ion-icon>
-                            </ion-button>
+                                <ion-button @click="deletePicture(pic)">
+                                    <ion-icon :icon="trashOutline"></ion-icon>
+                                </ion-button>
+                            </div>
                         </ion-item>
                     </ion-list>
 
@@ -386,7 +388,7 @@ const createCase = async () => {
     console.log(pictureToSave);
     pictureToSave.forEach(async (file) => {
         await cameraService.uploadPhoto(file, caseId);
-        console.log(file+" Bild");
+        console.log(file + " Bild");
     })
     console.log(caseId);
     console.log()

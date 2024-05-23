@@ -32,7 +32,8 @@
                 </ion-item>
 
                 <ion-item class="customTransparent">
-                    <input :value="PlaceName" @focus="setLocation" id="search1" type="search" autocomplete="on" placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
+                    <input :value="PlaceName" @focus="setLocation" id="search1" type="search" autocomplete="on"
+                        placeholder="Geben sie einen Standort ein." style="width: 100%; padding: 10px;">
                 </ion-item>
 
                 <ion-item class="customTransparent">
@@ -87,15 +88,16 @@
                 <ion-card-content class="customTransparent">
                     <ion-list class="custom-transparent">
                         <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
-
                             <ion-thumbnail slot="start">
                                 <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
                             </ion-thumbnail>
-                            <ion-label>{{ pic.imageName }}</ion-label>
+                            <div>
+                                <ion-label>{{ pic.imageName }}</ion-label>
 
-                            <ion-button @click="deletePicture(pic)">
-                                <ion-icon :icon="trashOutline"></ion-icon>
-                            </ion-button>
+                                <ion-button @click="deletePicture(pic)">
+                                    <ion-icon :icon="trashOutline"></ion-icon>
+                                </ion-button>
+                            </div>
                         </ion-item>
                     </ion-list>
                     <div class="flex justify-center customTransparent">
@@ -109,7 +111,7 @@
                 <ion-card-content class="customTransparent">
                     <p class="text-black"> Updaten über den Update Button auf der Info Seite! </p>
                     <ion-list class="custom-transparent text-black">
-                        <div v-for="(link, index) in linkList" :key="index" >
+                        <div v-for="(link, index) in linkList" :key="index">
                             <ion-grid>
                                 <ion-row>
                                     <ion-col>
@@ -351,13 +353,13 @@ function convertDateString(inputDate: string): string {
 }
 
 const deletePicture = async (deletePicture: ImageData) => {
-    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName,CaseId);
+    const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
 
-    if(successful){
+    if (successful) {
         picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
         ToastMessage = "Bild erfolgreich gelöscht";
         setOpen(true);
-    }else{
+    } else {
         ToastMessage = "Etwas lief schief probiere es später nochmal!";
         setOpen(true);
     }
