@@ -1,7 +1,10 @@
 <template>
     <ion-page>
         <HeaderComponent />
-        <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
+        <ion-content v-if="!dataLoaded" class="spinner-content">
+            <ion-spinner></ion-spinner>
+        </ion-content>
+        <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true" v-if="dataLoaded">
             <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen" autocapitalize="off"></ion-searchbar>
             <p class="mx-4">Klicke auf einen Fall um mehr zu sehen!</p>
             <ion-list lines="full" class="custom-transparent">
@@ -43,7 +46,7 @@ import {
     IonIcon,
     IonPage,
     IonContent,
-    IonTitle,
+    IonSpinner,
     IonGrid,
     IonRow,
     IonModal,
@@ -60,6 +63,7 @@ let cases:FilteredCases = [];
 const modalRef = ref();
 let caseToPass: FilteredCases = [];
 const results = ref(cases);
+const dataLoaded = ref<boolean>(false);
 
 onMounted(async () => {
     const currentLocation = await mapService.currentLocation();
@@ -71,7 +75,8 @@ onMounted(async () => {
     const dateB = new Date(b.created_at);
 
     return dateB.getTime() - dateA.getTime();
-});
+    });
+    dataLoaded.value = true;
 })
 
 const canDismiss = async () => {

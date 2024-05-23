@@ -1,7 +1,10 @@
 <template>
     <ion-page>
         <HeaderComponent />
-        <ion-content class="ion-padding case">
+        <ion-content v-if="!dataLoaded" class="spinner-content">
+            <ion-spinner></ion-spinner>
+        </ion-content>
+        <ion-content class="ion-padding case" v-if="dataLoaded">
             <ion-toolbar class="customTransparent">
                 <ion-segment v-model="segment" color="primary">
                     <ion-segment-button value="info">
@@ -221,8 +224,8 @@ import {
     IonList,
     IonCardContent,
     IonThumbnail,
-    IonTitle
-
+    IonTitle,
+    IonSpinner
 } from '@ionic/vue';
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
@@ -235,6 +238,7 @@ import { cameraService } from '@/services/camera-service';
 const ionRouter = useIonRouter();
 const modal = ref();
 const isToastOpen = ref(false);
+const dataLoaded = ref<boolean>(false);
 
 const ionInputTitle = ref();
 const ionInputSummary = ref();
@@ -263,6 +267,7 @@ let number = 0;
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
+    dataLoaded.value = true;
 })
 
 const cancel = () => {
