@@ -379,31 +379,36 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
 const createCase = async () => {
 
     console.log(linkList.value);
+    if (!CaseType || !localUserId || !SelectedDateTime || !Latitude || !Longitude || !PlaceName || !CaseStatus || !ionInputSummary.value.$el.value || !ionInputTitle.value.$el.value) {
+        ToastMessage = "Bitte füllen Sie alle Felder aus, bevor Sie den Fall erstellen.";
+        setOpen(true);
+    } else {
 
-    const caseId = await caseService.createCase(
-        CaseType,
-        localUserId,
-        SelectedDateTime,
-        Latitude,
-        Longitude,
-        PlaceName,
-        CaseStatus,
-        ionInputSummary.value.$el.value,
-        ionInputTitle.value.$el.value,
-        null,
-        linkList.value
-    );
 
-    console.log(pictureToSave);
-    pictureToSave.forEach(async (file) => {
-        await cameraService.uploadPhoto(file, caseId);
-        console.log(file + " Bild");
-    })
-    console.log(caseId);
-    console.log()
+        const caseId = await caseService.createCase(
+            CaseType,
+            localUserId,
+            SelectedDateTime,
+            Latitude,
+            Longitude,
+            PlaceName,
+            CaseStatus,
+            ionInputSummary.value.$el.value,
+            ionInputTitle.value.$el.value,
+            null,
+            linkList.value
+        );
 
-    navigateBack();
+        console.log(pictureToSave);
+        pictureToSave.forEach(async (file) => {
+            await cameraService.uploadPhoto(file, caseId);
+            console.log(file + " Bild");
+        })
+        console.log(caseId);
+        console.log()
 
+        navigateBack();
+    }
 };
 
 const navigateBack = () => {
