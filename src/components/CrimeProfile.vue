@@ -419,7 +419,7 @@ const listenToChanges = async (caseId: string) => {
   const handleInserts = async (payload: any) => {
     console.log("Change received!", payload);
     const newComment = payload.new;
-    const username = await currentUserInformation.getUserName(UserId);
+    const username = await currentUserInformation.getUserName(payload.new['user_id']);
     console.log(username);
     newComment.username = username;
     messages.value.push(newComment);
