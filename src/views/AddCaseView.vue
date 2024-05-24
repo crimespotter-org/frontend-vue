@@ -421,6 +421,8 @@ const navigateBack = () => {
     title = '';
     summary = '';
     picture.value = [];
+    CrimeDate = "";
+    CrimeTime = "";
 
     console.log(ionInputSummary.value.$el.value);
     ionRouter.push("/crime-map");
