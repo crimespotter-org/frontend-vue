@@ -142,7 +142,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import {
   IonContent,
   IonHeader,
@@ -243,28 +243,6 @@ onIonViewDidEnter(async () => {
   detailCase = [];
   linkList.value = [];
 
-  const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
-  await Promise.all(caseImages!.map(async (file) => {
-    const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
-    const imageData: ImageData = {
-      pictureUri: pictureUri,
-      imageName: file.name
-    };
-    picture.value.push(imageData);
-  }));
-  detailCase = await caseService.getCase(CaseId);
-  detailCase.forEach(function (item) {
-    const link: Link = {
-      linkId: item.link_id,
-      type: item.link_type,
-      linkUrl: item.url
-    };
-    linkList.value.push(link);
-  });
-  dataLoaded.value = true;
-})
-
-onMounted(async () => {
   CaseId = props.markerData[0].id;
   UserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
   const caseImages = await caseService.getCaseImagesFromStorage(CaseId);

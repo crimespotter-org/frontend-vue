@@ -264,8 +264,7 @@ onIonViewDidEnter(async () => {
     dataLoaded.value = false;
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = detailCase[0].crime_date_time
-    console.log(SelectedDateTime);
+    SelectedDateTime = detailCase[0].crime_date_time;
 
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 
@@ -280,7 +279,9 @@ onIonViewDidEnter(async () => {
     getPictures();
 
     detailCase.forEach(function (item) {
-        console.log(item.link_id + "Link");
+        if(item.link_id == null){
+            return;
+        }
         const link: Link = {
             linkId: item.link_id,
             type: item.link_type,
@@ -292,39 +293,6 @@ onIonViewDidEnter(async () => {
     dataLoaded.value = true;
 })
 
-onMounted(async () => {
-    CaseId = route.params['caseId'].toString();
-    detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = detailCase[0].crime_date_time;
-
-
-    console.log(SelectedDateTime + "nach dem formatieren");
-
-    localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
-
-    splitDateTime(SelectedDateTime);
-
-    CaseType = detailCase[0].case_type;
-    CaseStatus = detailCase[0].status;
-    Latitude = detailCase[0].lat;
-    Longitude = detailCase[0].long;
-    PlaceName = detailCase[0].place_name;
-
-    getPictures();
-
-    detailCase.forEach(function (item) {
-        console.log(item.link_id + "Link");
-        const link: Link = {
-            linkId: item.link_id,
-            type: item.link_type,
-            linkUrl: item.url
-        };
-        linkList.value.push(link);
-    });
-
-    dataLoaded.value = true;
-});
-
 function splitDateTime(dateTimeString: string): void {
   const [date, timeWithOffset] = dateTimeString.split('T');
   const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
@@ -333,6 +301,7 @@ function splitDateTime(dateTimeString: string): void {
 }
 
 const getPictures = async () => {
+    picture.value = [];
     const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
     await Promise.all(caseImages!.map(async (file) => {
         const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
@@ -413,7 +382,7 @@ const takePhoto = async () => {
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
         return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
-    const file = new File([blob], number.toString(), {
+    const file = new File([blob], `${number}.${getPhoto.format}`, {
         type: blob.type,
     });
 
