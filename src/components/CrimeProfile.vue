@@ -130,9 +130,6 @@
         </ion-item>
 
       </ion-card>
-      <div class="input-button-wrapper">
-
-      </div>
     </div>
     <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
       @didDismiss="setOpen(false)"></ion-toast>
@@ -183,9 +180,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import FooterComponent from '../components/Footer.vue';
 
-
-//Emma
-const pictureLoaded = ref<boolean>(false);
 const isToastOpen = ref(false);
 const picture = ref<ImageData[]>([]);
 const linkList = ref<Link[]>([]);
@@ -197,9 +191,6 @@ const segment = ref('info');
 const messages = ref<Comment>([]);
 const newMessage = ref();
 const dataLoaded = ref<boolean>(false);
-
-//Nina
-
 const iconName = ref("");
 const stateOfCaseGerman = ref("");
 let stateOfCase: Status;
@@ -274,8 +265,6 @@ onIonViewDidEnter(async () => {
   });
 
   messages.value = await caseService.getComments(CaseId);
-  await listenToChanges(CaseId);
-  pictureLoaded.value = true;
   dataLoaded.value = true;
 })
 
@@ -291,8 +280,6 @@ onMounted(async () => {
     };
     picture.value.push(imageData);
   }));
-
-  console.log(picture);
 
   votes.value = await caseService.getVotes(CaseId);
   upvote.value = votes.value[0].upvotes;
@@ -312,7 +299,6 @@ onMounted(async () => {
 
   messages.value = await caseService.getComments(CaseId);
   await listenToChanges(CaseId);
-  pictureLoaded.value = true;
   dataLoaded.value = true;
 });
 
