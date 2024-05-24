@@ -1,8 +1,10 @@
 <template>
   <ion-page>
     <HeaderComponent />
-    <ion-content v-if="!markerDataLoaded" class="spinner-content">
-      <ion-spinner></ion-spinner>
+    <ion-content v-if="!markerDataLoaded">
+      <div class="grid content-center justify-center min-h-full">
+        <ion-spinner></ion-spinner>
+      </div>
     </ion-content>
     <ion-content :scroll-y="true" class="crimeMap" v-if="markerDataLoaded">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked"
