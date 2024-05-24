@@ -253,7 +253,7 @@ const cancel = () => {
 
 const confirm = () => {
     console.log(SelectedDateTime)
-    CrimeDate = convertDateString(SelectedDateTime);
+    splitDateTime(SelectedDateTime);
     console.log(SelectedDateTime);
     ionInputCrimeDate.value.$el.value = CrimeDate;
     ionInputCrimeTime.value.$el.value = CrimeTime;
@@ -264,12 +264,13 @@ onIonViewDidEnter(async () => {
     dataLoaded.value = false;
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = selectedDateTimeFunction(detailCase[0].crime_date_time);
+    SelectedDateTime = detailCase[0].crime_date_time
+    console.log(SelectedDateTime);
 
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 
-    console.log(detailCase[0].crime_date_time);
-    CrimeDate = convertDateString(detailCase[0].crime_date_time);
+    splitDateTime(SelectedDateTime);
+
     CaseType = detailCase[0].case_type;
     CaseStatus = detailCase[0].status;
     Latitude = detailCase[0].lat;
@@ -294,18 +295,20 @@ onIonViewDidEnter(async () => {
 onMounted(async () => {
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = selectedDateTimeFunction(detailCase[0].crime_date_time);
+    SelectedDateTime = detailCase[0].crime_date_time;
+
+
+    console.log(SelectedDateTime + "nach dem formatieren");
 
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 
-    CrimeDate = convertDateString(detailCase[0].crime_date_time);
+    splitDateTime(SelectedDateTime);
+
     CaseType = detailCase[0].case_type;
     CaseStatus = detailCase[0].status;
     Latitude = detailCase[0].lat;
     Longitude = detailCase[0].long;
     PlaceName = detailCase[0].place_name;
-
-    console.log(detailCase[0].crime_date_time);
 
     getPictures();
 
@@ -321,6 +324,13 @@ onMounted(async () => {
 
     dataLoaded.value = true;
 });
+
+function splitDateTime(dateTimeString: string): void {
+  const [date, timeWithOffset] = dateTimeString.split('T');
+  const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
+  CrimeDate = date;
+  CrimeTime = time;
+}
 
 const getPictures = async () => {
     const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
@@ -381,30 +391,7 @@ const updateCase = async () => {
 
 };
 
-function convertDateString(inputDate: string): string {
-    const date = new Date(inputDate);
-    const day = ("0" + date.getDate()).slice(-2);
-    const month = ("0" + (date.getMonth() + 1)).slice(-2);
-    const year = date.getFullYear();
-    const hours = ("0" + date.getHours()).slice(-2);
-    const minutes = ("0" + date.getMinutes()).slice(-2);
-    const seconds = ("0" + date.getSeconds()).slice(-2);
 
-    CrimeTime = `${hours}:${minutes}:${seconds}`;
-    return `${day}.${month}.${year}`;
-}
-
-function selectedDateTimeFunction(inputDate: string): string {
-    const date = new Date(inputDate);
-    const day = ("0" + date.getDate()).slice(-2);
-    const month = ("0" + (date.getMonth() + 1)).slice(-2);
-    const year = date.getFullYear();
-    const hours = ("0" + date.getHours()).slice(-2);
-    const minutes = ("0" + date.getMinutes()).slice(-2);
-    const seconds = ("0" + date.getSeconds()).slice(-2);
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`; //2017-03-05T11:00:00
-}
 
 const deletePicture = async (deletePicture: ImageData) => {
     const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);

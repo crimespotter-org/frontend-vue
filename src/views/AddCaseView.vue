@@ -237,6 +237,8 @@ import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "io
 import { caseService } from '@/services/case-service';
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 import { cameraService } from '@/services/camera-service';
+import { format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 const ionRouter = useIonRouter();
 const modal = ref();
@@ -282,45 +284,38 @@ const onCalenderClickEvent = () => {
 };
 
 const confirm = () => {
-    console.log(SelectedDateTime)
-    CrimeDate = convertDateString(SelectedDateTime);
+    console.log(SelectedDateTime);
+    splitDateTime(SelectedDateTime);
     ionInputCrimeDate.value.$el.value = CrimeDate;
     ionInputCrimeTime.value.$el.value = CrimeTime;
     SelectedDateTime = formatDateToISOWithTimezone(SelectedDateTime);
-    console.log(SelectedDateTime);
     modal.value.$el.dismiss(null, 'cancel');
 }
 
-function convertDateString(inputDate: string): string {
-    const date = new Date(inputDate);
-    const day = ("0" + date.getDate()).slice(-2);
-    const month = ("0" + (date.getMonth() + 1)).slice(-2);
-    const year = date.getFullYear();
-    const hours = ("0" + date.getHours()).slice(-2);
-    const minutes = ("0" + date.getMinutes()).slice(-2);
-    const seconds = ("0" + date.getSeconds()).slice(-2);
-
-    CrimeTime = `${hours}:${minutes}:${seconds}`;
-    return `${day}.${month}.${year}`;
+function splitDateTime(dateTimeString: string): void {
+  const [date, timeWithOffset] = dateTimeString.split('T');
+  const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
+  CrimeDate = date;
+  CrimeTime = time;
 }
 
 function formatDateToISOWithTimezone(dateString: string): string {
   const date = new Date(dateString);
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const zonedDate = toZonedTime(date, timeZone);
+  const formattedDate = format(zonedDate, "yyyy-MM-dd'T'HH:mm:ssXXX");
 
-  // Hole den Zeitzonenoffset in Minuten und konvertiere ihn in Stunden und Minuten
-  const offset = -date.getTimezoneOffset();
-  const offsetHours = Math.floor(offset / 60);
-  const offsetMinutes = offset % 60;
-
-  // Formatierung des Offsets als +HH:MM oder -HH:MM
-  const offsetSign = offset >= 0 ? '+' : '-';
-  const formattedOffset = `${offsetSign}${String(Math.abs(offsetHours)).padStart(2, '0')}:${String(Math.abs(offsetMinutes)).padStart(2, '0')}`;
-
-  // Erstelle den ISO-String mit Zeitzonen-Offset
-  const isoString = date.toISOString().replace('Z', formattedOffset);
-
-  return isoString;
+  return formattedDate;
 }
+
+function formateDateForDb(dateString: string) : string{
+    const zonedDate = parseISO(dateString);
+    const utcDate = new Date(zonedDate.getTime() - zonedDate.getTimezoneOffset() * 60000);
+    const formattedUtcDate = format(utcDate, "yyyy-MM-dd'T'HH:mm:ssXXX");
+    return formattedUtcDate
+}
+
+
 
 onIonViewDidLeave(() => {
     CaseType = null;
@@ -423,6 +418,8 @@ const createCase = async () => {
     } else {
 
         console.log(linkList.value);
+        SelectedDateTime = formateDateForDb(SelectedDateTime);
+        console.log(SelectedDateTime + "Time for db");
 
         const caseId = await caseService.createCase(
             CaseType,

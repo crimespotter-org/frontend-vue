@@ -33,7 +33,12 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
+  <ion-content v-if="!dataLoaded">
+            <div class="grid content-center justify-center min-h-full">
+                <ion-spinner></ion-spinner>
+            </div>
+        </ion-content>
+  <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true" v-if="dataLoaded">
     <ion-toolbar class="customTransparent">
       <ion-segment v-model="segment" color="primary">
         <ion-segment-button value="info">
@@ -54,7 +59,8 @@
       </div>
       <div class="flex gap-x-4">
         <ion-icon :icon="calendarOutline"></ion-icon>
-        <p> {{ formattedDate }}</p>
+        <p> {{ CrimeDate }}</p>
+        <p> {{ CrimeTime }}</p>
       </div>
       <div class="flex gap-x-4">
         <ion-icon :icon="iconName"></ion-icon>
@@ -131,7 +137,7 @@
     <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
       @didDismiss="setOpen(false)"></ion-toast>
   </ion-content>
-  <FooterComponent />
+  <FooterComponent v-if="dataLoaded" />
 
 </template>
 
@@ -140,7 +146,6 @@ import { ref, onMounted } from "vue";
 import {
   IonContent,
   IonHeader,
-  IonTitle,
   modalController,
   IonToolbar,
   IonButtons,
@@ -160,7 +165,8 @@ import {
   IonInput,
   IonSegment,
   IonSegmentButton,
-onIonViewDidEnter
+onIonViewDidEnter,
+IonSpinner
 } from "@ionic/vue";
 import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline, trashOutline, arrowForwardOutline } from 'ionicons/icons';
 import router from '../router';
@@ -189,13 +195,15 @@ let UserId: string;
 const segment = ref('info');
 const messages = ref<Comment>([]);
 const newMessage = ref();
+const dataLoaded = ref<boolean>(false);
 
 //Nina
 
 const iconName = ref("");
 const stateOfCaseGerman = ref("");
 let stateOfCase: Status;
-let formattedDate: string;
+let CrimeTime: string;
+let CrimeDate: string;
 let typeOfCase: Casetype;
 const typeOfCaseGerman = ref("");
 const isAdmin = ref(false);
@@ -230,6 +238,7 @@ const alertResult = (ev: CustomEvent) => {
 
 onIonViewDidEnter(async () => {
 
+  dataLoaded.value = false;
   picture.value = [];
   detailCase = [];
   linkList.value = [];
@@ -252,6 +261,7 @@ onIonViewDidEnter(async () => {
     };
     linkList.value.push(link);
   });
+  dataLoaded.value = true;
 })
 
 onMounted(async () => {
@@ -270,8 +280,8 @@ onMounted(async () => {
   votes.value = await caseService.getVotes(CaseId);
   upvote.value = votes.value[0].upvotes;
   downvote.value = votes.value[0].downvotes;
-  console.log(upvote);
-  console.log(downvote);
+
+  splitDateTime(props.markerData[0].crime_date_time);
 
   detailCase = await caseService.getCase(CaseId);
   detailCase.forEach(function (item) {
@@ -286,6 +296,7 @@ onMounted(async () => {
   messages.value = await caseService.getComments(CaseId);
   await listenToChanges(CaseId);
   pictureLoaded.value = true;
+  dataLoaded.value = true;
 });
 
 // PROPS
@@ -299,12 +310,19 @@ const emits = defineEmits<{
   (event: "deleteMarker", value: FilteredCases): void;
 }>();
 
+function splitDateTime(dateTimeString: string): void {
+  const [date, timeWithOffset] = dateTimeString.split('T');
+  const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
+  CrimeDate = date;
+  CrimeTime = time;
+  console.log(CrimeDate);
+}
+
 const dismiss = () => {
   props.modal.$el.dismiss();
 };
 
 setStatusAndIcon();
-modifyDate();
 setCaseType();
 getCurrentUserRoleFromService();
 
@@ -363,20 +381,6 @@ async function setCaseType() {
   } else if (typeOfCase == "rape") {
     typeOfCaseGerman.value = "Vergewaltigung";
   }
-}
-
-
-function modifyDate() {
-  const crimeDateTime = new Date(props.markerData[0].crime_date_time);
-  formattedDate = crimeDateTime.toLocaleDateString('de-DE', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric'
-  });
-
-  formattedDate += ' Uhr';
 }
 
 
