@@ -142,7 +142,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import {
   IonContent,
   IonHeader,
@@ -254,6 +254,43 @@ onIonViewDidEnter(async () => {
     };
     picture.value.push(imageData);
   }));
+
+  votes.value = await caseService.getVotes(CaseId);
+  upvote.value = votes.value[0].upvotes;
+  downvote.value = votes.value[0].downvotes;
+
+  splitDateTime(props.markerData[0].crime_date_time);
+
+  detailCase = await caseService.getCase(CaseId);
+  detailCase.forEach(function (item) {
+    const link: Link = {
+      linkId: item.link_id,
+      type: item.link_type,
+      linkUrl: item.url
+    };
+    linkList.value.push(link);
+  });
+
+  messages.value = await caseService.getComments(CaseId);
+  await listenToChanges(CaseId);
+  pictureLoaded.value = true;
+  dataLoaded.value = true;
+})
+
+onMounted(async () => {
+  CaseId = props.markerData[0].id;
+  UserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
+  const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
+  await Promise.all(caseImages!.map(async (file) => {
+    const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
+    const imageData: ImageData = {
+      pictureUri: pictureUri,
+      imageName: file.name
+    };
+    picture.value.push(imageData);
+  }));
+
+  console.log(picture);
 
   votes.value = await caseService.getVotes(CaseId);
   upvote.value = votes.value[0].upvotes;

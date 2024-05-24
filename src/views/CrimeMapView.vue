@@ -51,12 +51,6 @@ onIonViewDidEnter(async () => {
   markerDataLoaded.value = true;
 });
 
-onMounted(async () => {
-  const currentLocation = await mapService.currentLocation();
-  markerData.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
-  markerDataLoaded.value = true;
-});
-
 const mapClicked = () => {
   console.log("mapClicked");
 };
@@ -79,6 +73,7 @@ const getMarkerInfo = (marker: { lat: number; long: number }): FilteredCases => 
 const markerClicked = (event: Coordinate) => {
   console.log(event);
   markerToPass = getMarkerInfo({ lat: event.latitude, long: event.longitude });
+  console.log(markerToPass[0]);
   if (markerToPass.length == 0) {
     return;
   }

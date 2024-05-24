@@ -206,8 +206,7 @@ import {
     IonCardContent,
     IonThumbnail,
     IonTitle,
-    IonSpinner,
-    onIonViewDidEnter
+    IonSpinner
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
 import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
@@ -244,7 +243,6 @@ let PlaceName: string;
 let ToastMessage: string;
 const linkTypRef = ref<LinkType>('newspaper');
 let localUserId: string = "";
-const pictureToSave: File[] = [];
 let number: number = 0;
 
 const cancel = () => {
@@ -260,8 +258,12 @@ const confirm = () => {
     modal.value.$el.dismiss(null, 'cancel');
 }
 
-onIonViewDidEnter(async () => {
-    dataLoaded.value = false;
+onMounted(async () => {
+
+    detailCase = [];
+    picture.value = [];
+    linkList.value = [];
+
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
     SelectedDateTime = detailCase[0].crime_date_time;
@@ -276,10 +278,11 @@ onIonViewDidEnter(async () => {
     Longitude = detailCase[0].long;
     PlaceName = detailCase[0].place_name;
 
-    getPictures();
+    await getPictures();
+    findHighestNumber();
 
     detailCase.forEach(function (item) {
-        if(item.link_id == null){
+        if (item.link_id == null) {
             return;
         }
         const link: Link = {
@@ -291,17 +294,28 @@ onIonViewDidEnter(async () => {
     });
 
     dataLoaded.value = true;
-})
+});
+
+const findHighestNumber = () => { 
+
+    picture.value.forEach(image => {
+        const index = parseInt(image.imageName);
+        if (index > number) {
+            number = index;
+        }
+    });
+};
 
 function splitDateTime(dateTimeString: string): void {
-  const [date, timeWithOffset] = dateTimeString.split('T');
-  const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
-  CrimeDate = date;
-  CrimeTime = time;
+    const [date, timeWithOffset] = dateTimeString.split('T');
+    const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
+    CrimeDate = date;
+    CrimeTime = time;
 }
 
 const getPictures = async () => {
     picture.value = [];
+    console.log(picture.value + "picture");
     const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
     await Promise.all(caseImages!.map(async (file) => {
         const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
@@ -354,13 +368,7 @@ const updateCase = async () => {
         setOpen(true);
     }
 
-    pictureToSave.forEach(async (file) => {
-        await cameraService.uploadPhoto(file, CaseId);
-    })
-
 };
-
-
 
 const deletePicture = async (deletePicture: ImageData) => {
     const successful = await caseService.deleteCaseImageFromStorage(deletePicture.imageName, CaseId);
@@ -391,11 +399,47 @@ const takePhoto = async () => {
         imageName: file.name
     };
     picture.value.push(imageData);
-    pictureToSave.push(file);
+    await cameraService.uploadPhoto(file, CaseId);
 }
 
 
-const navigateBack = () => {
+const navigateBack = async () => {
+    detailCase = [];
+    picture.value = [];
+    linkList.value = [];
+
+    console.log(detailCase)
+
+    CaseId = route.params['caseId'].toString();
+    detailCase = await caseService.getCase(CaseId);
+
+    console.log(detailCase)
+
+    SelectedDateTime = detailCase[0].crime_date_time;
+
+    splitDateTime(SelectedDateTime);
+
+    CaseType = detailCase[0].case_type;
+    CaseStatus = detailCase[0].status;
+    Latitude = detailCase[0].lat;
+    Longitude = detailCase[0].long;
+    PlaceName = detailCase[0].place_name;
+    ionInputSummary.value.$el.value = detailCase[0].summary;
+    ionInputTitle.value.$el.value = detailCase[0].title;
+
+    getPictures();
+
+    detailCase.forEach(function (item) {
+        if (item.link_id == null) {
+            return;
+        }
+        const link: Link = {
+            linkId: item.link_id,
+            type: item.link_type,
+            linkUrl: item.url
+        };
+        linkList.value.push(link);
+    });
     ionRouter.push("/crime-map");
 };
 
