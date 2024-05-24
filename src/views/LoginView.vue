@@ -21,8 +21,8 @@
             <div class="buttonContainer">
                 <router-link to="/create-Account"> <ion-button>Account erstellen</ion-button> </router-link>
             </div>
-            <ion-toast :is-open="changeNotSuccesful" @didDismiss="setOpenChangeSuccessful(false)"
-                message="{{ changemessage }}" :duration="5000"></ion-toast>
+            <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
+                @didDismiss="setOpen(false)"></ion-toast>
 
         </ion-content>
     </ion-page>
@@ -42,39 +42,44 @@ import {
     IonInput,
     IonButton,
     IonSelect,
-    IonSelectOption
+    IonSelectOption,
+    IonToast,
+    useIonRouter,
 } from "@ionic/vue";
 import { ref } from "vue";
 import { supabase } from "@/services/supabase-service";
-import router from '../router'
+import router from '../router';
 
 //variable email and password
 let email = ref("");
 let password = ref("");
-let changeNotSuccesful = ref(false);
-let changemessage = ref("");
+const isToastOpen = ref(false);
+let ToastMessage: string;
+const ionRouter = useIonRouter();
 
 
 //Login
 async function login() {
-
     const { data, error } = await supabase.auth.signInWithPassword({
         email: email.value,
         password: password.value
     });
+
     if (!error) {
-        router.push('/crime-map');
+        ionRouter.push("/crime-map");
+        ToastMessage = "Anmeldung erfolgreich.";
+        setOpen(true);
     } else {
         console.log(error);
-        changemessage.value = "Die Anmeldung war nicht erfolgreich: " + error;
-        changeNotSuccesful.value = true;
+        ToastMessage = "Die Anmeldung war nicht erfolgreich: " + error;
+        setOpen(true);
 
     }
 }
 
 
-const setOpenChangeSuccessful = (state: boolean) => {
-    changeNotSuccesful.value = state;
+const setOpen = (state: boolean) => {
+    isToastOpen.value = state;
 };
 
 </script>
