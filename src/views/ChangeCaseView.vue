@@ -438,7 +438,7 @@ const navigateBack = async () => {
             type: item.link_type,
             linkUrl: item.url
         };
-        linkList.value.push(link);
+        linkList.value.push(link);        
     });
     ionRouter.push("/crime-map");
 };
@@ -460,6 +460,7 @@ const includeLink = () => {
         linkUrl: linkInputUrl.value.$el.value
     };
     linkList.value.push(link);
+    linkInputUrl.value.$el.value = "";
 };
 
 const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
