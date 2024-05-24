@@ -1,11 +1,14 @@
 <template>
     <ion-page>
         <HeaderComponent />
-        <ion-content v-if="!dataLoaded" class="spinner-content">
-            <ion-spinner></ion-spinner>
+        <ion-content v-if="!dataLoaded">
+            <div class="grid content-center justify-center min-h-full">
+                <ion-spinner></ion-spinner>
+            </div>
         </ion-content>
         <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true" v-if="dataLoaded">
-            <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen" autocapitalize="off"></ion-searchbar>
+            <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen"
+                autocapitalize="off"></ion-searchbar>
             <p class="mx-4">Klicke auf einen Fall um mehr zu sehen!</p>
             <ion-list lines="full" class="custom-transparent">
                 <ion-item v-for="(c, index) in results" :key="index" class="customTransparent" @click="caseClicked(c)">
@@ -59,7 +62,7 @@ import { mapService } from '../services/map-service';
 import { FilteredCases, Status, Casetype } from '../types/supabase-global';
 import { alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
 
-let cases:FilteredCases = [];
+let cases: FilteredCases = [];
 const modalRef = ref();
 let caseToPass: FilteredCases = [];
 const results = ref(cases);
@@ -71,10 +74,10 @@ onMounted(async () => {
 
     results.value = cases.sort((a, b) => {
 
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
 
-    return dateB.getTime() - dateA.getTime();
+        return dateB.getTime() - dateA.getTime();
     });
     dataLoaded.value = true;
 })
@@ -145,7 +148,7 @@ function modifyDate(dateTime: string): string {
     return formattedDate
 }
 
-const handleInput = (event: any) =>{
+const handleInput = (event: any) => {
     console.log(event);
     const query = event.target.value.toLowerCase();
     results.value = cases.filter((d) => d.title.toLowerCase().indexOf(query) > -1);

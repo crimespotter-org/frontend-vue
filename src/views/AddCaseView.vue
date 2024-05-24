@@ -1,8 +1,10 @@
 <template>
     <ion-page>
         <HeaderComponent />
-        <ion-content v-if="!dataLoaded" class="spinner-content">
-            <ion-spinner></ion-spinner>
+        <ion-content v-if="!dataLoaded">
+            <div class="grid content-center justify-center min-h-full">
+                <ion-spinner></ion-spinner>
+            </div>
         </ion-content>
         <ion-content class="ion-padding case" v-if="dataLoaded">
             <ion-toolbar class="customTransparent">
