@@ -1,7 +1,10 @@
 <template>
-    <ion-page v-if="dataLoaded">
+    <ion-page>
         <HeaderComponent />
-        <ion-content class="ion-padding case">
+        <ion-content v-if="!dataLoaded" class="spinner-content">
+            <ion-spinner></ion-spinner>
+        </ion-content>
+        <ion-content class="ion-padding case" v-if="dataLoaded">
             <ion-toolbar class="customTransparent">
                 <ion-segment v-model="segment" color="primary">
                     <ion-segment-button value="info">
@@ -88,7 +91,7 @@
                     </ion-grid>
                 </ion-item>
             </ion-card>
-            <ion-card v-if="pictureLoaded" v-show="segment === 'picture'" class="customTransparent">
+            <ion-card v-show="segment === 'picture'" class="customTransparent">
                 <ion-card-content class="customTransparent">
                     <ion-list class="custom-transparent">
                         <ion-item v-for="(pic, index) of picture" :key="index" class="customTransparent">
@@ -201,6 +204,8 @@ import {
     IonCardContent,
     IonThumbnail,
     IonTitle,
+    IonSpinner,
+onIonViewDidEnter
 } from '@ionic/vue';
 import { caseService } from '@/services/case-service';
 import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "ionicons/icons";
@@ -212,7 +217,6 @@ import { cameraService } from '../services/camera-service';
 
 const ionRouter = useIonRouter();
 const dataLoaded = ref<boolean>(false);
-const pictureLoaded = ref<boolean>(false);
 const modal = ref();
 const isToastOpen = ref(false);
 const route = useRoute();
@@ -248,15 +252,47 @@ const cancel = () => {
 const confirm = () => {
     console.log(SelectedDateTime)
     CrimeDate = convertDateString(SelectedDateTime);
+    console.log(SelectedDateTime);
     ionInputCrimeDate.value.$el.value = CrimeDate;
     ionInputCrimeTime.value.$el.value = CrimeTime;
     modal.value.$el.dismiss(null, 'cancel');
 }
 
+onIonViewDidEnter(async () =>{
+    dataLoaded.value = false;
+    CaseId = route.params['caseId'].toString();
+    detailCase = await caseService.getCase(CaseId);
+    SelectedDateTime = SelectedDateTimeFunction(detailCase[0].crime_date_time);
+
+    localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
+
+    console.log(detailCase[0].crime_date_time);
+    CrimeDate = convertDateString(detailCase[0].crime_date_time);
+    CaseType = detailCase[0].case_type;
+    CaseStatus = detailCase[0].status;
+    Latitude = detailCase[0].lat;
+    Longitude = detailCase[0].long;
+    PlaceName = detailCase[0].place_name;
+
+    getPictures();
+
+    detailCase.forEach(function (item) {
+        console.log(item.link_id + "Link");
+        const link: Link = {
+            linkId: item.link_id,
+            type: item.link_type,
+            linkUrl: item.url
+        };
+        linkList.value.push(link);
+    });
+
+    dataLoaded.value = true;
+})
+
 onMounted(async () => {
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = detailCase[0].crime_date_time;
+    SelectedDateTime = SelectedDateTimeFunction(detailCase[0].crime_date_time);
 
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 
@@ -278,8 +314,6 @@ onMounted(async () => {
         };
         linkList.value.push(link);
     });
-
-    pictureLoaded.value = true;
 
     dataLoaded.value = true;
 });
@@ -354,6 +388,18 @@ function convertDateString(inputDate: string): string {
 
     CrimeTime = `${hours}:${minutes}:${seconds}`;
     return `${day}.${month}.${year}`;
+}
+
+function SelectedDateTimeFunction(inputDate: string): string {
+    const date = new Date(inputDate);
+    const day = ("0" + date.getDate()).slice(-2);
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
+    const year = date.getFullYear();
+    const hours = ("0" + date.getHours()).slice(-2);
+    const minutes = ("0" + date.getMinutes()).slice(-2);
+    const seconds = ("0" + date.getSeconds()).slice(-2);
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`; //2017-03-05T11:00:00
 }
 
 const deletePicture = async (deletePicture: ImageData) => {
