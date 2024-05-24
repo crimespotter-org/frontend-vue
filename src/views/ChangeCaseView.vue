@@ -262,7 +262,7 @@ onIonViewDidEnter(async () =>{
     dataLoaded.value = false;
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = SelectedDateTimeFunction(detailCase[0].crime_date_time);
+    SelectedDateTime = selectedDateTimeFunction(detailCase[0].crime_date_time);
 
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 
@@ -292,7 +292,7 @@ onIonViewDidEnter(async () =>{
 onMounted(async () => {
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-    SelectedDateTime = SelectedDateTimeFunction(detailCase[0].crime_date_time);
+    SelectedDateTime = selectedDateTimeFunction(detailCase[0].crime_date_time);
 
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
 
@@ -302,6 +302,8 @@ onMounted(async () => {
     Latitude = detailCase[0].lat;
     Longitude = detailCase[0].long;
     PlaceName = detailCase[0].place_name;
+
+    console.log(detailCase[0].crime_date_time);
 
     getPictures();
 
@@ -390,7 +392,7 @@ function convertDateString(inputDate: string): string {
     return `${day}.${month}.${year}`;
 }
 
-function SelectedDateTimeFunction(inputDate: string): string {
+function selectedDateTimeFunction(inputDate: string): string {
     const date = new Date(inputDate);
     const day = ("0" + date.getDate()).slice(-2);
     const month = ("0" + (date.getMonth() + 1)).slice(-2);

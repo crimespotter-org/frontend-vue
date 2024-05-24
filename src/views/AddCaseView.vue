@@ -225,7 +225,8 @@ import {
     IonCardContent,
     IonThumbnail,
     IonTitle,
-    IonSpinner
+    IonSpinner,
+onIonViewDidLeave
 } from '@ionic/vue';
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
@@ -283,8 +284,11 @@ const confirm = () => {
     CrimeDate = convertDateString(SelectedDateTime);
     ionInputCrimeDate.value.$el.value = CrimeDate;
     ionInputCrimeTime.value.$el.value = CrimeTime;
+    SelectedDateTime = formatDateToISOWithTimezone(SelectedDateTime);
+    console.log(SelectedDateTime);
     modal.value.$el.dismiss(null, 'cancel');
 }
+
 function convertDateString(inputDate: string): string {
     const date = new Date(inputDate);
     const day = ("0" + date.getDate()).slice(-2);
@@ -297,6 +301,38 @@ function convertDateString(inputDate: string): string {
     CrimeTime = `${hours}:${minutes}:${seconds}`;
     return `${day}.${month}.${year}`;
 }
+
+function formatDateToISOWithTimezone(dateString: string): string {
+  const date = new Date(dateString);
+
+  // Hole den Zeitzonenoffset in Minuten und konvertiere ihn in Stunden und Minuten
+  const offset = -date.getTimezoneOffset();
+  const offsetHours = Math.floor(offset / 60);
+  const offsetMinutes = offset % 60;
+
+  // Formatierung des Offsets als +HH:MM oder -HH:MM
+  const offsetSign = offset >= 0 ? '+' : '-';
+  const formattedOffset = `${offsetSign}${String(Math.abs(offsetHours)).padStart(2, '0')}:${String(Math.abs(offsetMinutes)).padStart(2, '0')}`;
+
+  // Erstelle den ISO-String mit Zeitzonen-Offset
+  const isoString = date.toISOString().replace('Z', formattedOffset);
+
+  return isoString;
+}
+
+onIonViewDidLeave(() => {
+    CaseType = null;
+    PlaceName = "";
+    CaseStatus = null;
+    ionInputSummary.value.$el.value = null;
+    ionInputTitle.value = null;
+    linkList.value = [];
+    title = '';
+    summary = '';
+    picture.value = [];
+    CrimeDate = "";
+    CrimeTime = "";
+})
 
 const setLocation = () => {
 
@@ -356,7 +392,7 @@ const takePhoto = async () => {
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
         return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
-    const file = new File([blob], `${number}`, {
+    const file = new File([blob], `${number}.${getPhoto.format}`, {
         type: blob.type,
     });
 
@@ -384,6 +420,7 @@ const createCase = async () => {
         setOpen(true);
     } else {
 
+        console.log(linkList.value);
 
         const caseId = await caseService.createCase(
             CaseType,
