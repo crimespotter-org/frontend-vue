@@ -1,11 +1,16 @@
 <template>
-  <ion-page v-if="markerDataLoaded">
+  <ion-page>
     <HeaderComponent />
-    <ion-content :scroll-y="true" class="crimeMap">
+    <ion-content v-if="!markerDataLoaded">
+      <div class="grid content-center justify-center min-h-full">
+        <ion-spinner></ion-spinner>
+      </div>
+    </ion-content>
+    <ion-content :scroll-y="true" class="crimeMap" v-if="markerDataLoaded">
       <my-map :markerData="markerData" @onMarkerChange="receiveMarkerData" @onMapClicked="mapClicked"
         @onMarkerClicked="markerClicked"></my-map>
       <ion-modal ref="modalRef" :can-dismiss="canDismiss" color="primary">
-        <crime-profile :markerData="markerToPass" :modal="modalRef" @deleteMarker="deleteMarkerFromMap"/>
+        <crime-profile :markerData="markerToPass" :modal="modalRef" @deleteMarker="deleteMarkerFromMap" />
       </ion-modal>
     </ion-content>
   </ion-page>
@@ -16,7 +21,8 @@ import {
   IonContent,
   IonPage,
   onIonViewDidEnter,
-  IonModal
+  IonModal,
+  IonSpinner
 } from "@ionic/vue";
 import { onMounted, ref } from "vue";
 import MyMap from "../components/GoogleMap.vue";
@@ -45,18 +51,11 @@ onIonViewDidEnter(async () => {
   markerDataLoaded.value = true;
 });
 
-onMounted(async () => {
-  const currentLocation = await mapService.currentLocation();
-  markerData.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
-  markerDataLoaded.value = true;
-  console.log(markerData);
-});
-
 const mapClicked = () => {
   console.log("mapClicked");
 };
 
-const deleteMarkerFromMap = async() => {
+const deleteMarkerFromMap = async () => {
   markerDataLoaded.value = false;
   const currentLocation = await mapService.currentLocation();
   markerData.value = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 100, null, null);
@@ -74,6 +73,7 @@ const getMarkerInfo = (marker: { lat: number; long: number }): FilteredCases => 
 const markerClicked = (event: Coordinate) => {
   console.log(event);
   markerToPass = getMarkerInfo({ lat: event.latitude, long: event.longitude });
+  console.log(markerToPass[0]);
   if (markerToPass.length == 0) {
     return;
   }

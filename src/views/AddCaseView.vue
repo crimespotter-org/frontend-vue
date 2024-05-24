@@ -1,7 +1,12 @@
 <template>
     <ion-page>
         <HeaderComponent />
-        <ion-content class="ion-padding case">
+        <ion-content v-if="!dataLoaded">
+            <div class="grid content-center justify-center min-h-full">
+                <ion-spinner></ion-spinner>
+            </div>
+        </ion-content>
+        <ion-content class="ion-padding case" v-if="dataLoaded">
             <ion-toolbar class="customTransparent">
                 <ion-segment v-model="segment" color="primary">
                     <ion-segment-button value="info">
@@ -71,10 +76,14 @@
                                 </ion-fab-button>
                             </ion-col>
                             <ion-col>
-                                <ion-input ref="ionInputCrimeDate" :readonly="true" label="Tatdatum: "
-                                    :value="CrimeDate"></ion-input>
-                                <ion-input ref="ionInputCrimeTime" :readonly="true" label="Tatzeit: "
-                                    :value="CrimeTime"></ion-input>
+                                <div>
+                                    <ion-label>Tatdatum:</ion-label>
+                                    <ion-input ref="ionInputCrimeDate" :readonly="true" :value="CrimeDate"></ion-input>
+                                </div>
+                                <div>
+                                    <ion-label>Tatzeit:</ion-label>
+                                    <ion-input ref="ionInputCrimeTime" :readonly="true" :value="CrimeTime"></ion-input>
+                                </div>
                             </ion-col>
                         </ion-row>
                         <ion-row>
@@ -102,11 +111,13 @@
                             <ion-thumbnail slot="start">
                                 <ion-img alt="Hier sollte ein Bild sein" :src=pic.pictureUri />
                             </ion-thumbnail>
-                            <ion-label>{{ pic.imageName }}</ion-label>
+                            <div>
+                                <ion-label>{{ pic.imageName }}</ion-label>
 
-                            <ion-button @click="deletePicture(pic)">
-                                <ion-icon :icon="trashOutline"></ion-icon>
-                            </ion-button>
+                                <ion-button @click="deletePicture(pic)">
+                                    <ion-icon :icon="trashOutline"></ion-icon>
+                                </ion-button>
+                            </div>
                         </ion-item>
                     </ion-list>
 
@@ -216,8 +227,8 @@ import {
     IonCardContent,
     IonThumbnail,
     IonTitle,
+    IonSpinner,
 onIonViewDidLeave
-
 } from '@ionic/vue';
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
@@ -226,10 +237,13 @@ import { calendarOutline, cameraOutline, trashOutline, arrowUpOutline } from "io
 import { caseService } from '@/services/case-service';
 import { currentUserInformation } from "@/services/currentUserInformation-service";
 import { cameraService } from '@/services/camera-service';
+import { format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 const ionRouter = useIonRouter();
 const modal = ref();
 const isToastOpen = ref(false);
+const dataLoaded = ref<boolean>(false);
 
 const ionInputTitle = ref();
 const ionInputSummary = ref();
@@ -270,6 +284,7 @@ onIonViewDidLeave(() => {
 
 onMounted(async () => {
     localUserId = (await currentUserInformation.getCurrentUser()).data.session!.user.id;
+    dataLoaded.value = true;
 })
 
 const cancel = () => {
@@ -281,24 +296,52 @@ const onCalenderClickEvent = () => {
 };
 
 const confirm = () => {
-    console.log(SelectedDateTime)
-    CrimeDate = convertDateString(SelectedDateTime);
+    console.log(SelectedDateTime);
+    splitDateTime(SelectedDateTime);
     ionInputCrimeDate.value.$el.value = CrimeDate;
     ionInputCrimeTime.value.$el.value = CrimeTime;
+    SelectedDateTime = formatDateToISOWithTimezone(SelectedDateTime);
     modal.value.$el.dismiss(null, 'cancel');
 }
-function convertDateString(inputDate: string): string {
-    const date = new Date(inputDate);
-    const day = ("0" + date.getDate()).slice(-2);
-    const month = ("0" + (date.getMonth() + 1)).slice(-2);
-    const year = date.getFullYear();
-    const hours = ("0" + date.getHours()).slice(-2);
-    const minutes = ("0" + date.getMinutes()).slice(-2);
-    const seconds = ("0" + date.getSeconds()).slice(-2);
 
-    CrimeTime = `${hours}:${minutes}:${seconds}`;
-    return `${day}.${month}.${year}`;
+function splitDateTime(dateTimeString: string): void {
+  const [date, timeWithOffset] = dateTimeString.split('T');
+  const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
+  CrimeDate = date;
+  CrimeTime = time;
 }
+
+function formatDateToISOWithTimezone(dateString: string): string {
+  const date = new Date(dateString);
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const zonedDate = toZonedTime(date, timeZone);
+  const formattedDate = format(zonedDate, "yyyy-MM-dd'T'HH:mm:ssXXX");
+
+  return formattedDate;
+}
+
+function formateDateForDb(dateString: string) : string{
+    const zonedDate = parseISO(dateString);
+    const utcDate = new Date(zonedDate.getTime() - zonedDate.getTimezoneOffset() * 60000);
+    const formattedUtcDate = format(utcDate, "yyyy-MM-dd'T'HH:mm:ssXXX");
+    return formattedUtcDate
+}
+
+
+
+onIonViewDidLeave(() => {
+    CaseType = null;
+    PlaceName = "";
+    CaseStatus = null;
+    ionInputSummary.value.$el.value = null;
+    ionInputTitle.value = null;
+    linkList.value = [];
+    title = '';
+    summary = '';
+    picture.value = [];
+    CrimeDate = "";
+    CrimeTime = "";
+})
 
 const setLocation = () => {
 
@@ -358,7 +401,7 @@ const takePhoto = async () => {
     const blob = await fetch(getPhoto.webPath!).then(async (r) => {
         return new Blob([await r.arrayBuffer()], { type: `image/${getPhoto.format}` });
     });
-    const file = new File([blob], `${number}`, {
+    const file = new File([blob], `${number}.${getPhoto.format}`, {
         type: blob.type,
     });
 
@@ -381,31 +424,39 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
 const createCase = async () => {
 
     console.log(linkList.value);
+    if (!CaseType || !localUserId || !SelectedDateTime || !Latitude || !Longitude || !PlaceName || !CaseStatus || !ionInputSummary.value.$el.value || !ionInputTitle.value.$el.value) {
+        ToastMessage = "Bitte füllen Sie alle Felder aus, bevor Sie den Fall erstellen.";
+        setOpen(true);
+    } else {
 
-    const caseId = await caseService.createCase(
-        CaseType,
-        localUserId,
-        SelectedDateTime,
-        Latitude,
-        Longitude,
-        PlaceName,
-        CaseStatus,
-        ionInputSummary.value.$el.value,
-        ionInputTitle.value.$el.value,
-        null,
-        linkList.value
-    );
+        console.log(linkList.value);
+        SelectedDateTime = formateDateForDb(SelectedDateTime);
+        console.log(SelectedDateTime + "Time for db");
 
-    console.log(pictureToSave);
-    pictureToSave.forEach(async (file) => {
-        await cameraService.uploadPhoto(file, caseId);
-        console.log(file+" Bild");
-    })
-    console.log(caseId);
-    console.log()
+        const caseId = await caseService.createCase(
+            CaseType,
+            localUserId,
+            SelectedDateTime,
+            Latitude,
+            Longitude,
+            PlaceName,
+            CaseStatus,
+            ionInputSummary.value.$el.value,
+            ionInputTitle.value.$el.value,
+            null,
+            linkList.value
+        );
 
-    navigateBack();
+        console.log(pictureToSave);
+        pictureToSave.forEach(async (file) => {
+            await cameraService.uploadPhoto(file, caseId);
+            console.log(file + " Bild");
+        })
+        console.log(caseId);
+        console.log()
 
+        navigateBack();
+    }
 };
 
 const navigateBack = () => {
@@ -418,6 +469,8 @@ const navigateBack = () => {
     title = '';
     summary = '';
     picture.value = [];
+    CrimeDate = "";
+    CrimeTime = "";
 
     ionRouter.push("/crime-map");
 };

@@ -245,6 +245,7 @@ http://ionicframework.com/docs/theming/ */
   background: url(../../public/bg-content.jpg) no-repeat 100% 100%; /* Hintergrundbild setzen */
   background-size: cover; /* Hintergrundbild skalieren, um den gesamten Bereich zu bedecken */
   --ion-font-family: "RobotoMono";
+  --ion-font-color: black;
   text-align: justify;
 }
 
@@ -266,6 +267,11 @@ http://ionicframework.com/docs/theming/ */
 .customTransparentAndShadowNone {
   --background: transparent;
   --box-shadow: none;
+}
+
+ion-spinner {
+  width: 50px;
+  height: 50px;
 }
 
 html {

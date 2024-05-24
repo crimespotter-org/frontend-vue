@@ -1,8 +1,14 @@
 <template>
     <ion-page>
         <HeaderComponent />
-        <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true">
-            <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen" autocapitalize="off"></ion-searchbar>
+        <ion-content v-if="!dataLoaded">
+            <div class="grid content-center justify-center min-h-full">
+                <ion-spinner></ion-spinner>
+            </div>
+        </ion-content>
+        <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true" v-if="dataLoaded">
+            <ion-searchbar color="tertiary" @ionInput="handleInput($event)" placeholder="Titel suchen"
+                autocapitalize="off"></ion-searchbar>
             <p class="mx-4">Klicke auf einen Fall um mehr zu sehen!</p>
             <ion-list lines="full" class="custom-transparent">
                 <ion-item v-for="(c, index) in results" :key="index" class="customTransparent" @click="caseClicked(c)">
@@ -43,49 +49,54 @@ import {
     IonIcon,
     IonPage,
     IonContent,
-    IonTitle,
+    IonSpinner,
     IonGrid,
     IonRow,
     IonModal,
     IonSearchbar,
-onIonViewDidEnter
+    onIonViewDidEnter
 } from '@ionic/vue';
 import CrimeProfile from "../components/CrimeProfile.vue";
 import { onMounted, ref } from 'vue';
 import HeaderComponent from '../components/Header.vue';
 import { mapService } from '../services/map-service';
-import { FilteredCases, Status, Casetype } from '../types/supabase-global';
+import { FilteredCases, Status, Casetype, Coordinate } from '../types/supabase-global';
 import { alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
 
-let cases:FilteredCases = [];
+let cases: FilteredCases = [];
 const modalRef = ref();
 let caseToPass: FilteredCases = [];
 const results = ref(cases);
+const dataLoaded = ref<boolean>(false);
+let currentLocation: Coordinate;
 
 onIonViewDidEnter(async () => {
-    const currentLocation = await mapService.currentLocation();
+    dataLoaded.value = false;
+    currentLocation = await mapService.currentLocation();
     cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 10000, null, null);
-
     results.value = cases.sort((a, b) => {
 
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
 
-    return dateB.getTime() - dateA.getTime();
-});
+        return dateB.getTime() - dateA.getTime();
+    });
+    dataLoaded.value = true;
 })
 
 onMounted(async () => {
-    const currentLocation = await mapService.currentLocation();
+    currentLocation = await mapService.currentLocation();
     cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 10000, null, null);
 
+    console.log("bin in der liste");
     results.value = cases.sort((a, b) => {
 
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
 
-    return dateB.getTime() - dateA.getTime();
-});
+        return dateB.getTime() - dateA.getTime();
+    });
+    dataLoaded.value = true;
 })
 
 const canDismiss = async () => {
@@ -154,7 +165,7 @@ function modifyDate(dateTime: string): string {
     return formattedDate
 }
 
-const handleInput = (event: any) =>{
+const handleInput = (event: any) => {
     console.log(event);
     const query = event.target.value.toLowerCase();
     results.value = cases.filter((d) => d.title.toLowerCase().indexOf(query) > -1);

@@ -12,6 +12,9 @@
         <ion-button class="mt-4">
           <router-link to="login">Zur Anmeldung</router-link>
         </ion-button>
+        <div class="buttonContainer">
+          <router-link to="/create-Account"> <ion-button>Account erstellen</ion-button> </router-link>
+        </div>
       </div>
     </ion-content>
   </ion-page>
