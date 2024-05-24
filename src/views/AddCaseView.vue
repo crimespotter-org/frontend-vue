@@ -315,14 +315,12 @@ function formateDateForDb(dateString: string) : string{
     return formattedUtcDate
 }
 
-
-
 onIonViewDidLeave(() => {
     CaseType = null;
     PlaceName = "";
     CaseStatus = null;
-    ionInputSummary.value.$el.value = null;
-    ionInputTitle.value = null;
+    ionInputSummary.value.$el.value = "";
+    ionInputTitle.value.$el.value = "";
     linkList.value = [];
     title = '';
     summary = '';
@@ -451,8 +449,8 @@ const navigateBack = () => {
     CaseType = null;
     PlaceName = "";
     CaseStatus = null;
-    ionInputSummary.value.$el.value = null;
-    ionInputTitle.value = null;
+    ionInputSummary.value.$el.value = "";
+    ionInputTitle.value.$el.value = "";
     linkList.value = [];
     title = '';
     summary = '';
