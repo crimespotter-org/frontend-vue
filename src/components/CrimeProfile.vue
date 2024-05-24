@@ -165,8 +165,9 @@ import {
   IonInput,
   IonSegment,
   IonSegmentButton,
-onIonViewDidEnter,
-IonSpinner
+  onIonViewDidEnter,
+  IonSpinner,
+  useIonRouter,
 } from "@ionic/vue";
 import { thumbsUpOutline, thumbsDownOutline, createOutline, alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline, arrowBackOutline, trashOutline, arrowForwardOutline } from 'ionicons/icons';
 import router from '../router';
@@ -212,6 +213,7 @@ const votes = ref<CaseVote>([]);
 const navigation = [Navigation];
 const upvote = ref<number>();
 const downvote = ref<number>();
+const ionRouter = useIonRouter();
 
 const alertButtons = [
   {
@@ -423,6 +425,7 @@ const deleteCase = async () => {
   await caseService.deleteCase(CaseId);
   emits('deleteMarker', props.markerData);
   props.modal.$el.dismiss();
+  ionRouter.push("/crime-map");
 }
 
 const listenToChanges = async (caseId: string) => {

@@ -286,6 +286,9 @@ const filterEvent = async () => {
   const range = Number(SelectedRange);
   console.log(SelectedCrimeType);
   console.log(SelectedCrimeStatus);
+  if(SelectedCrimeType?.length === 0){
+    SelectedCrimeType = null;
+  }
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
   loadMapMarkers();
   emits('onMarkerChange', listOfCases);
@@ -305,6 +308,7 @@ const handleStatusChange = async (event: { detail: { value: string } }) => {
 };
 
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
+  console.log(SelectedCrimeType);
   SelectedCrimeType = [];
   if (event.detail.value.length === 0) {
     SelectedCrimeType = null;

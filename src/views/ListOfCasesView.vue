@@ -53,13 +53,14 @@ import {
     IonGrid,
     IonRow,
     IonModal,
-    IonSearchbar
+    IonSearchbar,
+    onIonViewDidEnter
 } from '@ionic/vue';
 import CrimeProfile from "../components/CrimeProfile.vue";
 import { onMounted, ref } from 'vue';
 import HeaderComponent from '../components/Header.vue';
 import { mapService } from '../services/map-service';
-import { FilteredCases, Status, Casetype } from '../types/supabase-global';
+import { FilteredCases, Status, Casetype, Coordinate } from '../types/supabase-global';
 import { alertCircleOutline, checkmarkCircleOutline, locationOutline, calendarOutline, constructOutline } from 'ionicons/icons';
 
 let cases: FilteredCases = [];
@@ -67,11 +68,27 @@ const modalRef = ref();
 let caseToPass: FilteredCases = [];
 const results = ref(cases);
 const dataLoaded = ref<boolean>(false);
+let currentLocation: Coordinate;
+
+onIonViewDidEnter(async () => {
+    dataLoaded.value = false;
+    currentLocation = await mapService.currentLocation();
+    cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 10000, null, null);
+    results.value = cases.sort((a, b) => {
+
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+
+        return dateB.getTime() - dateA.getTime();
+    });
+    dataLoaded.value = true;
+})
 
 onMounted(async () => {
-    const currentLocation = await mapService.currentLocation();
+    currentLocation = await mapService.currentLocation();
     cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 10000, null, null);
 
+    console.log("bin in der liste");
     results.value = cases.sort((a, b) => {
 
         const dateA = new Date(a.created_at);
