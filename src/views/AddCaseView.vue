@@ -228,7 +228,7 @@ import {
     IonThumbnail,
     IonTitle,
     IonSpinner,
-onIonViewDidLeave
+    onIonViewDidLeave
 } from '@ionic/vue';
 import { ref, onMounted } from "vue";
 import HeaderComponent from '../components/Header.vue';
@@ -284,7 +284,6 @@ const onCalenderClickEvent = () => {
 };
 
 const confirm = () => {
-    console.log(SelectedDateTime);
     splitDateTime(SelectedDateTime);
     ionInputCrimeDate.value.$el.value = CrimeDate;
     ionInputCrimeTime.value.$el.value = CrimeTime;
@@ -293,22 +292,22 @@ const confirm = () => {
 }
 
 function splitDateTime(dateTimeString: string): void {
-  const [date, timeWithOffset] = dateTimeString.split('T');
-  const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
-  CrimeDate = date;
-  CrimeTime = time;
+    const [date, timeWithOffset] = dateTimeString.split('T');
+    const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
+    CrimeDate = date;
+    CrimeTime = time;
 }
 
 function formatDateToISOWithTimezone(dateString: string): string {
-  const date = new Date(dateString);
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const zonedDate = toZonedTime(date, timeZone);
-  const formattedDate = format(zonedDate, "yyyy-MM-dd'T'HH:mm:ssXXX");
+    const date = new Date(dateString);
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const zonedDate = toZonedTime(date, timeZone);
+    const formattedDate = format(zonedDate, "yyyy-MM-dd'T'HH:mm:ssXXX");
 
-  return formattedDate;
+    return formattedDate;
 }
 
-function formateDateForDb(dateString: string) : string{
+function formateDateForDb(dateString: string): string {
     const zonedDate = parseISO(dateString);
     const utcDate = new Date(zonedDate.getTime() - zonedDate.getTimezoneOffset() * 60000);
     const formattedUtcDate = format(utcDate, "yyyy-MM-dd'T'HH:mm:ssXXX");
@@ -332,7 +331,6 @@ onIonViewDidLeave(() => {
 const setLocation = () => {
 
     const elem = document.getElementById("search2") as HTMLInputElement;
-    console.log(elem);
 
     const autocomplete = new window.google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
@@ -347,7 +345,6 @@ const setLocation = () => {
 };
 
 const deleteLink = (link: Link) => {
-    console.log(link);
     linkList.value = linkList.value.filter(function (item) {
         return item !== link;
     });
@@ -409,15 +406,12 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
 
 const createCase = async () => {
 
-    console.log(linkList.value);
     if (!CaseType || !localUserId || !SelectedDateTime || !Latitude || !Longitude || !PlaceName || !CaseStatus || !ionInputSummary.value.$el.value || !ionInputTitle.value.$el.value) {
         ToastMessage = "Bitte füllen Sie alle Felder aus, bevor Sie den Fall erstellen.";
         setOpen(true);
     } else {
 
-        console.log(linkList.value);
         SelectedDateTime = formateDateForDb(SelectedDateTime);
-        console.log(SelectedDateTime + "Time for db");
 
         const caseId = await caseService.createCase(
             CaseType,
@@ -433,13 +427,9 @@ const createCase = async () => {
             linkList.value
         );
 
-        console.log(pictureToSave);
         pictureToSave.forEach(async (file) => {
             await cameraService.uploadPhoto(file, caseId);
-            console.log(file + " Bild");
         })
-        console.log(caseId);
-        console.log()
 
         navigateBack();
     }
@@ -458,7 +448,6 @@ const navigateBack = () => {
     CrimeDate = "";
     CrimeTime = "";
 
-    console.log(ionInputSummary.value.$el.value);
     ionRouter.push("/crime-map");
 };
 

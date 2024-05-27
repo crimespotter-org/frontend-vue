@@ -68,24 +68,26 @@ class CaseService {
       link_type: link.type,
     }));
 
-    const { data: caseId, error } = await supabase.rpc("create_crime_case_angular", {
-      p_case_type,
-      p_created_by,
-      p_crime_date_time,
-      p_latitude,
-      p_links,
-      p_longitude,
-      p_place_name,
-      p_status,
-      p_summary,
-      p_title,
-      p_zip_code,
-    });
+    const { data: caseId, error } = await supabase.rpc(
+      "create_crime_case_angular",
+      {
+        p_case_type,
+        p_created_by,
+        p_crime_date_time,
+        p_latitude,
+        p_links,
+        p_longitude,
+        p_place_name,
+        p_status,
+        p_summary,
+        p_title,
+        p_zip_code,
+      }
+    );
     if (error) {
       console.error(error);
       return "";
     }
-    console.log(caseId);
     return caseId;
   }
 
@@ -94,7 +96,6 @@ class CaseService {
       case_id,
     });
     if (error) console.error(error);
-    else console.log(data);
   }
 
   async getCase(case_id_param: string): Promise<Case> {
@@ -108,7 +109,6 @@ class CaseService {
       console.error("Fehler beim Abrufen der Daten:", error.message);
       return [];
     }
-    console.log(cases);
     return cases;
   }
 
@@ -121,7 +121,6 @@ class CaseService {
     if (error) {
       console.error("Fehler beim Abrufen der Bilder:", error.message);
     }
-    console.log(caseImage);
 
     return caseImage;
   }
@@ -193,7 +192,6 @@ class CaseService {
       console.error(error);
       return [];
     }
-    console.log(vote);
     return vote;
   }
 
@@ -205,16 +203,20 @@ class CaseService {
     return comment;
   }
 
-  async insertComment(p_case_id: string, p_text: string, p_user_id: string): Promise<boolean> {
+  async insertComment(
+    p_case_id: string,
+    p_text: string,
+    p_user_id: string
+  ): Promise<boolean> {
     const { data, error } = await supabase.rpc("insert_comment", {
       p_case_id,
       p_text,
       p_user_id,
     });
-    if (error){
+    if (error) {
       console.error(error);
       return false;
-    } 
+    }
     return true;
   }
 }

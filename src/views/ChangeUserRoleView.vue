@@ -59,26 +59,18 @@ async function getUsers() {
   role_admin = 'admin';
 
   allRoles = [role_admin, role_crimefluencer, role_crimespotter];
-  console.log(allRoles);
 
   let { data: user_list, error } = await supabase
     .from('user_profiles')
     .select('*');
 
   if (!error) {
-
     allUsers.value = user_list;
-    console.log(allUsers.value[0].username);
-    console.log("Users: " + allUsers.value);
-    //return (data);
   }
 }
 
 
 async function changeUserRole() {
-  console.log("Rolle" + selectedRole.value)
-  console.log("USer" + selectedUser.value)
-
   let localUser = await currentUserInformation.getCurrentUser();
   let localUserMail = localUser.data.session?.user.email;
 
@@ -93,16 +85,12 @@ async function changeUserRole() {
       setOpenChangeSuccessful(true);
       selectedRole.value = null;
       selectedUser.value = null;
-    } else {
-      console.log("Error" + error)
     }
   } else {
     setOpenOwnRole(true);
     selectedRole.value = null;
     selectedUser.value = null;
   }
-
-
 }
 
 const setOpenOwnRole = (state: boolean) => {

@@ -34,10 +34,10 @@
     </ion-toolbar>
   </ion-header>
   <ion-content v-if="!dataLoaded">
-            <div class="grid content-center justify-center min-h-full">
-                <ion-spinner></ion-spinner>
-            </div>
-        </ion-content>
+    <div class="grid content-center justify-center min-h-full">
+      <ion-spinner></ion-spinner>
+    </div>
+  </ion-content>
   <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true" v-if="dataLoaded">
     <ion-toolbar class="customTransparent">
       <ion-segment v-model="segment" color="primary">
@@ -175,7 +175,6 @@ import { Case, Status, Casetype, ImageData, Link, FilteredCases, Role, CaseVote,
 import { supabase } from "../services/supabase-service";
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 import "swiper/swiper-bundle.css";
-// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import FooterComponent from '../components/Footer.vue';
@@ -318,7 +317,6 @@ function splitDateTime(dateTimeString: string): void {
   const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
   CrimeDate = date;
   CrimeTime = time;
-  console.log(CrimeDate);
 }
 
 const dismiss = () => {
@@ -417,10 +415,8 @@ const deleteCase = async () => {
 const listenToChanges = async (caseId: string) => {
 
   const handleInserts = async (payload: any) => {
-    console.log("Change received!", payload);
     const newComment = payload.new;
     const username = await currentUserInformation.getUserName(payload.new['user_id']);
-    console.log(username);
     newComment.username = username;
     messages.value.push(newComment);
   };
@@ -438,8 +434,6 @@ const listenToChanges = async (caseId: string) => {
 </script>
 
 <style scoped>
-
-
 .swiper {
   width: 100%;
   height: 100%;

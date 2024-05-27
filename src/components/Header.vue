@@ -37,12 +37,10 @@ import router from '../router'
 async function logout() {
 
   const { error } = await supabase.auth.signOut();
-  
+
 
   if (!error) {
     router.push('/login');
-  } else {
-    console.log("Logout Error" + error);
   }
 }
 

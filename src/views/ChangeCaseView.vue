@@ -250,9 +250,7 @@ const cancel = () => {
 }
 
 const confirm = () => {
-    console.log(SelectedDateTime)
     splitDateTime(SelectedDateTime);
-    console.log(SelectedDateTime);
     ionInputCrimeDate.value.$el.value = CrimeDate;
     ionInputCrimeTime.value.$el.value = CrimeTime;
     modal.value.$el.dismiss(null, 'cancel');
@@ -296,7 +294,7 @@ onMounted(async () => {
     dataLoaded.value = true;
 });
 
-const findHighestNumber = () => { 
+const findHighestNumber = () => {
 
     picture.value.forEach(image => {
         const index = parseInt(image.imageName);
@@ -315,7 +313,6 @@ function splitDateTime(dateTimeString: string): void {
 
 const getPictures = async () => {
     picture.value = [];
-    console.log(picture.value + "picture");
     const caseImages = await caseService.getCaseImagesFromStorage(CaseId);
     await Promise.all(caseImages!.map(async (file) => {
         const pictureUri = await caseService.getPublicUrl(file.name, CaseId);
@@ -330,7 +327,6 @@ const getPictures = async () => {
 const setLocation = () => {
 
     const elem = document.getElementById("search1") as HTMLInputElement;
-    console.log(elem);
 
     const autocomplete = new window.google.maps.places.Autocomplete(elem);
     const returnFields = ["geometry", "name"];
@@ -408,12 +404,8 @@ const navigateBack = async () => {
     picture.value = [];
     linkList.value = [];
 
-    console.log(detailCase)
-
     CaseId = route.params['caseId'].toString();
     detailCase = await caseService.getCase(CaseId);
-
-    console.log(detailCase)
 
     SelectedDateTime = detailCase[0].crime_date_time;
 
@@ -438,21 +430,18 @@ const navigateBack = async () => {
             type: item.link_type,
             linkUrl: item.url
         };
-        linkList.value.push(link);        
+        linkList.value.push(link);
     });
     ionRouter.push("/crime-map");
 };
 
 const deleteLink = (link: Link) => {
-    console.log(link);
     linkList.value = linkList.value.filter(function (item) {
         return item !== link;
     });
 };
 
 const includeLink = () => {
-
-    console.log(linkTypRef.value.$el.value);
 
     const link: Link = {
         linkId: "",
@@ -473,8 +462,6 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
     linkList.value = linkList.value.filter(function (item) {
         return item !== link;
     });
-
-    console.log(type.detail.value);
 
     const newLink: Link = {
         linkId: linkId,

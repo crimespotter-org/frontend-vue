@@ -70,10 +70,8 @@ async function login() {
         ToastMessage = "Anmeldung erfolgreich.";
         setOpen(true);
     } else {
-        console.log(error);
         ToastMessage = "Die Anmeldung war nicht erfolgreich: " + error;
         setOpen(true);
-
     }
 }
 
