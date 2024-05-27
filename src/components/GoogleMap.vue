@@ -111,18 +111,18 @@ const isCrimefluencer = ref(false);
 getCurrentUserRoleFromService();
 
 async function getCurrentUserRoleFromService() {
-    const currentUserRole: Role = await currentUserInformation.getCurrentUserRole();
-    checkRole(currentUserRole);
+  const currentUserRole: Role = await currentUserInformation.getCurrentUserRole();
+  checkRole(currentUserRole);
 }
 
 function checkRole(currentUserRole: Role) {
-    if (currentUserRole == "admin") {
-        isAdmin.value = true;
-        isCrimefluencer.value = true;
-    }
-    else if (currentUserRole == "crimefluencer") {
-        isCrimefluencer.value = true;
-    }
+  if (currentUserRole == "admin") {
+    isAdmin.value = true;
+    isCrimefluencer.value = true;
+  }
+  else if (currentUserRole == "crimefluencer") {
+    isCrimefluencer.value = true;
+  }
 }
 
 const modal = ref();
@@ -180,7 +180,6 @@ onBeforeMount(() => {
 window.initMap = async () => {
   listOfCases = props.markerData;
   currentLocation.value = await mapService.currentLocation();
-  console.log(currentLocation);
   map.value = new window.google.maps.Map(mapDivRef.value, {
     zoom: 10,
     disableDefaultUI: false,
@@ -192,7 +191,6 @@ window.initMap = async () => {
 
 onMounted(async () => {
   const vote = await caseService.getVotes("713af3b1-16cf-4a44-893d-5280f1fbfbd9");
-  console.log(vote);
   currentLocation.value = await mapService.currentLocation();
   await nextTick();
   Sleep(5000);
@@ -284,9 +282,7 @@ const setHeatMap = () => {
 
 const filterEvent = async () => {
   const range = Number(SelectedRange);
-  console.log(SelectedCrimeType);
-  console.log(SelectedCrimeStatus);
-  if(SelectedCrimeType?.length === 0){
+  if (SelectedCrimeType?.length === 0) {
     SelectedCrimeType = null;
   }
   listOfCases = await mapService.getFilteredCases(currentLocation.value!.latitude, currentLocation.value!.longitude, range, SelectedCrimeStatus, SelectedCrimeType);
@@ -304,11 +300,9 @@ const handleStatusChange = async (event: { detail: { value: string } }) => {
   } else {
     SelectedCrimeStatus = event.detail.value as Status;
   }
-  console.log(SelectedCrimeStatus);
 };
 
 const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
-  console.log(SelectedCrimeType);
   SelectedCrimeType = [];
   if (event.detail.value.length === 0) {
     SelectedCrimeType = null;
@@ -316,7 +310,6 @@ const handleCaseTypeChange = async (event: { detail: { value: string } }) => {
     const caseType = event.detail.value as Casetype;
     SelectedCrimeType.push(caseType);
   }
-  console.log(SelectedCrimeType);
 }
 
 const toggled = () => {
@@ -330,7 +323,6 @@ const toggled = () => {
 }
 
 const deleteHeatMap = () => {
-  console.log("remove Heatmap");
   heatmap.setData([]);
   heatmap.setMap(null);
 }

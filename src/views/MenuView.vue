@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-import { IonPage, IonTitle, IonContent, IonItem } from '@ionic/vue';
+import { IonPage, IonTitle, IonContent, IonItem, onIonViewDidEnter } from '@ionic/vue';
 import { Role } from "@/types/supabase-global";
 import HeaderComponent from '../components/Header.vue';
 import FooterComponent from '../components/Footer.vue';
@@ -39,7 +39,9 @@ import { addOutline, folderOpenOutline, peopleOutline, mapOutline } from "ionico
 const isAdmin = ref(false);
 const isCrimefluencer = ref(false);
 
-getCurrentUserRoleFromService();
+onIonViewDidEnter(async() => {
+    await getCurrentUserRoleFromService();
+})
 
 async function getCurrentUserRoleFromService() {
     const currentUserRole: Role = await currentUserInformation.getCurrentUserRole();

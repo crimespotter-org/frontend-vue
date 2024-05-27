@@ -34,10 +34,10 @@
     </ion-toolbar>
   </ion-header>
   <ion-content v-if="!dataLoaded">
-            <div class="grid content-center justify-center min-h-full">
-                <ion-spinner></ion-spinner>
-            </div>
-        </ion-content>
+    <div class="grid content-center justify-center min-h-full">
+      <ion-spinner></ion-spinner>
+    </div>
+  </ion-content>
   <ion-content class="case ion-padding" :fullscreen="true" :scroll-events="true" v-if="dataLoaded">
     <ion-toolbar class="customTransparent">
       <ion-segment v-model="segment" color="primary">
@@ -130,9 +130,6 @@
         </ion-item>
 
       </ion-card>
-      <div class="input-button-wrapper">
-
-      </div>
     </div>
     <ion-toast trigger="open-toast" :is-open="isToastOpen" :message=ToastMessage :duration="5000"
       @didDismiss="setOpen(false)"></ion-toast>
@@ -178,14 +175,10 @@ import { Case, Status, Casetype, ImageData, Link, FilteredCases, Role, CaseVote,
 import { supabase } from "../services/supabase-service";
 import { currentUserInformation } from '@/services/currentUserInformation-service';
 import "swiper/swiper-bundle.css";
-// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import FooterComponent from '../components/Footer.vue';
 
-
-//Emma
-const pictureLoaded = ref<boolean>(false);
 const isToastOpen = ref(false);
 const picture = ref<ImageData[]>([]);
 const linkList = ref<Link[]>([]);
@@ -197,9 +190,6 @@ const segment = ref('info');
 const messages = ref<Comment>([]);
 const newMessage = ref();
 const dataLoaded = ref<boolean>(false);
-
-//Nina
-
 const iconName = ref("");
 const stateOfCaseGerman = ref("");
 let stateOfCase: Status;
@@ -274,8 +264,6 @@ onIonViewDidEnter(async () => {
   });
 
   messages.value = await caseService.getComments(CaseId);
-  await listenToChanges(CaseId);
-  pictureLoaded.value = true;
   dataLoaded.value = true;
 })
 
@@ -291,8 +279,6 @@ onMounted(async () => {
     };
     picture.value.push(imageData);
   }));
-
-  console.log(picture);
 
   votes.value = await caseService.getVotes(CaseId);
   upvote.value = votes.value[0].upvotes;
@@ -312,7 +298,6 @@ onMounted(async () => {
 
   messages.value = await caseService.getComments(CaseId);
   await listenToChanges(CaseId);
-  pictureLoaded.value = true;
   dataLoaded.value = true;
 });
 
@@ -332,7 +317,6 @@ function splitDateTime(dateTimeString: string): void {
   const [time] = timeWithOffset.split(/[+-]/); // berücksichtigt auch Zeitzonen-Offset
   CrimeDate = date;
   CrimeTime = time;
-  console.log(CrimeDate);
 }
 
 const dismiss = () => {
@@ -431,10 +415,8 @@ const deleteCase = async () => {
 const listenToChanges = async (caseId: string) => {
 
   const handleInserts = async (payload: any) => {
-    console.log("Change received!", payload);
     const newComment = payload.new;
-    const username = await currentUserInformation.getUserName(UserId);
-    console.log(username);
+    const username = await currentUserInformation.getUserName(payload.new['user_id']);
     newComment.username = username;
     messages.value.push(newComment);
   };
@@ -452,8 +434,6 @@ const listenToChanges = async (caseId: string) => {
 </script>
 
 <style scoped>
-
-
 .swiper {
   width: 100%;
   height: 100%;

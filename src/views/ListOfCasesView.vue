@@ -88,7 +88,6 @@ onMounted(async () => {
     currentLocation = await mapService.currentLocation();
     cases = await mapService.getFilteredCases(currentLocation.latitude, currentLocation.longitude, 10000, null, null);
 
-    console.log("bin in der liste");
     results.value = cases.sort((a, b) => {
 
         const dateA = new Date(a.created_at);
@@ -104,7 +103,6 @@ const canDismiss = async () => {
 };
 
 const caseClicked = (event: { id: string }) => {
-    console.log(event.id);
     caseToPass = cases.filter(
         (m) =>
             m.id === event.id
@@ -166,7 +164,6 @@ function modifyDate(dateTime: string): string {
 }
 
 const handleInput = (event: any) => {
-    console.log(event);
     const query = event.target.value.toLowerCase();
     results.value = cases.filter((d) => d.title.toLowerCase().indexOf(query) > -1);
 }
