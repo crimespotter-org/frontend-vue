@@ -265,7 +265,7 @@ let PlaceName: string;
 let ToastMessage: string;
 const linkTypRef = ref('newspaper');
 let localUserId: string = "";
-const pictureToSave: File[] = [];
+let pictureToSave: File[] = [];
 let title: string;
 let summary: string;
 let number = 0;
@@ -326,6 +326,7 @@ onIonViewDidLeave(() => {
     picture.value = [];
     CrimeDate = "";
     CrimeTime = "";
+    number = 0;
 })
 
 const setLocation = () => {
@@ -376,6 +377,7 @@ const changeLinkType = (link: Link, type: { detail: { value: LinkType } }) => {
 
 const deletePicture = async (deletePicture: ImageData) => {
     picture.value = picture.value.filter(item => item.pictureUri !== deletePicture.pictureUri);
+    pictureToSave = pictureToSave.filter(item => item.name !== deletePicture.imageName);
 };
 
 const takePhoto = async () => {
